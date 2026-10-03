@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { Icon } from '@ohjanus/icons';
   import { getContext } from 'svelte';
 
   interface Props {
@@ -14,5 +15,5 @@
 
 <button type="button" class="ohjanus-dropdown-sub-trigger {className}" {style} onclick={() => ctx?.toggle()} aria-haspopup="menu">
   {@render children?.()}
-  <span aria-hidden="true">›</span>
+  <span aria-hidden="true"><Icon name="chevron-right" size={12} /></span>
 </button>

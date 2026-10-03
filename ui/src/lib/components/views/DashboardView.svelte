@@ -68,7 +68,7 @@
         {#snippet header()}
           <Flex class="panel-header-inner" justify="between" align="center">
             <span>REAL-TIME QUERY THROUGHPUT (REQS / SEC)</span>
-            <Badge variant="success" size="sm">● LIVE</Badge>
+            <Badge variant="success" size="sm"><span class="status-dot ok" aria-hidden="true"></span>LIVE</Badge>
           </Flex>
         {/snippet}
         <Flex class="chart-bars font-mono" align="end" gap="6px">

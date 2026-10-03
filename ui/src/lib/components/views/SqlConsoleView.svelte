@@ -90,7 +90,7 @@
       <div class="line-num">73</div>
       <div class="line-num success-gutter">
         <span>74</span>
-        <span class="check-mark" title="Executed statement">✓</span>
+        <span class="check-mark" title="Executed statement"><Icon name="check" size={10} /></span>
       </div>
     </div>
 
@@ -99,10 +99,10 @@
       <div class="execution-block">
         <!-- Floating Result Badge [✓ 6 ▲ ▼] -->
         <div class="floating-exec-badge" title="Query completed: 6 rows returned">
-          <span class="badge-check">✓</span>
+          <span class="badge-check"><Icon name="check" size={11} /></span>
           <span class="badge-count">6</span>
-          <span class="badge-nav">▲</span>
-          <span class="badge-nav">▼</span>
+          <span class="badge-nav"><Icon name="chevron-up" size={10} /></span>
+          <span class="badge-nav"><Icon name="chevron-down" size={10} /></span>
         </div>
 
         <div class="code-line">
@@ -269,30 +269,30 @@
             <div class="header-inner">
               <Icon name="key" size={12} color="#FACC15" />
               <span>id</span>
-              <span class="header-icon">▽</span>
-              <span class="header-icon">⇅</span>
+              <span class="header-icon"><Icon name="filter" size={9} /></span>
+              <span class="header-icon"><Icon name="sort" size={9} /></span>
             </div>
           </th>
           <th class="col-header" style="width: 130px;">
             <div class="header-inner">
               <span style="color: var(--type-general); font-weight: bold; font-size: 11px;">#</span>
               <span>ordinal</span>
-              <span class="header-icon">▽</span>
+              <span class="header-icon"><Icon name="filter" size={9} /></span>
             </div>
           </th>
           <th class="col-header" style="width: 320px;">
             <div class="header-inner">
               <span style="color: var(--type-general); font-size: 11px;">" "</span>
               <span>"connectionCredentialID"</span>
-              <span class="header-icon">▽</span>
-              <span class="header-icon">⇅</span>
+              <span class="header-icon"><Icon name="filter" size={9} /></span>
+              <span class="header-icon"><Icon name="sort" size={9} /></span>
             </div>
           </th>
           <th class="col-header">
             <div class="header-inner">
               <span style="color: var(--type-general); font-size: 11px;">" "</span>
               <span>"sourcePath"</span>
-              <span class="header-icon">▽</span>
+              <span class="header-icon"><Icon name="filter" size={9} /></span>
             </div>
           </th>
         </tr>
@@ -321,9 +321,11 @@
 
     <!-- Floating row count pill [ 1 row ⌵ | ⋮ ] -->
     <div class="floating-row-badge" title="Retrieved count">
-      <span>1 row ⌵</span>
+      <span>1 row</span>
       <span style="color: var(--text-muted); opacity: 0.6;">|</span>
-      <span>⋮</span>
+      <Icon name="chevron-down" size={10} />
+      <span style="color: var(--text-muted); opacity: 0.6;">|</span>
+      <Icon name="more" size={12} />
     </div>
   </div>
 </div>
@@ -481,6 +483,8 @@
     color: var(--action-success);
     font-size: 11px;
     font-weight: bold;
+    display: inline-flex;
+    align-items: center;
   }
 
   .editor-code {
@@ -531,6 +535,8 @@
   .badge-check {
     color: var(--action-success);
     font-weight: bold;
+    display: inline-flex;
+    align-items: center;
   }
 
   .badge-count {
@@ -542,6 +548,8 @@
     color: var(--text-muted);
     font-size: 8px;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
   }
 
   /* Syntax Highlighting */
@@ -671,6 +679,8 @@
   .header-icon {
     color: var(--text-muted);
     font-size: 9px;
+    display: inline-flex;
+    align-items: center;
   }
 
   .row-num-cell {

@@ -61,9 +61,9 @@
               {/if}
             </Flex>
             {#if conn.status === 'healthy'}
-              <Badge variant="success" size="sm">● HEALTHY</Badge>
+              <Badge variant="success" size="sm"><span class="status-dot ok" aria-hidden="true"></span>HEALTHY</Badge>
             {:else}
-              <Badge variant="danger" size="sm">● DEGRADED</Badge>
+              <Badge variant="danger" size="sm"><span class="status-dot bad" aria-hidden="true"></span>DEGRADED</Badge>
             {/if}
           </Flex>
         {/snippet}
@@ -105,7 +105,12 @@
             onclick={() => runTest(conn.name)}
             loading={testingConn === conn.name}
           >
-            {testingConn === conn.name ? 'Pinging...' : '⟳ Test Connection'}
+            {#if testingConn === conn.name}
+              Pinging...
+            {:else}
+              <Icon name="refresh" size={12} />
+              <span>Test Connection</span>
+            {/if}
           </Button>
         {/snippet}
       </Card>

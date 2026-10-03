@@ -329,3 +329,19 @@ input:focus, textarea:focus, select:focus {
 .jb-btn-danger:hover {
   background-color: var(--action-danger-hover);
 }
+
+/* Shared status dot (replaces ● glyph in badges) */
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  margin-right: 5px;
+}
+.status-dot.ok {
+  background-color: var(--action-success, #57D38C);
+}
+.status-dot.bad {
+  background-color: var(--action-danger, #E55353);
+}

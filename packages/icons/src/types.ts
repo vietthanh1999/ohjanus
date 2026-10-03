@@ -47,7 +47,11 @@ export type IconName =
   | 'printer'
   | 'stop'
   | 'maximize'
-  | 'layout';
+  | 'layout'
+  | 'sort'
+  | 'crosshairs'
+  | 'expand-y'
+  | 'check-square';
 
 export interface IconProps {
   size?: number | string;

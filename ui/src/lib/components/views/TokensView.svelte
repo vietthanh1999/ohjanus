@@ -205,7 +205,7 @@
 
 <!-- One-Time Secret Reveal Modal via @ohjanus/ui -->
 {#if showSecretModal && generatedToken}
-  <Modal open={showSecretModal} onClose={() => showSecretModal = false} title="🎉 MCP Token Generated Successfully" width="520px">
+  <Modal open={showSecretModal} onClose={() => showSecretModal = false} title="MCP Token Generated Successfully" width="520px">
     {#snippet children()}
       <Stack class="secret-reveal-stack" gap="12px">
         <Alert variant="warning" title="WARNING:">

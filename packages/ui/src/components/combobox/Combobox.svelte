@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { Icon } from '@ohjanus/icons';
 
   interface Option {
     value: string;
@@ -139,7 +140,7 @@
         <span class="ohjanus-combobox-chip">
           {labelFor(v)}
           {#if !disabled}
-            <button type="button" aria-label="Remove {labelFor(v)}" onclick={() => choose(v)}>×</button>
+            <button type="button" aria-label="Remove {labelFor(v)}" onclick={() => choose(v)}><Icon name="x" size={10} /></button>
           {/if}
         </span>
       {/each}
@@ -160,7 +161,7 @@
       onkeydown={handleKeydown}
     />
     {#if clearable && (search || selectedValues.length > 0) && !disabled}
-      <button type="button" class="ohjanus-combobox-clear" aria-label="Clear" onclick={clear}>×</button>
+      <button type="button" class="ohjanus-combobox-clear" aria-label="Clear" onclick={clear}><Icon name="x" size={10} /></button>
     {/if}
   </div>
   {#if open && !disabled}

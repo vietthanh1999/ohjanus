@@ -207,7 +207,7 @@
   <div class="filter-bar">
     <!-- WHERE Filter Field -->
     <div class="filter-group where-group">
-      <span class="filter-icon">⌵</span>
+      <span class="filter-icon"><Icon name="filter" size={11} /></span>
       <span class="filter-label">WHERE</span>
       <input
         type="text"
@@ -218,7 +218,7 @@
 
     <!-- ORDER BY Filter Field -->
     <div class="filter-group orderby-group">
-      <span class="filter-icon">≡</span>
+      <span class="filter-icon"><Icon name="sort" size={11} /></span>
       <span class="filter-label">ORDER BY</span>
       <input
         type="text"
@@ -239,8 +239,8 @@
             <div class="header-inner">
               <Icon name="key" size={12} color="#FACC15" />
               <span class="col-name">id</span>
-              <span class="header-funnel">▽</span>
-              <span class="header-sort">⇅</span>
+              <span class="header-funnel"><Icon name="filter" size={9} /></span>
+              <span class="header-sort"><Icon name="sort" size={9} /></span>
             </div>
           </th>
 
@@ -249,8 +249,8 @@
             <div class="header-inner">
               <Icon name="clock" size={12} color="#56A8F5" />
               <span class="col-name">createdDate</span>
-              <span class="header-funnel">▽</span>
-              <span class="header-sort">⇅</span>
+              <span class="header-funnel"><Icon name="filter" size={9} /></span>
+              <span class="header-sort"><Icon name="sort" size={9} /></span>
             </div>
           </th>
 
@@ -259,8 +259,8 @@
             <div class="header-inner">
               <Icon name="clock" size={12} color="#56A8F5" />
               <span class="col-name">lastUpdatedDate</span>
-              <span class="header-funnel">▽</span>
-              <span class="header-sort">⇅</span>
+              <span class="header-funnel"><Icon name="filter" size={9} /></span>
+              <span class="header-sort"><Icon name="sort" size={9} /></span>
             </div>
           </th>
 
@@ -269,7 +269,7 @@
             <div class="header-inner">
               <Icon name="user" size={12} color="#7A7E85" />
               <span class="col-name">createdBy</span>
-              <span class="header-funnel">▽</span>
+              <span class="header-funnel"><Icon name="filter" size={9} /></span>
             </div>
           </th>
         </tr>
@@ -317,9 +317,11 @@
 
     <!-- Floating row count pill [ 58 rows ⌵ | ⋮ ] -->
     <div class="floating-row-badge" title="Filter count">
-      <span>58 rows ⌵</span>
+      <span>58 rows</span>
       <span style="color: var(--text-muted); opacity: 0.6;">|</span>
-      <span>⋮</span>
+      <Icon name="chevron-down" size={10} />
+      <span style="color: var(--text-muted); opacity: 0.6;">|</span>
+      <Icon name="more" size={12} />
     </div>
   </div>
 </div>
@@ -477,6 +479,8 @@
   .header-funnel, .header-sort {
     color: var(--text-muted);
     font-size: 9px;
+    display: inline-flex;
+    align-items: center;
   }
 
   .row-num-cell {

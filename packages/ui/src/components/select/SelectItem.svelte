@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { Icon } from '@ohjanus/icons';
   import { getContext, onMount } from 'svelte';
 
   interface Props {
@@ -39,7 +40,11 @@
   onclick={() => ctx?.select(itemValue)}
 >
   {#if ctx?.multiple}
-    <span aria-hidden="true">{selected ? '☑' : '☐'}</span>
+    {#if selected}
+      <span aria-hidden="true"><Icon name="check-square" size={12} /></span>
+    {:else}
+      <span class="ohjanus-select-check-empty" aria-hidden="true"></span>
+    {/if}
   {/if}
   {#if children}
     {@render children()}

@@ -123,7 +123,7 @@
 
             <!-- Requester info -->
             <Flex class="requester-row" align="center" gap="12px">
-              <span class="agent-client">🤖 {item.requested_by.client}</span>
+              <span class="agent-client"><Icon name="user" size={12} /> {item.requested_by.client}</span>
               <span class="token-tag code-text">{item.requested_by.token_id}</span>
               <span class="rows-affected">Est. ~{item.affected_estimate.toLocaleString()} rows</span>
             </Flex>
@@ -133,7 +133,7 @@
               <Alert variant="warning">
                 {#each item.warnings as warn}
                   <Flex class="warn-line" align="center" gap="6px">
-                    <span class="warn-icon">⚠️</span>
+                    <span class="warn-icon"><Icon name="alert-triangle" size={12} /></span>
                     <span>{warn}</span>
                   </Flex>
                 {/each}
@@ -187,7 +187,7 @@
       {#if selectedDetail}
         <Flex class="drawer-header" align="center" justify="between">
           <span style="font-weight: 600; color: var(--text-primary);">Request Inspection: {selectedDetail.id}</span>
-          <button class="jb-icon-btn" onclick={() => selectedDetail = null}>✕</button>
+          <button class="jb-icon-btn" onclick={() => selectedDetail = null}><Icon name="x" size={12} /></button>
         </Flex>
         <Stack class="drawer-body" gap="8px">
           <Box class="meta-section">

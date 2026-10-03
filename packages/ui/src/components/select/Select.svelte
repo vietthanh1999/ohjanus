@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { Icon } from '@ohjanus/icons';
   import { setContext } from 'svelte';
 
   interface Option {
@@ -134,11 +135,11 @@
       aria-expanded={open}
     >
       <span class:ohjanus-select-placeholder={!displayLabel()}>{displayLabel() || placeholder}</span>
-      <span class="ohjanus-select-caret" aria-hidden="true">▾</span>
+      <span class="ohjanus-select-caret" aria-hidden="true"><Icon name="chevron-down" size={10} /></span>
     </button>
   {/if}
   {#if clearable && (Array.isArray(value) ? value.length : value)}
-    <button type="button" class="ohjanus-select-clear" onclick={clear} aria-label="Clear selection">×</button>
+    <button type="button" class="ohjanus-select-clear" onclick={clear} aria-label="Clear selection"><Icon name="x" size={10} /></button>
   {/if}
   {#if open}
     <ul class="ohjanus-select-list" role="listbox" aria-multiselectable={multiple}>
@@ -154,7 +155,11 @@
             onclick={() => select(opt.value)}
           >
             {#if multiple}
-              <span aria-hidden="true">{isSelected(opt.value) ? '☑' : '☐'}</span>
+              {#if isSelected(opt.value)}
+                <span aria-hidden="true"><Icon name="check-square" size={12} /></span>
+              {:else}
+                <span class="ohjanus-select-check-empty" aria-hidden="true"></span>
+              {/if}
             {/if}
             {opt.label}
           </button>

@@ -26,6 +26,6 @@
   onclick={() => !disabled && ctx?.select(itemValue)}
   onkeydown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !disabled) { e.preventDefault(); ctx?.select(itemValue); } }}
 >
-  <span class="ohjanus-dropdown-radio-dot" aria-hidden="true">{checked ? '●' : '○'}</span>
+  <span class="ohjanus-dropdown-radio-dot" class:checked aria-hidden="true"></span>
   {@render children?.()}
 </div>
