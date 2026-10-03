@@ -418,16 +418,23 @@
   .filter-input {
     flex: 1;
     height: var(--control-height-xs, 24px);
-    background-color: #1E1F22;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm, 4px);
+    background-color: transparent;
+    border: none;
+    outline: none;
     padding: 0 8px;
     font-size: var(--font-size-sm, 12px);
     color: var(--text-primary);
   }
 
   .filter-input:focus {
-    border-color: var(--border-accent);
+    border: none;
+    outline: none;
+    box-shadow: none;
+  }
+
+  .filter-input:hover {
+    border: none;
+    box-shadow: none;
   }
 
   /* 3. Data Grid */
