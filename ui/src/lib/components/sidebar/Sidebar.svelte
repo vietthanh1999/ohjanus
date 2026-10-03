@@ -421,6 +421,7 @@
     height: var(--tree-row-height, 28px);
     display: flex;
     align-items: center;
+    gap: 4px;
     padding-right: 8px;
     cursor: pointer;
     font-size: var(--font-size-base, 13px);
@@ -464,7 +465,7 @@
   }
 
   :global(.node-icon) {
-    margin-right: 6px;
+    margin-right: 2px;
     width: 15px;
     height: 15px;
     flex-shrink: 0;
@@ -524,7 +525,7 @@
   }
 
   .service-chk {
-    margin-right: 4px;
+    margin-right: 0;
     accent-color: var(--action-primary);
   }
 
@@ -532,6 +533,6 @@
     font-size: 11px;
     color: var(--text-muted);
     font-family: var(--font-code);
-    margin-left: 8px;
+    margin-left: 4px;
   }
 </style>
