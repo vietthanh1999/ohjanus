@@ -1,0 +1,107 @@
+# Janus example configuration (§3.1 of the spec).
+# Copy to janus.yaml (git-ignored) and fill in token hashes + secret refs.
+# Generate a token:  janus token create --scopes read --ttl 720h
+server:
+  name: janus
+  version: 0.1.0
+  transport: stdio            # stdio | http | sse (http/sse land in v0.2)
+  http:
+    listen: "127.0.0.1:8787"
+    tls:
+      enabled: false
+      cert_file: ""
+      key_file: ""
+
+auth:
+  mode: token                 # token | none (none is dev only)
+  tokens:
+    - id: "tok_dev_001"
+      hash: "sha256:REPLACE_WITH_TOKEN_HASH"
+      scopes: ["read"]
+      expires_at: "2026-12-31T23:59:59Z"
+
+connections:
+  - name: "analytics"
+    driver: postgres          # postgres | mysql | sqlite
+    dsn_ref: "env:JANUS_ANALYTICS_DSN"
+    pool:
+      max_open: 10
+      max_idle: 5
+      conn_max_lifetime: "1h"
+    readonly: true
+    allowed_schemas: ["public"]
+    denied_tables: ["users", "secrets", "api_keys"]
+    allowed_tables: []
+    row_limit: 1000
+
+policy:
+  default_action: deny
+  rules:
+    - name: "allow-select"
+      match:
+        statement: ["SELECT", "WITH", "EXPLAIN", "SHOW"]
+      action: allow
+    - name: "deny-ddl"
+      match:
+        statement: ["CREATE", "ALTER", "DROP", "TRUNCATE", "GRANT", "REVOKE"]
+      action: deny
+      reason: "DDL is fully blocked"
+    - name: "warn-write"
+      match:
+        statement: ["INSERT", "UPDATE", "DELETE", "MERGE"]
+      action: require_approval
+
+approval:
+  enabled: true
+  method: "cli"               # cli | http | webhook
+  cli:
+    prompt: true
+  token_ttl: "5m"
+
+credential:
+  resolvers:
+    - scheme: "env"
+      prefix: "JANUS_"
+    - scheme: "file"
+      base_path: "/etc/janus/secrets"
+      file_mode: 384          # 0600 decimal; files must be owner read/write only
+
+audit:
+  enabled: true
+  sinks:
+    - type: "stdout"
+      format: "json"
+
+redaction:
+  enabled: true
+  patterns:
+    - name: "email"
+      regex: "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+      replacement: "[EMAIL]"
+    - name: "vn_phone"
+      regex: "\\b(0|\\+84)\\d{9,10}\\b"
+      replacement: "[PHONE]"
+  columns:
+    - "password"
+    - "password_hash"
+    - "api_key"
+    - "secret"
+    - "token"
+
+observability:
+  log_level: "info"           # debug | info | warn | error
+  metrics:
+    enabled: false
+    listen: "127.0.0.1:9090"
+    path: "/metrics"
+  tracing:
+    enabled: false
+    otlp_endpoint: ""
+
+limits:
+  max_query_length: 10000
+  query_timeout: "30s"
+  max_concurrent_queries: 20
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
