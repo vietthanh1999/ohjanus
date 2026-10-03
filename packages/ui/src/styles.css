@@ -2337,3 +2337,34 @@
 
 
 
+
+/* Badge spec variants */
+.ohjanus-badge-outline {
+  background-color: transparent;
+  border: 1px solid var(--border-default, #393B40);
+  color: var(--text-secondary, #9DA0A8);
+}
+.ohjanus-badge-secondary {
+  background-color: var(--bg-hover, #313438);
+  color: var(--text-primary, #DFE1E5);
+}
+.ohjanus-badge-destructive {
+  background-color: rgba(229, 83, 83, 0.15);
+  color: var(--action-danger, #E55353);
+}
+.ohjanus-badge-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 9999px;
+  background-color: currentColor;
+  margin-right: 4px;
+}
+.ohjanus-badge-remove {
+  background: none; border: none; cursor: pointer;
+  color: inherit; font-size: 1em; line-height: 1;
+  padding: 0 0 0 4px;
+}
+
+/* Button spec sizes */
+.ohjanus-btn-xl { height: 44px; padding: 0 22px; font-size: 15px; }
+.ohjanus-btn-fullwidth { width: 100%; }

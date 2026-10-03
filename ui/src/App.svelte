@@ -113,7 +113,7 @@
 </Box>
 
 <style>
-  .app-root {
+  :global(.app-root) {
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -122,28 +122,29 @@
     background-color: var(--bg-window-frame, #24272A);
   }
 
-  .main-layout {
+  :global(.main-layout) {
     flex: 1;
     display: flex;
     overflow: hidden;
     position: relative;
-    padding: 0 4px 4px 4px;
-    gap: 4px;
+    padding: 0;
+    gap: 0;
   }
 
-  .work-area {
+  :global(.work-area) {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     background-color: var(--bg-canvas);
     min-width: 0;
-    border-radius: 8px;
-    border: 1px solid var(--border-panel, rgba(255, 255, 255, 0.08));
+    border-radius: 0;
+    border: none;
+    border-left: 1px solid var(--border-subtle, #323438);
     position: relative;
   }
 
-  .view-content {
+  :global(.view-content) {
     flex: 1;
     overflow: hidden;
     position: relative;

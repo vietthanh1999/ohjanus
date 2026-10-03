@@ -44,6 +44,26 @@ class ToastManager {
     return this.show({ type: 'info', title, description });
   }
 
+  promise<T>(
+    task: Promise<T>,
+    messages: { loading: string; success: string | ((value: T) => string); error: string | ((err: unknown) => string) }
+  ): Promise<T> {
+    const id = this.show({ type: 'info', title: messages.loading, duration: 0 });
+    task.then(
+      (value) => {
+        this.dismiss(id);
+        const title = typeof messages.success === 'function' ? messages.success(value) : messages.success;
+        this.success(title);
+      },
+      (err: unknown) => {
+        this.dismiss(id);
+        const title = typeof messages.error === 'function' ? messages.error(err) : messages.error;
+        this.error(title);
+      }
+    );
+    return task;
+  }
+
   dismiss(id: string) {
     this.toasts = this.toasts.filter((t: ToastItem) => t.id !== id);
   }

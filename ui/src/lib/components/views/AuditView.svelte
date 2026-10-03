@@ -189,15 +189,15 @@
 </Box>
 
 <style>
-  .audit-view {
+  :global(.audit-view) {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--titlebar-height) - var(--tabbar-height) - var(--statusbar-height));
+    height: 100%;
     background-color: var(--bg-canvas);
     overflow: hidden;
   }
 
-  .audit-header {
+  :global(.audit-view .audit-header) {
     height: 48px;
     background-color: var(--bg-toolbar);
     border-bottom: 1px solid var(--border-default);
@@ -205,23 +205,23 @@
     flex-shrink: 0;
   }
 
-  .header-left {
+  :global(.audit-view .header-left) {
     display: flex;
     flex-direction: column;
   }
 
-  .header-title {
+  :global(.audit-view .header-title) {
     font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
   }
 
-  .header-desc {
+  :global(.audit-view .header-desc) {
     font-size: 11px;
     color: var(--text-muted);
   }
 
-  .filter-select {
+  :global(.audit-view .filter-select) {
     height: 26px;
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
@@ -231,23 +231,25 @@
     color: var(--text-primary);
   }
 
-  .content-layout {
+  :global(.audit-view .content-layout) {
     flex: 1;
+    display: flex;
+    flex-direction: row;
     overflow: hidden;
   }
 
-  .table-container {
+  :global(.audit-view .table-container) {
     flex: 1;
     overflow: auto;
   }
 
-  .audit-table {
+  :global(.audit-view .audit-table) {
     width: 100%;
     border-collapse: collapse;
     font-size: 12px;
   }
 
-  .audit-table th {
+  :global(.audit-view .audit-table th) {
     height: var(--table-header-height);
     background-color: var(--bg-table-header);
     border-bottom: 1px solid var(--border-default);
@@ -263,7 +265,7 @@
     z-index: 10;
   }
 
-  .audit-table td {
+  :global(.audit-view .audit-table td) {
     height: 28px;
     border-bottom: 1px solid var(--border-subtle);
     border-right: 1px solid var(--border-subtle);
@@ -272,46 +274,46 @@
     color: var(--text-primary);
   }
 
-  .audit-table tr:hover {
+  :global(.audit-view .audit-table tr:hover) {
     background-color: var(--bg-hover);
     cursor: pointer;
   }
 
-  .audit-table tr.selected {
+  :global(.audit-view .audit-table tr.selected) {
     background-color: var(--bg-selected);
   }
 
-  .cell-ts {
+  :global(.audit-view .cell-ts) {
     color: var(--text-muted);
     font-size: 11px;
   }
 
-  .cell-client {
+  :global(.audit-view .cell-client) {
     color: #DFE1E5;
   }
 
-  .cell-conn {
+  :global(.audit-view .cell-conn) {
     color: var(--syntax-function);
   }
 
-  .cell-type {
+  :global(.audit-view .cell-type) {
     font-weight: 600;
     font-size: 11px;
   }
 
-  .cell-num {
+  :global(.audit-view .cell-num) {
     color: var(--syntax-number);
     text-align: right;
     padding-right: 12px;
   }
 
-  .cell-sql {
+  :global(.audit-view .cell-sql) {
     color: #9DA0A8;
     max-width: 380px;
   }
 
   /* Right Drawer */
-  .audit-drawer {
+  :global(.audit-view .audit-drawer) {
     width: 360px;
     background-color: var(--bg-toolbar);
     border-left: 1px solid var(--border-default);
@@ -320,33 +322,33 @@
     flex-shrink: 0;
   }
 
-  .drawer-header {
+  :global(.audit-view .drawer-header) {
     height: 36px;
     padding: 0 12px;
     background-color: #25272A;
     border-bottom: 1px solid var(--border-default);
   }
 
-  .drawer-body {
+  :global(.audit-view .drawer-body) {
     padding: 14px;
     overflow-y: auto;
   }
 
-  .drawer-row {
+  :global(.audit-view .drawer-row) {
     font-size: 11px;
     padding: 4px 0;
     border-bottom: 1px solid var(--border-subtle);
   }
 
-  .d-label {
+  :global(.audit-view .d-label) {
     color: var(--text-muted);
   }
 
-  .d-val {
+  :global(.audit-view .d-val) {
     color: var(--text-primary);
   }
 
-  .sql-box {
+  :global(.audit-view .sql-box) {
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
     padding: 8px 10px;

@@ -61,42 +61,55 @@ func NewWriteService(
 
 // Preview estimates a write and issues a single-use token. Never executes.
 func (s *WriteService) Preview(ctx context.Context, req domain.ReadRequest) (*in.WritePreview, error) {
-	if err := s.gateway.RequireScope(ctx, domain.ScopeWritePreview); err != nil {
+	status := "success"
+	defer func() { s.gateway.Observe("db_write_preview", status) }()
+	fail := func(st string, err error) (*in.WritePreview, error) {
+		status = st
 		return nil, err
 	}
+	if err := s.gateway.RequireScope(ctx, domain.ScopeWritePreview); err != nil {
+		return fail("error", err)
+	}
+	release, err := s.gateway.Enter(ctx)
+	if err != nil {
+		return fail("error", err)
+	}
+	defer release()
 	if s.maxQueryLength > 0 && len(req.SQL) > s.maxQueryLength {
-		return nil, domain.NewError(domain.CodeQueryTooLong, "query exceeds max_query_length")
+		return fail("error", domain.NewError(domain.CodeQueryTooLong, "query exceeds max_query_length"))
 	}
 	vq, err := s.validator.Validate(ctx, req.Connection, req.SQL)
 	if err != nil {
 		s.emitDenied(ctx, req, "db_write_preview", err)
-		return nil, err
+		return fail("error", err)
 	}
 	decision := s.policy.Evaluate(ctx, vq)
 	if decision.Action == domain.ActionDeny {
 		err := domain.ErrQueryDenied(decision.Reason, decision.Rule)
 		s.emitDenied(ctx, req, "db_write_preview", err)
-		return nil, err
+		s.gateway.ObserveDenial(decision.Rule, req.Connection)
+		return fail("denied", err)
 	}
 	if !vq.StatementType.IsWrite() {
 		err := domain.ErrQueryDenied("db_write_preview requires a write statement", decision.Rule)
 		s.emitDenied(ctx, req, "db_write_preview", err)
-		return nil, err
+		s.gateway.ObserveDenial(decision.Rule, req.Connection)
+		return fail("denied", err)
 	}
 	pool, ok := s.pools[req.Connection]
 	if !ok {
-		return nil, domain.ErrConnectionNotFound(req.Connection)
+		return fail("error", domain.ErrConnectionNotFound(req.Connection))
 	}
 	plan, err := pool.Explain(ctx, domain.Query{Connection: req.Connection, SQL: vq.NormalizedSQL, Params: req.Params})
 	if err != nil {
-		return nil, err
+		return fail("error", err)
 	}
 	estimate := parseEstimate(plan.Text)
 	warnings := buildWarnings(vq, estimate)
 
 	id, err := randID("pvw_")
 	if err != nil {
-		return nil, domain.NewError(domain.CodeInternal, "generate preview token")
+		return fail("error", domain.NewError(domain.CodeInternal, "generate preview token"))
 	}
 	expiresAt := s.clock.Now()
 	if s.tokenTTL > 0 {
@@ -117,7 +130,7 @@ func (s *WriteService) Preview(ctx context.Context, req domain.ReadRequest) (*in
 		Estimate:    estimate,
 	}
 	if err := s.tokens.Create(ctx, token); err != nil {
-		return nil, err
+		return fail("error", err)
 	}
 	if s.audit != nil {
 		s.audit.Emit(ctx, domain.AuditEvent{
@@ -139,20 +152,31 @@ func (s *WriteService) Preview(ctx context.Context, req domain.ReadRequest) (*in
 
 // Execute verifies the single-use token and runs the write.
 func (s *WriteService) Execute(ctx context.Context, req domain.ExecuteRequest) (*in.WriteResult, error) {
-	if err := s.gateway.RequireScope(ctx, domain.ScopeWriteExecute); err != nil {
+	status := "success"
+	defer func() { s.gateway.Observe("db_write_execute", status) }()
+	fail := func(st string, err error) (*in.WriteResult, error) {
+		status = st
 		return nil, err
 	}
+	if err := s.gateway.RequireScope(ctx, domain.ScopeWriteExecute); err != nil {
+		return fail("error", err)
+	}
+	release, err := s.gateway.Enter(ctx)
+	if err != nil {
+		return fail("error", err)
+	}
+	defer release()
 	token, err := s.tokens.Get(ctx, req.PreviewTokenID)
 	if err != nil {
-		return nil, err
+		return fail("error", err)
 	}
 	switch token.State {
 	case domain.TokenUsed:
-		return nil, domain.NewError(domain.CodeTokenAlreadyUsed, "preview token already used")
+		return fail("error", domain.NewError(domain.CodeTokenAlreadyUsed, "preview token already used"))
 	case domain.TokenExpired:
-		return nil, domain.NewError(domain.CodeTokenExpired, "preview token expired")
+		return fail("error", domain.NewError(domain.CodeTokenExpired, "preview token expired"))
 	case domain.TokenRejected:
-		return nil, domain.NewError(domain.CodeTokenMismatch, "write request was rejected: "+token.DecidedReason)
+		return fail("denied", domain.NewError(domain.CodeTokenMismatch, "write request was rejected: "+token.DecidedReason))
 	}
 	if token.State == domain.TokenPending {
 		approved, err := s.approval.Approve(ctx, out.ApprovalRequest{
@@ -160,36 +184,37 @@ func (s *WriteService) Execute(ctx context.Context, req domain.ExecuteRequest) (
 			SQL: token.SQL, Params: token.Params, Estimate: 0,
 		})
 		if err != nil {
-			return nil, err
+			return fail("error", err)
 		}
 		if !approved {
 			_, _ = s.tokens.Reject(ctx, token.ID, domain.TokenIDFrom(ctx), "rejected by approver")
-			return nil, domain.NewError(domain.CodeTokenMismatch, "write request was rejected by approver")
+			return fail("denied", domain.NewError(domain.CodeTokenMismatch, "write request was rejected by approver"))
 		}
 		if _, err := s.tokens.Approve(ctx, token.ID, domain.TokenIDFrom(ctx), "approved"); err != nil {
-			return nil, err
+			return fail("error", err)
 		}
 	}
 	// Re-validate: the SQL must byte-match the previewed statement.
 	vq, err := s.validator.Validate(ctx, req.Connection, req.SQL)
 	if err != nil {
-		return nil, err
+		return fail("error", err)
 	}
 	if req.Connection != token.Connection ||
 		domain.HashSQL(vq.NormalizedSQL) != token.SQLHash ||
 		domain.HashParams(req.Params) != token.ParamsHash {
-		return nil, domain.NewError(domain.CodeTokenMismatch, "preview token does not match connection, SQL or params")
+		return fail("error", domain.NewError(domain.CodeTokenMismatch, "preview token does not match connection, SQL or params"))
 	}
 	decision := s.policy.Evaluate(ctx, vq)
 	if decision.Action == domain.ActionDeny {
-		return nil, domain.ErrQueryDenied(decision.Reason, decision.Rule)
+		s.gateway.ObserveDenial(decision.Rule, req.Connection)
+		return fail("denied", domain.ErrQueryDenied(decision.Reason, decision.Rule))
 	}
 	if err := s.tokens.MarkUsed(ctx, token.ID); err != nil {
-		return nil, err
+		return fail("error", err)
 	}
 	pool, ok := s.pools[req.Connection]
 	if !ok {
-		return nil, domain.ErrConnectionNotFound(req.Connection)
+		return fail("error", domain.ErrConnectionNotFound(req.Connection))
 	}
 	qctx := ctx
 	if s.queryTimeout > 0 {
@@ -202,10 +227,11 @@ func (s *WriteService) Execute(ctx context.Context, req domain.ExecuteRequest) (
 	duration := s.clock.Now().Sub(start).Milliseconds()
 	if err != nil {
 		if qctx.Err() == context.DeadlineExceeded {
-			return nil, domain.NewError(domain.CodeQueryTimeout, "query timed out")
+			return fail("error", domain.NewError(domain.CodeQueryTimeout, "query timed out"))
 		}
-		return nil, err
+		return fail("error", err)
 	}
+	s.gateway.ObserveDuration(req.Connection, string(vq.StatementType), float64(duration)/1000)
 	if s.audit != nil {
 		s.audit.Emit(ctx, domain.AuditEvent{
 			TS: s.clock.Now(), Event: "write.executed",

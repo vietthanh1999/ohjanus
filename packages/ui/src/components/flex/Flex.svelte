@@ -18,11 +18,11 @@
 
   let {
     as = 'div',
-    direction = 'row',
-    align = 'stretch',
-    justify = 'start',
-    wrap = false,
-    gap = '0',
+    direction,
+    align,
+    justify,
+    wrap,
+    gap,
     inline = false,
     class: className = '',
     style = '',
@@ -49,24 +49,26 @@
   };
 
   const gapValue = $derived(
-    typeof gap === 'number'
+    gap === undefined
+      ? undefined
+      : typeof gap === 'number'
       ? `${gap}px`
-      : gap.endsWith('px') || gap.endsWith('rem') || gap.endsWith('em') || gap.endsWith('%')
+      : typeof gap === 'string' && (gap.endsWith('px') || gap.endsWith('rem') || gap.endsWith('em') || gap.endsWith('%'))
       ? gap
       : `var(--spacing-${gap}, ${gap}px)`
   );
 
   const wrapValue = $derived(
-    typeof wrap === 'boolean' ? (wrap ? 'wrap' : 'nowrap') : wrap
+    wrap === undefined ? undefined : typeof wrap === 'boolean' ? (wrap ? 'wrap' : 'nowrap') : wrap
   );
 
   const flexStyle = $derived(
     `display: ${inline ? 'inline-flex' : 'flex'}; ` +
-    `flex-direction: ${direction}; ` +
-    `align-items: ${alignMap[align] || align}; ` +
-    `justify-content: ${justifyMap[justify] || justify}; ` +
-    `flex-wrap: ${wrapValue}; ` +
-    `gap: ${gapValue}; ` +
+    (direction ? `flex-direction: ${direction}; ` : '') +
+    (align ? `align-items: ${alignMap[align] || align}; ` : '') +
+    (justify ? `justify-content: ${justifyMap[justify] || justify}; ` : '') +
+    (wrapValue ? `flex-wrap: ${wrapValue}; ` : '') +
+    (gapValue !== undefined ? `gap: ${gapValue}; ` : '') +
     `${style}`
   );
 </script>

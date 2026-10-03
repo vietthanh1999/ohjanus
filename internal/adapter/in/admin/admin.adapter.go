@@ -64,6 +64,15 @@ func New(addr, authMode string, tokens out.TokenStore, resolver out.TokenResolve
 	return s
 }
 
+// SetMetricsHandler mounts a public Prometheus scrape endpoint.
+// Call before serving; nil disables it.
+func (s *Server) SetMetricsHandler(h http.Handler) {
+	if h == nil {
+		return
+	}
+	s.mux.Handle("/metrics", h)
+}
+
 // ServeListener serves on a pre-bound listener until ctx ends.
 func (s *Server) ServeListener(ctx context.Context, ln net.Listener) error {
 	go func() {

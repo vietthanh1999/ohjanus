@@ -113,50 +113,6 @@ class AppStateManager {
       closable: true,
       icon: 'table',
       env: 'Dev'
-    },
-    {
-      id: 'console_2',
-      title: 'console_2 [[PRD] 10.250.6.23]',
-      type: 'console',
-      closable: true,
-      icon: 'lightning',
-      env: 'PRD'
-    },
-    {
-      id: 'approvals',
-      title: 'Approvals Queue',
-      type: 'approvals',
-      closable: true,
-      icon: 'shield',
-      badge: '2'
-    },
-    {
-      id: 'audit',
-      title: 'Audit Logs',
-      type: 'audit',
-      closable: true,
-      icon: 'audit'
-    },
-    {
-      id: 'tokens',
-      title: 'MCP Tokens',
-      type: 'tokens',
-      closable: true,
-      icon: 'key'
-    },
-    {
-      id: 'connections',
-      title: 'Connection Pools',
-      type: 'connections',
-      closable: true,
-      icon: 'database'
-    },
-    {
-      id: 'dashboard',
-      title: 'Gateway Dashboard',
-      type: 'dashboard',
-      closable: true,
-      icon: 'chart'
     }
   ]);
 

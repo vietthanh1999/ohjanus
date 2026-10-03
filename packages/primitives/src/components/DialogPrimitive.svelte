@@ -1,11 +1,13 @@
 <script lang="ts">
-  import { onMount, type Snippet } from 'svelte';
+  import type { Snippet } from 'svelte';
   import Portal from './Portal.svelte';
+  import FocusTrap from './FocusTrap.svelte';
 
   interface Props {
     open: boolean;
     onClose: () => void;
     children?: Snippet;
+    modal?: boolean;
     closeOnEscape?: boolean;
     closeOnClickOutside?: boolean;
     titleId?: string;
@@ -16,6 +18,7 @@
     open,
     onClose,
     children,
+    modal = true,
     closeOnEscape = true,
     closeOnClickOutside = true,
     titleId,
@@ -30,10 +33,20 @@
   }
 
   function handleBackdropClick(e: MouseEvent) {
-    if (closeOnClickOutside && e.target === e.currentTarget) {
+    if (modal && closeOnClickOutside && e.target === e.currentTarget) {
       onClose();
     }
   }
+
+  // Scroll-lock the page while the dialog is open.
+  $effect(() => {
+    if (!open || typeof document === 'undefined') return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  });
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -46,17 +59,20 @@
     <div
       role="presentation"
       class="ohjanus-dialog-backdrop"
+      class:ohjanus-dialog-backdrop-transparent={!modal}
       onclick={handleBackdropClick}
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={descriptionId}
-        class="ohjanus-dialog-container"
-      >
-        {@render children?.()}
-      </div>
+      <FocusTrap>
+        <div
+          role="dialog"
+          aria-modal={modal}
+          aria-labelledby={titleId}
+          aria-describedby={descriptionId}
+          class="ohjanus-dialog-container"
+        >
+          {@render children?.()}
+        </div>
+      </FocusTrap>
     </div>
   </Portal>
 {/if}
@@ -70,7 +86,12 @@
     align-items: center;
     justify-content: center;
   }
-
+  .ohjanus-dialog-backdrop-transparent {
+    pointer-events: none;
+  }
+  .ohjanus-dialog-backdrop-transparent > * {
+    pointer-events: auto;
+  }
   .ohjanus-dialog-container {
     position: relative;
     max-width: 100%;

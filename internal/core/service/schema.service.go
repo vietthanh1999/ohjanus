@@ -34,7 +34,10 @@ func NewSchemaService(gateway *Gateway, pools map[string]out.Pool, metas map[str
 // ListConnections returns the connection aliases the agent may see.
 // Credentials are never included.
 func (s *SchemaService) ListConnections(ctx context.Context) ([]domain.Connection, error) {
+	status := "success"
+	defer func() { s.gateway.Observe("db_list_connections", status) }()
 	if err := s.gateway.RequireScope(ctx, domain.ScopeRead); err != nil {
+		status = "error"
 		return nil, err
 	}
 	out := make([]domain.Connection, 0, len(s.metas))
@@ -47,27 +50,35 @@ func (s *SchemaService) ListConnections(ctx context.Context) ([]domain.Connectio
 
 // GetSchema returns filtered schemas/tables for a connection.
 func (s *SchemaService) GetSchema(ctx context.Context, connection, schema, table string) ([]domain.Schema, error) {
+	status := "success"
+	defer func() { s.gateway.Observe("db_schema", status) }()
 	if err := s.gateway.RequireScope(ctx, domain.ScopeRead); err != nil {
+		status = "error"
 		return nil, err
 	}
 	meta, ok := s.metas[connection]
 	if !ok {
+		status = "error"
 		return nil, domain.ErrConnectionNotFound(connection)
 	}
 	if schema != "" && len(meta.AllowedSchemas) > 0 && !containsFold(meta.AllowedSchemas, schema) {
+		status = "denied"
 		return nil, domain.NewError(domain.CodeSchemaNotAllowed,
 			fmt.Sprintf("schema %q is not allowed", schema))
 	}
 	if table != "" && isTableDenied(meta, schema, table) {
+		status = "denied"
 		return nil, domain.NewError(domain.CodeTableNotAllowed,
 			fmt.Sprintf("table %q is not allowed", table))
 	}
 	pool, ok := s.pools[connection]
 	if !ok {
+		status = "error"
 		return nil, domain.ErrConnectionNotFound(connection)
 	}
 	schemas, err := pool.Schema(ctx, schema, table)
 	if err != nil {
+		status = "error"
 		return nil, err
 	}
 	return filterSchemas(schemas, meta), nil

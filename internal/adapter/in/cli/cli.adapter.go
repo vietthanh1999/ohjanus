@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -29,6 +30,8 @@ import (
 	credchain "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/chain"
 	credenv "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/env"
 	credfile "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/file"
+	limitmemory "github.com/vietthanh1999/ohjanus/internal/adapter/out/limits/memory"
+	prommetrics "github.com/vietthanh1999/ohjanus/internal/adapter/out/metrics/prom"
 	policyyaml "github.com/vietthanh1999/ohjanus/internal/adapter/out/policy/yaml"
 	redactregex "github.com/vietthanh1999/ohjanus/internal/adapter/out/redact/regex"
 	tokememory "github.com/vietthanh1999/ohjanus/internal/adapter/out/token/memory"
@@ -158,7 +161,19 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 				return err
 			}
 
-			gateway := service.NewGateway(clock)
+			var limiter out.RateLimiter = out.AllowRateLimiter{}
+			if cfg.Limits.RateLimit.Enabled {
+				limiter = limitmemory.New(cfg.Limits.RateLimit.RequestsPerMinute, clock)
+			}
+			var metrics out.Metrics = out.NoopMetrics{}
+			var metricsHandler http.Handler
+			if cfg.Observability.Metrics.Enabled {
+				pm := prommetrics.New()
+				metrics = pm
+				metricsHandler = pm.Handler()
+			}
+
+			gateway := service.NewGatewayWithLimits(clock, limiter, cfg.Limits.MaxConcurrentQueries, metrics)
 			readSvc := service.NewReadService(gateway, validator, policyEng, pools, metas, combinedAudit, clock, redactor,
 				1000, cfg.Limits.MaxQueryLength, cfg.QueryTimeout())
 			schemaSvc := service.NewSchemaService(gateway, pools, metas)
@@ -174,7 +189,7 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 			})
 
 			if cfg.Admin.Enabled {
-				if err := startAdmin(ctx, cfg, logger, tokenStore, tokenResolver, authStore, auditBuffer, combinedAudit, pools, metas, clock); err != nil {
+				if err := startAdmin(ctx, cfg, logger, tokenStore, tokenResolver, authStore, auditBuffer, combinedAudit, pools, metas, clock, metricsHandler); err != nil {
 					return err
 				}
 			}
@@ -245,12 +260,13 @@ func closePools(pools map[string]out.Pool) {
 
 // startAdmin pre-binds the Admin port (fail fast) then serves it in the
 // background next to the MCP transport.
-func startAdmin(ctx context.Context, cfg *config.Config, logger *slog.Logger, tokenStore out.TokenStore, tokenResolver out.TokenResolver, authStore out.AuthTokenStore, auditReader out.AuditReader, auditSink out.AuditSink, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta, clock out.Clock) error {
+func startAdmin(ctx context.Context, cfg *config.Config, logger *slog.Logger, tokenStore out.TokenStore, tokenResolver out.TokenResolver, authStore out.AuthTokenStore, auditReader out.AuditReader, auditSink out.AuditSink, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta, clock out.Clock, metricsHandler http.Handler) error {
 	ln, err := net.Listen("tcp", cfg.Admin.Listen)
 	if err != nil {
 		return fmt.Errorf("admin listen %s: %w", cfg.Admin.Listen, err)
 	}
 	admin := adminapi.New(cfg.Admin.Listen, cfg.Auth.Mode, tokenStore, tokenResolver, authStore, auditReader, auditSink, pools, metas, clock)
+	admin.SetMetricsHandler(metricsHandler)
 	go func() {
 		if err := admin.ServeListener(ctx, ln); err != nil {
 			logger.Error("admin server stopped", "err", err)

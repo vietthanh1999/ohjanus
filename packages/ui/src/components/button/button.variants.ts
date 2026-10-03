@@ -14,11 +14,12 @@ export const buttonVariants = variants({
       link: 'ohjanus-btn-link'
     },
     size: {
-      default: 'ohjanus-btn-sm',
+      default: 'ohjanus-btn-md',
       xs: 'ohjanus-btn-xs',
       sm: 'ohjanus-btn-sm',
       md: 'ohjanus-btn-md',
       lg: 'ohjanus-btn-lg',
+      xl: 'ohjanus-btn-xl',
       icon: 'ohjanus-btn-icon',
       'icon-xs': 'ohjanus-btn-icon-xs',
       'icon-sm': 'ohjanus-btn-icon-sm',
@@ -26,7 +27,7 @@ export const buttonVariants = variants({
     }
   },
   defaultVariants: {
-    variant: 'secondary',
-    size: 'sm'
+    variant: 'default',
+    size: 'default'
   }
 });

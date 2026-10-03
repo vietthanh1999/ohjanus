@@ -252,15 +252,15 @@
 </Box>
 
 <style>
-  .approvals-view {
+  :global(.approvals-view) {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--titlebar-height) - var(--tabbar-height) - var(--statusbar-height));
+    height: 100%;
     background-color: var(--bg-canvas);
     overflow: hidden;
   }
 
-  .view-header {
+  :global(.approvals-view .view-header) {
     height: 48px;
     background-color: var(--bg-toolbar);
     border-bottom: 1px solid var(--border-default);
@@ -268,30 +268,30 @@
     flex-shrink: 0;
   }
 
-  .header-left {
+  :global(.approvals-view .header-left) {
     display: flex;
     flex-direction: column;
   }
 
-  .header-title {
+  :global(.approvals-view .header-title) {
     font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
   }
 
-  .header-desc {
+  :global(.approvals-view .header-desc) {
     font-size: 11px;
     color: var(--text-muted);
   }
 
-  .state-tabs {
+  :global(.approvals-view .state-tabs) {
     background-color: #1E1F22;
     padding: 2px;
     border-radius: 4px;
     border: 1px solid var(--border-default);
   }
 
-  .state-tab-btn {
+  :global(.approvals-view .state-tab-btn) {
     padding: 3px 10px;
     font-size: 11px;
     color: var(--text-secondary);
@@ -301,13 +301,13 @@
     gap: 6px;
   }
 
-  .state-tab-btn.active {
+  :global(.approvals-view .state-tab-btn.active) {
     background-color: #313438;
     color: var(--text-primary);
     font-weight: 500;
   }
 
-  .count-pill {
+  :global(.approvals-view .count-pill) {
     background-color: #EDA200;
     color: #1E1F22;
     font-size: 9px;
@@ -316,12 +316,14 @@
     border-radius: 10px;
   }
 
-  .content-layout {
+  :global(.approvals-view .content-layout) {
     flex: 1;
+    display: flex;
+    flex-direction: row;
     overflow: hidden;
   }
 
-  .queue-list {
+  :global(.approvals-view .queue-list) {
     flex: 1;
     overflow-y: auto;
     padding: 16px;
@@ -330,7 +332,7 @@
     gap: 12px;
   }
 
-  .approval-card {
+  :global(.approvals-view .approval-card) {
     background-color: var(--bg-sidebar);
     border: 1px solid var(--border-default);
     border-radius: 6px;
@@ -342,17 +344,17 @@
     transition: all 0.15s ease;
   }
 
-  .approval-card:hover {
+  :global(.approvals-view .approval-card:hover) {
     border-color: #4E5157;
     background-color: #2E3035;
   }
 
-  .approval-card.selected {
+  :global(.approvals-view .approval-card.selected) {
     border-color: var(--border-accent);
     box-shadow: 0 0 0 1px var(--border-accent);
   }
 
-  .conn-pill {
+  :global(.approvals-view .conn-pill) {
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
     color: var(--text-secondary);
@@ -361,35 +363,35 @@
     border-radius: 3px;
   }
 
-  .time-meta {
+  :global(.approvals-view .time-meta) {
     font-size: 11px;
     color: var(--text-muted);
   }
 
-  .requester-row {
+  :global(.approvals-view .requester-row) {
     font-size: 11px;
     color: var(--text-secondary);
   }
 
-  .agent-client {
+  :global(.approvals-view .agent-client) {
     font-weight: 500;
     color: var(--text-primary);
   }
 
-  .token-tag {
+  :global(.approvals-view .token-tag) {
     color: var(--text-muted);
     background-color: #1E1F22;
     padding: 1px 4px;
     border-radius: 2px;
   }
 
-  .rows-affected {
+  :global(.approvals-view .rows-affected) {
     margin-left: auto;
     color: var(--syntax-number);
     font-weight: 500;
   }
 
-  .sql-preview {
+  :global(.approvals-view .sql-preview) {
     background-color: #1E1F22;
     border: 1px solid var(--border-subtle);
     border-radius: 4px;
@@ -402,11 +404,11 @@
     overflow: hidden;
   }
 
-  .card-actions {
+  :global(.approvals-view .card-actions) {
     margin-top: 4px;
   }
 
-  .decision-meta {
+  :global(.approvals-view .decision-meta) {
     font-size: 11px;
     color: var(--text-muted);
     border-top: 1px solid var(--border-subtle);
@@ -416,13 +418,13 @@
     gap: 2px;
   }
 
-  .reason-note {
+  :global(.approvals-view .reason-note) {
     color: #DFE1E5;
     font-style: italic;
   }
 
   /* Right Drawer */
-  .detail-drawer {
+  :global(.approvals-view .detail-drawer) {
     width: 440px;
     background-color: var(--bg-toolbar);
     border-left: 1px solid var(--border-default);
@@ -431,45 +433,45 @@
     flex-shrink: 0;
   }
 
-  .drawer-header {
+  :global(.approvals-view .drawer-header) {
     height: 36px;
     padding: 0 12px;
     background-color: #25272A;
     border-bottom: 1px solid var(--border-default);
   }
 
-  .drawer-body {
+  :global(.approvals-view .drawer-body) {
     padding: 16px;
     overflow-y: auto;
   }
 
-  .meta-section {
+  :global(.approvals-view .meta-section) {
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
     border-radius: 4px;
     padding: 8px 12px;
   }
 
-  .meta-row {
+  :global(.approvals-view .meta-row) {
     font-size: 11px;
     padding: 4px 0;
     border-bottom: 1px solid var(--border-subtle);
   }
 
-  .meta-row:last-child {
+  :global(.approvals-view .meta-row:last-child) {
     border-bottom: none;
   }
 
-  .meta-label {
+  :global(.approvals-view .meta-label) {
     color: var(--text-muted);
   }
 
-  .meta-val {
+  :global(.approvals-view .meta-val) {
     color: var(--text-primary);
     font-weight: 500;
   }
 
-  .section-title {
+  :global(.approvals-view .section-title) {
     font-size: 11px;
     font-weight: 600;
     color: var(--text-secondary);
@@ -478,7 +480,7 @@
     letter-spacing: 0.5px;
   }
 
-  .full-sql {
+  :global(.approvals-view .full-sql) {
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
     border-radius: 4px;
@@ -492,34 +494,34 @@
     margin: 0;
   }
 
-  .safety-box {
+  :global(.approvals-view .safety-box) {
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
     border-radius: 4px;
     padding: 10px 12px;
   }
 
-  .safety-item {
+  :global(.approvals-view .safety-item) {
     font-size: 11px;
     color: var(--text-primary);
   }
 
-  .safe-dot {
+  :global(.approvals-view .safe-dot) {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background-color: #57D38C;
   }
 
-  .safe-dot.risk {
+  :global(.approvals-view .safe-dot.risk) {
     background-color: #E55353;
   }
 
-  .drawer-actions {
+  :global(.approvals-view .drawer-actions) {
     margin-top: 12px;
   }
 
-  .drawer-empty {
+  :global(.approvals-view .drawer-empty) {
     flex: 1;
     padding: 24px;
     color: var(--text-muted);

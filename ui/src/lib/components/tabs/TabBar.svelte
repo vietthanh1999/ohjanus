@@ -90,28 +90,28 @@
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div class="tabs-dropdown" onclick={() => isDropdownOpen = false}>
         <div class="dropdown-header">Database Objects</div>
-        <button type="button" class="dropdown-item" onclick={() => appState.activeTabId = 'connection_credential'}>
+        <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'connection_credential', title: 'connectio...credential [[Dev][ReadOnly] 10.220.6.4]', type: 'table', closable: true, icon: 'table', env: 'Dev' })}>
           <span>🗄️ connection_credential [[Dev][ReadOnly] 10.220.6.4]</span>
         </button>
-        <button type="button" class="dropdown-item" onclick={() => appState.activeTabId = 'console_2'}>
+        <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'console_2', title: 'console_2 [[PRD] 10.250.6.23]', type: 'console', closable: true, icon: 'lightning', env: 'PRD' })}>
           <span>⚡ console_2 [[PRD] 10.250.6.23]</span>
         </button>
         <div class="dropdown-separator"></div>
         <div class="dropdown-header">Gateway Modules (§ui.md)</div>
-        <button type="button" class="dropdown-item" onclick={() => appState.activeTabId = 'approvals'}>
+        <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'approvals', title: 'Approvals Queue', type: 'approvals', closable: true, icon: 'shield', badge: '2' })}>
           <span>🛡️ Approvals Queue</span>
           <span class="count-tag">{appState.notificationCount}</span>
         </button>
-        <button type="button" class="dropdown-item" onclick={() => appState.activeTabId = 'audit'}>
+        <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'audit', title: 'Audit Logs', type: 'audit', closable: true, icon: 'audit' })}>
           <span>📜 Audit Log Trail</span>
         </button>
-        <button type="button" class="dropdown-item" onclick={() => appState.activeTabId = 'tokens'}>
+        <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'tokens', title: 'MCP Tokens', type: 'tokens', closable: true, icon: 'key' })}>
           <span>🔑 MCP Agent Tokens</span>
         </button>
-        <button type="button" class="dropdown-item" onclick={() => appState.activeTabId = 'connections'}>
+        <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'connections', title: 'Connection Pools', type: 'connections', closable: true, icon: 'database' })}>
           <span>🔌 Connection Pools</span>
         </button>
-        <button type="button" class="dropdown-item" onclick={() => appState.activeTabId = 'dashboard'}>
+        <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'dashboard', title: 'Gateway Dashboard', type: 'dashboard', closable: true, icon: 'chart' })}>
           <span>📊 Telemetry Dashboard</span>
         </button>
       </div>
@@ -130,8 +130,7 @@
     position: relative;
     z-index: 20;
     flex-shrink: 0;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    border-radius: 0;
   }
 
   .tabs-scrollable {

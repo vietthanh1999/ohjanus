@@ -212,50 +212,51 @@
 {/if}
 
 <style>
-  .tokens-view {
+  :global(.tokens-view) {
     display: flex;
     flex-direction: column;
     height: 100%;
     background-color: var(--bg-canvas);
     color: var(--text-primary);
+    overflow: hidden;
   }
 
-  .view-header {
+  :global(.tokens-view .view-header) {
     height: 52px;
     padding: 0 16px;
     border-bottom: 1px solid var(--border-default);
     background-color: var(--bg-toolbar);
   }
 
-  .header-icon {
+  :global(.tokens-view .header-icon) {
     font-size: 16px;
     margin-right: 6px;
   }
 
-  .view-title {
+  :global(.tokens-view .view-title) {
     font-weight: 600;
     font-size: 13px;
     color: var(--text-primary);
   }
 
-  .view-desc {
+  :global(.tokens-view .view-desc) {
     font-size: 11px;
     color: var(--text-muted);
     margin-left: 12px;
   }
 
-  .table-container {
+  :global(.tokens-view .table-container) {
     flex: 1;
     overflow: auto;
   }
 
-  .data-grid {
+  :global(.tokens-view .data-grid) {
     width: 100%;
     border-collapse: collapse;
     font-size: 11.5px;
   }
 
-  .data-grid th {
+  :global(.tokens-view .data-grid th) {
     background-color: var(--bg-table-header);
     border-bottom: 1px solid var(--border-default);
     padding: 6px 12px;
@@ -264,21 +265,21 @@
     font-weight: 600;
   }
 
-  .data-grid td {
+  :global(.tokens-view .data-grid td) {
     border-bottom: 1px solid var(--border-subtle);
     padding: 8px 12px;
     color: var(--text-primary);
   }
 
-  .data-grid tr:hover {
+  :global(.tokens-view .data-grid tr:hover) {
     background-color: var(--bg-hover);
   }
 
-  .id-cell {
+  :global(.tokens-view .id-cell) {
     color: var(--syntax-number, #6897BB);
   }
 
-  .scopes-cell {
+  :global(.tokens-view .scopes-cell) {
     display: flex;
     gap: 4px;
     flex-wrap: wrap;
@@ -288,14 +289,14 @@
     font-size: 10px !important;
   }
 
-  .scopes-grid {
+  :global(.scopes-grid) {
     background-color: var(--bg-canvas, #1E1F22);
     border: 1px solid var(--border-default, #393B40);
     border-radius: 4px;
     padding: 10px;
   }
 
-  .chk-label {
+  :global(.chk-label) {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -303,7 +304,7 @@
     cursor: pointer;
   }
 
-  .ohjanus-select {
+  :global(.ohjanus-select) {
     width: 100%;
     height: 30px;
     background-color: var(--bg-canvas, #1E1F22);
@@ -314,7 +315,7 @@
     outline: none;
   }
 
-  .secret-box {
+  :global(.secret-box) {
     background-color: var(--bg-canvas);
     border: 1px dashed var(--action-warning);
     border-radius: 4px;
@@ -324,7 +325,7 @@
     word-break: break-all;
   }
 
-  .mcp-config-snippet {
+  :global(.mcp-config-snippet) {
     background-color: var(--bg-canvas);
     border: 1px solid var(--border-default);
     border-radius: 4px;

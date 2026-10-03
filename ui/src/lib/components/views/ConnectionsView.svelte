@@ -121,7 +121,7 @@
 </Box>
 
 <style>
-  .connections-view {
+  :global(.connections-view) {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -129,18 +129,18 @@
     overflow-y: auto;
   }
 
-  .view-header {
+  :global(.connections-view .view-header) {
     height: 48px;
     background: var(--bg-toolbar);
     border-bottom: 1px solid var(--border-default);
     padding: 0 16px;
   }
 
-  .header-icon { font-size: 16px; margin-right: 8px; }
-  .view-title { font-weight: 600; font-size: 13px; margin-right: 12px; }
-  .view-desc { font-size: 11px; color: var(--text-muted); }
+  :global(.connections-view .header-icon) { font-size: 16px; margin-right: 8px; }
+  :global(.connections-view .view-title) { font-weight: 600; font-size: 13px; margin-right: 12px; }
+  :global(.connections-view .view-desc) { font-size: 11px; color: var(--text-muted); }
 
-  .cards-grid {
+  :global(.connections-view .cards-grid) {
     padding: 16px;
   }
 
@@ -148,8 +148,8 @@
     width: 100%;
   }
 
-  .db-icon { font-size: 16px; }
-  .conn-title { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+  :global(.connections-view .db-icon) { font-size: 16px; }
+  :global(.connections-view .conn-title) { font-weight: 600; font-size: 13px; color: var(--text-primary); }
 
   :global(.conn-details) {
     margin-bottom: 14px;

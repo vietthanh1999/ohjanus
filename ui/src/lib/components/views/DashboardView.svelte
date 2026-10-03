@@ -110,7 +110,7 @@
 </Box>
 
 <style>
-  .dashboard-view {
+  :global(.dashboard-view) {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -118,16 +118,16 @@
     overflow-y: auto;
   }
 
-  .view-header {
+  :global(.dashboard-view .view-header) {
     height: 48px;
     background: var(--bg-toolbar);
     border-bottom: 1px solid var(--border-default);
     padding: 0 16px;
   }
 
-  .view-title { font-weight: 600; font-size: 13px; }
+  :global(.dashboard-view .view-title) { font-weight: 600; font-size: 13px; }
 
-  .dashboard-body {
+  :global(.dashboard-view .dashboard-body) {
     padding: 16px;
   }
 
@@ -138,15 +138,15 @@
     padding: 12px 14px;
   }
 
-  .kpi-label { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; }
-  .kpi-val { font-size: 22px; font-weight: 700; color: var(--text-primary); }
-  .kpi-val.pos { color: var(--action-success); }
-  .kpi-val.warn { color: var(--action-danger); }
-  .kpi-val.pending { color: var(--action-warning); }
-  .kpi-trend.pos { font-size: 10.5px; color: var(--action-success); font-weight: 500; }
-  .kpi-sub { font-size: 10.5px; color: var(--text-muted); }
+  :global(.dashboard-view .kpi-label) { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; }
+  :global(.dashboard-view .kpi-val) { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+  :global(.dashboard-view .kpi-val.pos) { color: var(--action-success); }
+  :global(.dashboard-view .kpi-val.warn) { color: var(--action-danger); }
+  :global(.dashboard-view .kpi-val.pending) { color: var(--action-warning); }
+  :global(.dashboard-view .kpi-trend.pos) { font-size: 10.5px; color: var(--action-success); font-weight: 500; }
+  :global(.dashboard-view .kpi-sub) { font-size: 10.5px; color: var(--text-muted); }
 
-  .panel-header-inner {
+  :global(.dashboard-view .panel-header-inner) {
     width: 100%;
     font-size: 11px;
     font-weight: 600;
@@ -175,7 +175,7 @@
     opacity: 1;
   }
 
-  .bar-label {
+  :global(.dashboard-view .bar-label) {
     font-size: 9px;
     color: var(--text-muted);
     margin-top: 4px;
@@ -192,7 +192,7 @@
     margin-bottom: 4px;
   }
 
-  .denial-time { font-size: 10.5px; color: var(--text-muted); }
+  :global(.dashboard-view .denial-time) { font-size: 10.5px; color: var(--text-muted); }
   :global(.denial-sql) { font-size: 11px; color: var(--action-danger); margin-bottom: 2px; }
   :global(.denial-agent) { font-size: 10px; color: var(--text-muted); }
 </style>

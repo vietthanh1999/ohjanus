@@ -57,34 +57,47 @@ func NewReadService(
 
 // Read executes a read-only query through the full pipeline.
 func (s *ReadService) Read(ctx context.Context, req domain.ReadRequest) (*domain.ResultSet, error) {
-	if err := s.gateway.RequireScope(ctx, domain.ScopeRead); err != nil {
+	status := "success"
+	defer func() { s.gateway.Observe("db_read", status) }()
+	fail := func(st string, err error) (*domain.ResultSet, error) {
+		status = st
 		return nil, err
 	}
+	if err := s.gateway.RequireScope(ctx, domain.ScopeRead); err != nil {
+		return fail("error", err)
+	}
+	release, err := s.gateway.Enter(ctx)
+	if err != nil {
+		return fail("error", err)
+	}
+	defer release()
 	if s.maxQueryLength > 0 && len(req.SQL) > s.maxQueryLength {
-		return nil, domain.NewError(domain.CodeQueryTooLong, "query exceeds max_query_length")
+		return fail("error", domain.NewError(domain.CodeQueryTooLong, "query exceeds max_query_length"))
 	}
 	vq, err := s.validator.Validate(ctx, req.Connection, req.SQL)
 	if err != nil {
 		s.emitDenied(ctx, req, nil, err)
-		return nil, err
+		return fail("error", err)
 	}
 	decision := s.policy.Evaluate(ctx, vq)
 	if decision.Action == domain.ActionDeny {
 		err := domain.ErrQueryDenied(decision.Reason, decision.Rule)
 		s.emitDenied(ctx, req, vq, err)
-		return nil, err
+		s.gateway.ObserveDenial(decision.Rule, req.Connection)
+		return fail("denied", err)
 	}
 	if !vq.StatementType.IsRead() {
 		if decision.Action == domain.ActionRequireApproval {
-			return nil, domain.NewError(domain.CodeApprovalRequired, "write statements require db_write_preview first")
+			return fail("denied", domain.NewError(domain.CodeApprovalRequired, "write statements require db_write_preview first"))
 		}
 		err := domain.ErrQueryDenied("statement type not allowed for db_read", decision.Rule)
 		s.emitDenied(ctx, req, vq, err)
-		return nil, err
+		s.gateway.ObserveDenial(decision.Rule, req.Connection)
+		return fail("denied", err)
 	}
 	pool, ok := s.pools[req.Connection]
 	if !ok {
-		return nil, domain.ErrConnectionNotFound(req.Connection)
+		return fail("error", domain.ErrConnectionNotFound(req.Connection))
 	}
 	rowLimit := s.rowLimitFor(req.Connection)
 	limit := req.Limit
@@ -107,34 +120,47 @@ func (s *ReadService) Read(ctx context.Context, req domain.ReadRequest) (*domain
 	duration := s.clock.Now().Sub(start).Milliseconds()
 	if err != nil {
 		if qctx.Err() == context.DeadlineExceeded {
-			return nil, domain.NewError(domain.CodeQueryTimeout, "query timed out")
+			return fail("error", domain.NewError(domain.CodeQueryTimeout, "query timed out"))
 		}
 		s.emitExecuted(ctx, req, vq, decision, 0, false, duration, "error", err.Error())
-		return nil, err
+		return fail("error", err)
 	}
+	s.gateway.ObserveDuration(req.Connection, string(vq.StatementType), float64(duration)/1000)
 	s.emitExecuted(ctx, req, vq, decision, res.RowCount, res.Truncated, duration, "success", "")
 	return res, nil
 }
 
 // Explain runs EXPLAIN without executing the query.
 func (s *ReadService) Explain(ctx context.Context, req domain.ReadRequest) (*domain.Plan, error) {
-	if err := s.gateway.RequireScope(ctx, domain.ScopeRead); err != nil {
+	status := "success"
+	defer func() { s.gateway.Observe("db_explain", status) }()
+	fail := func(st string, err error) (*domain.Plan, error) {
+		status = st
 		return nil, err
 	}
+	if err := s.gateway.RequireScope(ctx, domain.ScopeRead); err != nil {
+		return fail("error", err)
+	}
+	release, err := s.gateway.Enter(ctx)
+	if err != nil {
+		return fail("error", err)
+	}
+	defer release()
 	vq, err := s.validator.Validate(ctx, req.Connection, req.SQL)
 	if err != nil {
 		s.emitDenied(ctx, req, nil, err)
-		return nil, err
+		return fail("error", err)
 	}
 	decision := s.policy.Evaluate(ctx, vq)
 	if decision.Action == domain.ActionDeny {
 		err := domain.ErrQueryDenied(decision.Reason, decision.Rule)
 		s.emitDenied(ctx, req, vq, err)
-		return nil, err
+		s.gateway.ObserveDenial(decision.Rule, req.Connection)
+		return fail("denied", err)
 	}
 	pool, ok := s.pools[req.Connection]
 	if !ok {
-		return nil, domain.ErrConnectionNotFound(req.Connection)
+		return fail("error", domain.ErrConnectionNotFound(req.Connection))
 	}
 	return pool.Explain(ctx, domain.Query{Connection: req.Connection, SQL: vq.NormalizedSQL, Params: req.Params})
 }
