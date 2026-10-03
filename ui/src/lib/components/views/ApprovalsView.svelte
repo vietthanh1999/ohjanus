@@ -283,26 +283,26 @@
   }
 
   :global(.approvals-view .header-title) {
-    font-size: 13px;
+    font-size: var(--font-size-lg, 16px);
     font-weight: 600;
     color: var(--text-primary);
   }
 
   :global(.approvals-view .header-desc) {
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-muted);
   }
 
   :global(.approvals-view .state-tabs) {
     background-color: #1E1F22;
-    padding: 2px;
+    padding: 3px;
     border-radius: 4px;
     border: 1px solid var(--border-default);
   }
 
   :global(.approvals-view .state-tab-btn) {
-    padding: 3px 10px;
-    font-size: 11px;
+    padding: 4px 12px;
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-secondary);
     border-radius: 3px;
     display: flex;
@@ -319,9 +319,9 @@
   :global(.approvals-view .count-pill) {
     background-color: #EDA200;
     color: #1E1F22;
-    font-size: 9px;
+    font-size: var(--font-size-2xs, 11px);
     font-weight: 700;
-    padding: 0 4px;
+    padding: 1px 6px;
     border-radius: 10px;
   }
 
@@ -345,10 +345,10 @@
     background-color: var(--bg-sidebar);
     border: 1px solid var(--border-default);
     border-radius: 6px;
-    padding: 12px 14px;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
     transition: all 0.15s ease;
   }
@@ -367,18 +367,18 @@
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
     color: var(--text-secondary);
-    font-size: 11px;
-    padding: 1px 6px;
+    font-size: var(--font-size-2xs, 11px);
+    padding: 2px 8px;
     border-radius: 3px;
   }
 
   :global(.approvals-view .time-meta) {
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-muted);
   }
 
   :global(.approvals-view .requester-row) {
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-secondary);
   }
 
@@ -390,7 +390,7 @@
   :global(.approvals-view .token-tag) {
     color: var(--text-muted);
     background-color: #1E1F22;
-    padding: 1px 4px;
+    padding: 1px 6px;
     border-radius: 2px;
   }
 
@@ -398,16 +398,17 @@
     margin-left: auto;
     color: var(--syntax-number);
     font-weight: 500;
+    font-size: var(--font-size-xs, 12px);
   }
 
   :global(.approvals-view .sql-preview) {
     background-color: #1E1F22;
     border: 1px solid var(--border-subtle);
     border-radius: 4px;
-    padding: 8px 10px;
-    font-size: 11px;
+    padding: 10px 12px;
+    font-size: var(--font-size-xs, 12px);
     color: #DFE1E5;
-    line-height: 16px;
+    line-height: var(--line-height-normal, 1.45);
     white-space: pre-wrap;
     max-height: 90px;
     overflow: hidden;
@@ -418,7 +419,7 @@
   }
 
   :global(.approvals-view .decision-meta) {
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-muted);
     border-top: 1px solid var(--border-subtle);
     padding-top: 6px;
@@ -443,10 +444,11 @@
   }
 
   :global(.approvals-view .drawer-header) {
-    height: 36px;
-    padding: 0 12px;
+    height: 40px;
+    padding: 0 14px;
     background-color: #25272A;
     border-bottom: 1px solid var(--border-default);
+    font-size: var(--font-size-md, 15px);
   }
 
   :global(.approvals-view .drawer-body) {
@@ -458,12 +460,12 @@
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
     border-radius: 4px;
-    padding: 8px 12px;
+    padding: 10px 14px;
   }
 
   :global(.approvals-view .meta-row) {
-    font-size: 11px;
-    padding: 4px 0;
+    font-size: var(--font-size-xs, 12px);
+    padding: 6px 0;
     border-bottom: 1px solid var(--border-subtle);
   }
 
@@ -481,7 +483,7 @@
   }
 
   :global(.approvals-view .section-title) {
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
     font-weight: 600;
     color: var(--text-secondary);
     margin-top: 8px;
@@ -493,9 +495,9 @@
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
     border-radius: 4px;
-    padding: 10px;
-    font-size: 11px;
-    line-height: 16px;
+    padding: 10px 12px;
+    font-size: var(--font-size-xs, 12px);
+    line-height: var(--line-height-normal, 1.45);
     color: #DFE1E5;
     max-height: 180px;
     overflow-y: auto;
@@ -511,7 +513,7 @@
   }
 
   :global(.approvals-view .safety-item) {
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-primary);
   }
 
@@ -534,7 +536,7 @@
     flex: 1;
     padding: 24px;
     color: var(--text-muted);
-    font-size: 12px;
+    font-size: var(--font-size-sm, 13px);
     text-align: center;
   }
 </style>

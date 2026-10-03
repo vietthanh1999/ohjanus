@@ -140,7 +140,7 @@
                   Revoke
                 </Button>
               {:else}
-                <span style="color: var(--text-muted); font-size: 11px;">Revoked</span>
+                <span style="color: var(--text-muted); font-size: var(--font-size-xs, 12px);">Revoked</span>
               {/if}
             </td>
           </tr>
@@ -268,18 +268,18 @@
   }
 
   :global(.tokens-view .header-icon) {
-    font-size: 16px;
+    font-size: 18px;
     margin-right: 6px;
   }
 
   :global(.tokens-view .view-title) {
     font-weight: 600;
-    font-size: 13px;
+    font-size: var(--font-size-lg, 16px);
     color: var(--text-primary);
   }
 
   :global(.tokens-view .view-desc) {
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-muted);
     margin-left: 12px;
   }
@@ -292,21 +292,22 @@
   :global(.tokens-view .data-grid) {
     width: 100%;
     border-collapse: collapse;
-    font-size: 11.5px;
+    font-size: var(--font-size-base, 14px);
   }
 
   :global(.tokens-view .data-grid th) {
     background-color: var(--bg-table-header);
     border-bottom: 1px solid var(--border-default);
-    padding: 6px 12px;
+    padding: 8px 12px;
     text-align: left;
     color: var(--text-muted);
     font-weight: 600;
+    font-size: var(--font-size-xs, 12px);
   }
 
   :global(.tokens-view .data-grid td) {
     border-bottom: 1px solid var(--border-subtle);
-    padding: 8px 12px;
+    padding: 9px 12px;
     color: var(--text-primary);
   }
 
@@ -325,7 +326,7 @@
   }
 
   :global(.scope-pill) {
-    font-size: 10px !important;
+    font-size: var(--font-size-2xs, 11px) !important;
   }
 
   :global(.scopes-grid) {
@@ -339,18 +340,19 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 11.5px;
+    font-size: var(--font-size-sm, 13px);
     cursor: pointer;
   }
 
   :global(.ohjanus-select) {
     width: 100%;
-    height: 30px;
+    height: var(--control-height-md, 34px);
     background-color: var(--bg-canvas, #1E1F22);
     border: 1px solid var(--border-default, #393B40);
     border-radius: 4px;
     color: var(--text-primary, #DFE1E5);
     padding: 0 8px;
+    font-size: var(--font-size-base, 14px);
     outline: none;
   }
 
@@ -359,7 +361,7 @@
     border: 1px dashed var(--action-warning);
     border-radius: 4px;
     padding: 10px 12px;
-    font-size: 12px;
+    font-size: var(--font-size-sm, 13px);
     color: #FACC15;
     word-break: break-all;
   }
@@ -370,7 +372,7 @@
     border-radius: 4px;
     padding: 8px;
     margin-top: 6px;
-    font-size: 10.5px;
+    font-size: var(--font-size-xs, 12px);
     color: var(--syntax-string, #6AAB73);
   }
 </style>

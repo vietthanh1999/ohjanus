@@ -206,7 +206,7 @@
 
   .tab-label {
     flex: 1;
-    font-size: 12px;
+    font-size: var(--font-size-sm, 13px);
   }
 
   .tab-close-icon {
@@ -235,8 +235,8 @@
   }
 
   .overflow-btn {
-    width: var(--icon-btn-size-sm, 26px);
-    height: var(--icon-btn-size-sm, 26px);
+    width: var(--icon-btn-size-sm, 28px);
+    height: var(--icon-btn-size-sm, 28px);
     border-radius: var(--radius-sm, 4px);
     display: flex;
     align-items: center;
@@ -263,7 +263,7 @@
   }
 
   .dropdown-header {
-    font-size: 10px;
+    font-size: var(--font-size-2xs, 11px);
     text-transform: uppercase;
     font-weight: 600;
     color: var(--text-muted);
@@ -277,7 +277,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 6px 12px;
-    font-size: 12px;
+    font-size: var(--font-size-sm, 13px);
     color: var(--text-primary);
     text-align: left;
   }

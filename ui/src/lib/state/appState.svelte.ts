@@ -178,6 +178,33 @@ select * from transfer_job where id = 'b8262180-1075-43f8-8338-2412d4734d65'`);
   lastExecutionLatency = $state<string>('630 ms');
   cursorPos = $state<{ line: number; col: number }>({ line: 71, col: 42 });
 
+  // UI Density & Typography Scale
+  uiDensity = $state<'compact' | 'standard' | 'comfortable'>('comfortable');
+
+  setDensity(density: 'compact' | 'standard' | 'comfortable') {
+    this.uiDensity = density;
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-density', density);
+      try {
+        localStorage.setItem('ohjanus_ui_density', density);
+      } catch {
+        // Ignore storage errors in restricted contexts
+      }
+    }
+  }
+
+  initDensity() {
+    if (typeof document !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('ohjanus_ui_density') as 'compact' | 'standard' | 'comfortable' | null;
+        this.uiDensity = saved || 'comfortable';
+      } catch {
+        this.uiDensity = 'comfortable';
+      }
+      document.documentElement.setAttribute('data-density', this.uiDensity);
+    }
+  }
+
   // SQL Result sets
   transferJobResults = $state([
     {
@@ -566,6 +593,7 @@ select * from transfer_job where id = 'b8262180-1075-43f8-8338-2412d4734d65'`);
   }
 
   async loadAll() {
+    this.initDensity();
     this.dataLoading = true;
     this.dataError = null;
     try {

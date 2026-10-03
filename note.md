@@ -4,7 +4,7 @@
 #### 1. Thiết kế thanh Top Bar
 - **Khung nền Titlebar**: Đồng nhất với background tổng thể của cửa sổ (`linear-gradient(90deg, #1C2426, #202628, #24272A)`), chiều cao chuẩn 38px, loại bỏ border-bottom thô để các khung bên dưới tạo ranh giới tự nhiên.
 - **Mac Traffic Lights**: 3 nút macOS (`#FF5F56`, `#FFBD2E`, `#27C93F`) căn lề trái chuẩn xác.
-- **Avatar Profile**: Hình chữ nhật bo góc cyan `VT` (`#0891B2`, chữ trắng đậm, padding 1px 5px) cạnh dropdown `VTVprime ⌵` và `Version Control ⌵`.
+- **Avatar Profile**: Hình chữ nhật bo góc cyan `VT` (`#0891B2`, chữ trắng đậm, padding 1px 5px) cạnh dropdown `VThanh ⌵` và `Version Control ⌵`.
 - **Cụm Action trung tâm**: Biểu tượng Database cylinder, Run tròn, Folder dự án và menu `···`.
 - **Cụm Utility góc phải**: AI Assistant xoáy, Search kính lúp và Settings bánh răng có **chấm thông báo vàng/amber** ở góc trên (`#E5A122`).
 

@@ -70,7 +70,85 @@
   --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-code: 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
 
+  /* Typography Scale - Comfortable (Base 14px) default */
+  --font-size-2xs: 11px;
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-md: 15px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 26px;
+
+  /* Line Heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.45;
+  --line-height-relaxed: 1.6;
+
   /* Layout geometry */
+  --titlebar-height: 40px;
+  --tabbar-height: 36px;
+  --toolbar-height: 36px;
+  --filterbar-height: 36px;
+  --table-row-height: 30px;
+  --table-header-height: 30px;
+  --statusbar-height: 28px;
+  --tree-row-height: 30px;
+
+  /* Component scale */
+  --control-height-xs: 24px;
+  --control-height-sm: 28px;
+  --control-height-md: 34px;
+  --control-height-lg: 40px;
+
+  /* Icon Button scale */
+  --icon-btn-size-xs: 24px;
+  --icon-btn-size-sm: 28px;
+  --icon-btn-size-md: 30px;
+  --icon-btn-size-lg: 34px;
+
+  /* Standard Icon size scale */
+  --icon-size-xs: 13px;
+  --icon-size-sm: 15px;
+  --icon-size-md: 16px;
+  --icon-size-lg: 20px;
+  --icon-size-xl: 24px;
+}
+
+/* Density overrides if user switches in settings */
+:root[data-density="standard"] {
+  --font-size-2xs: 10.5px;
+  --font-size-xs: 11.5px;
+  --font-size-sm: 12.5px;
+  --font-size-base: 13px;
+  --font-size-md: 14px;
+  --font-size-lg: 15px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 24px;
+
+  --titlebar-height: 38px;
+  --tabbar-height: 34px;
+  --toolbar-height: 34px;
+  --filterbar-height: 34px;
+  --table-row-height: 28px;
+  --table-header-height: 28px;
+  --statusbar-height: 26px;
+  --tree-row-height: 28px;
+
+  --control-height-md: 32px;
+  --control-height-lg: 38px;
+}
+
+:root[data-density="compact"] {
+  --font-size-2xs: 10px;
+  --font-size-xs: 11px;
+  --font-size-sm: 11.5px;
+  --font-size-base: 12px;
+  --font-size-md: 13px;
+  --font-size-lg: 14px;
+  --font-size-xl: 16px;
+  --font-size-2xl: 22px;
+
   --titlebar-height: 38px;
   --tabbar-height: 34px;
   --toolbar-height: 32px;
@@ -80,24 +158,8 @@
   --statusbar-height: 26px;
   --tree-row-height: 28px;
 
-  /* Component scale */
-  --control-height-xs: 24px;
-  --control-height-sm: 28px;
-  --control-height-md: 32px;
-  --control-height-lg: 38px;
-
-  /* Icon Button scale */
-  --icon-btn-size-xs: 22px;
-  --icon-btn-size-sm: 26px;
-  --icon-btn-size-md: 28px;
-  --icon-btn-size-lg: 32px;
-
-  /* Standard Icon size scale */
-  --icon-size-xs: 12px;
-  --icon-size-sm: 14px;
-  --icon-size-md: 16px;
-  --icon-size-lg: 20px;
-  --icon-size-xl: 24px;
+  --control-height-md: 30px;
+  --control-height-lg: 36px;
 }
 
 *, *::before, *::after {
@@ -113,8 +175,8 @@ html, body {
   background-color: var(--bg-canvas);
   color: var(--text-primary);
   font-family: var(--font-ui);
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: var(--font-size-base, 14px);
+  line-height: var(--line-height-normal, 1.45);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   user-select: none;

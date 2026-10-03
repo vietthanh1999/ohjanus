@@ -128,15 +128,15 @@
   }
 
   :global(.connections-view .view-header) {
-    height: 48px;
+    height: 52px;
     background: var(--bg-toolbar);
     border-bottom: 1px solid var(--border-default);
     padding: 0 16px;
   }
 
-  :global(.connections-view .header-icon) { font-size: 16px; margin-right: 8px; }
-  :global(.connections-view .view-title) { font-weight: 600; font-size: 13px; margin-right: 12px; }
-  :global(.connections-view .view-desc) { font-size: 11px; color: var(--text-muted); }
+  :global(.connections-view .header-icon) { font-size: 18px; margin-right: 8px; }
+  :global(.connections-view .view-title) { font-weight: 600; font-size: var(--font-size-lg, 16px); margin-right: 12px; }
+  :global(.connections-view .view-desc) { font-size: var(--font-size-xs, 12px); color: var(--text-muted); }
 
   :global(.connections-view .cards-grid) {
     padding: 16px;
@@ -146,12 +146,12 @@
     width: 100%;
   }
 
-  :global(.connections-view .db-icon) { font-size: 16px; }
-  :global(.connections-view .conn-title) { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+  :global(.connections-view .db-icon) { font-size: 18px; }
+  :global(.connections-view .conn-title) { font-weight: 600; font-size: var(--font-size-md, 15px); color: var(--text-primary); }
 
   :global(.conn-details) {
     margin-bottom: 14px;
-    font-size: 11.5px;
+    font-size: var(--font-size-sm, 13px);
   }
 
   :global(.detail-row .label) { color: var(--text-muted); }
@@ -166,7 +166,7 @@
   }
 
   :global(.pool-title) {
-    font-size: 10px;
+    font-size: var(--font-size-2xs, 11px);
     font-weight: 600;
     color: var(--text-muted);
     letter-spacing: 0.5px;
@@ -179,13 +179,13 @@
 
   :global(.stat-box .num) {
     display: block;
-    font-size: 14px;
+    font-size: var(--font-size-lg, 16px);
     font-weight: 700;
     color: var(--action-primary);
   }
 
   :global(.stat-box .lbl) {
-    font-size: 9.5px;
+    font-size: var(--font-size-2xs, 11px);
     color: var(--text-muted);
   }
 
@@ -194,7 +194,7 @@
   }
 
   :global(.sec-label) {
-    font-size: 10px;
+    font-size: var(--font-size-2xs, 11px);
     font-weight: 600;
     color: var(--text-muted);
     margin-bottom: 4px;

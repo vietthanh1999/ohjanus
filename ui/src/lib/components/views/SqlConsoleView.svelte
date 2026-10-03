@@ -646,7 +646,7 @@
   .jb-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: var(--font-size-sm, 13px);
   }
 
   .row-num-header {
@@ -663,8 +663,8 @@
     border-right: 1px solid var(--border-subtle);
     color: var(--text-secondary);
     font-weight: 400;
-    font-size: 11px;
-    padding: 0 6px;
+    font-size: var(--font-size-xs, 12px);
+    padding: 0 8px;
     text-align: left;
     user-select: none;
     white-space: nowrap;
@@ -678,7 +678,7 @@
 
   .header-icon {
     color: var(--text-muted);
-    font-size: 9px;
+    font-size: var(--font-size-2xs, 11px);
     display: inline-flex;
     align-items: center;
   }
@@ -692,7 +692,7 @@
     color: #7A7E85;
     text-align: right;
     padding-right: 6px;
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
     user-select: none;
   }
 
@@ -700,7 +700,7 @@
     height: var(--table-row-height);
     border-bottom: 1px solid #25272A;
     border-right: 1px solid var(--border-subtle);
-    padding: 0 6px;
+    padding: 0 8px;
     color: var(--text-primary);
     white-space: nowrap;
   }
@@ -716,7 +716,7 @@
 
   .uuid-cell {
     color: #DFE1E5;
-    font-size: 12px;
+    font-size: var(--font-size-base, 14px);
   }
 
   .num-cell {
