@@ -18,7 +18,13 @@ admin:
   listen: "127.0.0.1:8788"
 
 auth:
-  mode: token                 # token | none (none is dev only)
+  mode: token                 # token | none (none is dev only, refused without JANUS_ALLOW_NO_AUTH=1)
+  # Runtime token backend for UI/API-created tokens: memory (default, lost
+  # on restart) or sqlite (persisted across restarts). Config-file tokens
+  # below are always seeded. sqlite_path is required for store: sqlite;
+  # mount it as a volume in containers.
+  store: memory
+  # sqlite_path: "./janus-tokens.db"
   tokens:
     - id: "tok_dev_001"
       hash: "sha256:REPLACE_WITH_TOKEN_HASH"

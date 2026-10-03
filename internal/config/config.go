@@ -53,6 +53,12 @@ type AdminConfig struct {
 type AuthConfig struct {
 	Mode   string        `yaml:"mode"`
 	Tokens []TokenConfig `yaml:"tokens"`
+	// Store selects the runtime token backend: memory (default, tokens
+	// created via UI/API are lost on restart) or sqlite (persisted).
+	Store string `yaml:"store"`
+	// SQLitePath is the database file for store: sqlite.
+	// Relative paths resolve against the process working directory.
+	SQLitePath string `yaml:"sqlite_path"`
 }
 
 type TokenConfig struct {

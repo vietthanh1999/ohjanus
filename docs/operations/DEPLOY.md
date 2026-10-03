@@ -35,15 +35,22 @@ Start from `configs/janus.example.yaml` → `./janus.yaml` (git-ignored).
 - [ ] `limits.query_timeout` / `max_query_length` / rate limits set.
 - [ ] `redaction.enabled: true` for PII columns.
 
-## 3. Runtime tokens are memory-only (v0.1)
+## 3. Runtime token persistence
 
-Tokens created at runtime (UI / `POST /api/v1/tokens`) live in process
-memory and **are lost on restart**; only `janus.yaml` tokens survive.
-Runbook until the SQLite store lands:
+```yaml
+auth:
+  store: sqlite              # memory (default) | sqlite
+  sqlite_path: "./janus-tokens.db"
+```
 
-1. After every restart, re-issue agent tokens and update client configs.
-2. Or pin long-lived tokens in `janus.yaml` (hash only) and restart rarely.
-3. Monitor `audit` event `token.created` to track issuance.
+- `memory`: tokens created at runtime (UI / `POST /api/v1/tokens`) are
+  lost on restart; only `janus.yaml` tokens survive.
+- `sqlite`: runtime tokens persist across restarts (only hashes stored,
+  file created `0600`, WAL mode). Config-file tokens are merged on every
+  boot and never overwrite runtime rows.
+- The db path is stable identity: changing it starts from an empty store.
+  In containers, mount it as a volume so restarts keep tokens.
+- Monitor `audit` event `token.created` to track issuance.
 
 ## 4. TLS termination (remote operation)
 

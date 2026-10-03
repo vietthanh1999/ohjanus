@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -27,6 +28,7 @@ import (
 	auditstderr "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/stderr"
 	auditstdout "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/stdout"
 	authmemory "github.com/vietthanh1999/ohjanus/internal/adapter/out/auth/memory"
+	authsqlite "github.com/vietthanh1999/ohjanus/internal/adapter/out/auth/sqlite"
 	systemclock "github.com/vietthanh1999/ohjanus/internal/adapter/out/clock/system"
 	pgconnector "github.com/vietthanh1999/ohjanus/internal/adapter/out/connector/postgres"
 	credchain "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/chain"
@@ -144,9 +146,13 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 			}
 			redactor := redactregex.New(patterns, columns)
 
-			tokenResolver := authmemory.New(clock)
-			tokenResolver.Seed(cfg.AuthTokens())
-			authStore := tokenResolver
+			tokenResolver, authStore, err := buildAuthStores(cfg, clock)
+			if err != nil {
+				return err
+			}
+			if c, ok := authStore.(io.Closer); ok {
+				defer c.Close()
+			}
 			policyEng := policyyaml.New(cfg.PolicyRules(), domain.Action(cfg.Policy.DefaultAction))
 			metas := cfg.ConnectionMetas()
 
@@ -362,6 +368,33 @@ func checkAuthMode(mode string) error {
 		return fmt.Errorf("auth.mode \"none\" disables all authentication; refusing to serve (dev only: set JANUS_ALLOW_NO_AUTH=1)")
 	}
 	return nil
+}
+
+// buildAuthStores wires the MCP token resolver and the runtime token store.
+// Config-file tokens are always seeded; with store: sqlite, runtime tokens
+// created via UI/API survive restarts.
+func buildAuthStores(cfg *config.Config, clock out.Clock) (out.TokenResolver, out.AuthTokenStore, error) {
+	switch cfg.Auth.Store {
+	case "", "memory":
+		mem := authmemory.New(clock)
+		mem.Seed(cfg.AuthTokens())
+		return mem, mem, nil
+	case "sqlite":
+		if cfg.Auth.SQLitePath == "" {
+			return nil, nil, fmt.Errorf("auth.sqlite_path is required for store \"sqlite\"")
+		}
+		st, err := authsqlite.Open(cfg.Auth.SQLitePath, clock)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := st.Seed(cfg.AuthTokens()); err != nil {
+			st.Close()
+			return nil, nil, err
+		}
+		return st, st, nil
+	default:
+		return nil, nil, fmt.Errorf("auth.store %q must be memory|sqlite", cfg.Auth.Store)
+	}
 }
 
 func buildApprovalEngine(cfg *config.Config, tokens out.TokenStore, clock out.Clock) (out.ApprovalEngine, error) {
