@@ -14,12 +14,15 @@
     Flex,
     Stack,
     Text,
-    Table,
-    TableHeader,
-    TableBody,
-    TableRow,
-    TableHead,
-    TableCell,
+    DataGrid,
+    DataGridHead,
+    DataGridBody,
+    DataGridRow,
+    DataGridHeadCell,
+    DataGridHeaderInner,
+    DataGridRowNumHead,
+    DataGridRowNum,
+    DataGridCell,
   } from "@ohjanus/ui";
   import { Icon } from "@ohjanus/icons";
 
@@ -131,45 +134,86 @@
   </Flex>
 
   <!-- Tokens List Table -->
-  <Box class="table-container font-mono">
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>TOKEN ID</TableHead>
-          <TableHead>AGENT / CLIENT NAME</TableHead>
-          <TableHead>SCOPES</TableHead>
-          <TableHead>CREATED</TableHead>
-          <TableHead>EXPIRES</TableHead>
-          <TableHead>LAST USED</TableHead>
-          <TableHead>STATE</TableHead>
-          <TableHead style="text-align: right;">ACTIONS</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {#each appState.tokens as tok}
-          <TableRow>
-            <TableCell class="id-cell">{tok.id}</TableCell>
-            <TableCell class="name-cell font-sans">
+  <Box class="table-container">
+    <DataGrid style="height: 100%;">
+      <DataGridHead>
+        <DataGridRow>
+          <DataGridRowNumHead />
+          <DataGridHeadCell width="150px">
+            <DataGridHeaderInner>
+              <Icon name="key" size={12} color="#EDA200" />
+              <span>Token ID</span>
+            </DataGridHeaderInner>
+          </DataGridHeadCell>
+          <DataGridHeadCell width="220px">
+            <DataGridHeaderInner>
+              <Icon name="user" size={12} color="#7A7E85" />
+              <span>Agent / Client Name</span>
+            </DataGridHeaderInner>
+          </DataGridHeadCell>
+          <DataGridHeadCell width="200px">
+            <DataGridHeaderInner>
+              <Icon name="shield" size={12} color="#3B82F6" />
+              <span>Scopes</span>
+            </DataGridHeaderInner>
+          </DataGridHeadCell>
+          <DataGridHeadCell width="110px">
+            <DataGridHeaderInner>
+              <Icon name="clock" size={12} color="#56A8F5" />
+              <span>Created</span>
+            </DataGridHeaderInner>
+          </DataGridHeadCell>
+          <DataGridHeadCell width="170px">
+            <DataGridHeaderInner>
+              <Icon name="clock" size={12} color="#56A8F5" />
+              <span>Expires</span>
+            </DataGridHeaderInner>
+          </DataGridHeadCell>
+          <DataGridHeadCell width="110px">
+            <DataGridHeaderInner>
+              <Icon name="clock" size={12} color="#56A8F5" />
+              <span>Last Used</span>
+            </DataGridHeaderInner>
+          </DataGridHeadCell>
+          <DataGridHeadCell width="100px">
+            <DataGridHeaderInner>
+              <Icon name="chart" size={12} color="#57D38C" />
+              <span>State</span>
+            </DataGridHeaderInner>
+          </DataGridHeadCell>
+          <DataGridHeadCell width="110px">
+            <DataGridHeaderInner style="justify-content: flex-end;">
+              <span>Actions</span>
+            </DataGridHeaderInner>
+          </DataGridHeadCell>
+        </DataGridRow>
+      </DataGridHead>
+      <DataGridBody>
+        {#each appState.tokens as tok, idx (tok.id)}
+          <DataGridRow>
+            <DataGridRowNum index={idx} />
+            <DataGridCell class="id-cell" truncate title={tok.id}>{tok.id}</DataGridCell>
+            <DataGridCell class="name-cell" truncate title={tok.name}>
               <strong>{tok.name}</strong>
-            </TableCell>
-            <TableCell class="scopes-cell">
+            </DataGridCell>
+            <DataGridCell class="scopes-cell">
               {#each tok.scopes as sc}
-                <Badge variant="default" size="sm" class="scope-pill">
+                <Badge variant="default" size="md">
                   {sc}
                 </Badge>
               {/each}
-            </TableCell>
-            <TableCell>{tok.created_at}</TableCell>
-            <TableCell>{tok.expires_at}</TableCell>
-            <TableCell>{tok.last_used_at}</TableCell>
-            <TableCell>
+            </DataGridCell>
+            <DataGridCell tone="secondary">{tok.created_at || "—"}</DataGridCell>
+            <DataGridCell tone="secondary">{tok.expires_at}</DataGridCell>
+            <DataGridCell tone="secondary">{tok.last_used_at || "—"}</DataGridCell>
+            <DataGridCell>
               {#if tok.state === "active"}
-                <Badge variant="success" size="sm">ACTIVE</Badge>
+                <Badge variant="success" size="md">ACTIVE</Badge>
               {:else}
-                <Badge variant="danger" size="sm">REVOKED</Badge>
+                <Badge variant="danger" size="md">REVOKED</Badge>
               {/if}
-            </TableCell>
-            <TableCell style="text-align: right;">
+            </DataGridCell>
+            <DataGridCell align="right">
               {#if tok.state === "active"}
                 <Button
                   variant="danger"
@@ -185,11 +229,11 @@
                   >Revoked</Text
                 >
               {/if}
-            </TableCell>
-          </TableRow>
+            </DataGridCell>
+          </DataGridRow>
         {/each}
-      </TableBody>
-    </Table>
+      </DataGridBody>
+    </DataGrid>
   </Box>
 </Box>
 
@@ -398,12 +442,9 @@
 
   :global(.tokens-view .scopes-cell) {
     display: flex;
+    align-items: center;
     gap: 4px;
     flex-wrap: wrap;
-  }
-
-  :global(.scope-pill) {
-    font-size: var(--font-size-2xs, 11px) !important;
   }
 
   :global(.scopes-grid) {
