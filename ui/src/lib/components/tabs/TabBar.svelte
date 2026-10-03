@@ -75,6 +75,16 @@
       </svg>
     </button>
 
+    <button
+      type="button"
+      class="overflow-btn"
+      title="Tab Actions"
+    >
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 3a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>
+      </svg>
+    </button>
+
     {#if isDropdownOpen}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -120,6 +130,8 @@
     position: relative;
     z-index: 20;
     flex-shrink: 0;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
   }
 
   .tabs-scrollable {

@@ -69,6 +69,12 @@ type ResultSet struct {
 	DurationMs int64
 }
 
+// ExecResult is the outcome of a write execution.
+type ExecResult struct {
+	RowsAffected int64
+	DurationMs   int64
+}
+
 // ValidatedQuery is the output of AST validation.
 type ValidatedQuery struct {
 	Query         Query

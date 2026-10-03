@@ -5,6 +5,7 @@ import "time"
 // AuditEvent is a single structured audit record (JSONL).
 // Params are never logged raw; only hashes are stored.
 type AuditEvent struct {
+	ID             string        `json:"id,omitempty"`
 	TS             time.Time     `json:"ts"`
 	Event          string        `json:"event"`
 	RequestID      string        `json:"request_id"`

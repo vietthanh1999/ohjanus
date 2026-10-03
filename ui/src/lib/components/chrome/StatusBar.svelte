@@ -46,21 +46,31 @@
 
   <!-- Right: Document, Buffer Stats & System Status -->
   <div class="status-right">
-    <!-- Cursor Position & Buffer Analytics -->
-    <span class="status-item code-text" title="Cursor line:col (character count, line breaks)">
-      {appState.cursorPos.line}:{appState.cursorPos.col} (2954 chars, 73 line breaks)
-    </span>
+    {#if appState.activeTabId === 'console_2'}
+      <!-- Cursor Position & Buffer Analytics -->
+      <span class="status-item code-text" title="Cursor line:col (character count, line breaks)">
+        {appState.cursorPos.line}:{appState.cursorPos.col} (2954 chars, 73 line breaks)
+      </span>
 
-    <span class="status-item" title="Line Endings">LF</span>
-    <span class="status-item" title="File Encoding">UTF-8</span>
-    <span class="status-item" title="Indent Size">4 spaces</span>
+      <span class="status-item" title="Line Endings">LF</span>
+      <span class="status-item" title="File Encoding">UTF-8</span>
+      <span class="status-item" title="Indent Size">4 spaces</span>
 
-    <!-- Read-Only Lock Icon -->
-    <span class="status-item lock-icon" title="Database Connection is in ReadOnly Transaction Mode">
-      <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
-        <path fill-rule="evenodd" d="M4 4v2h-.5A1.5 1.5 0 002 7.5v6A1.5 1.5 0 003.5 15h9a1.5 1.5 0 001.5-1.5v-6A1.5 1.5 0 0012.5 6H12V4a4 4 0 00-8 0zm6.5 2V4a2.5 2.5 0 00-5 0v2h5z"/>
-      </svg>
-    </span>
+      <!-- Read-Only Lock Icon -->
+      <span class="status-item lock-icon" title="Database Connection is in ReadOnly Transaction Mode">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 4v2h-.5A1.5 1.5 0 002 7.5v6A1.5 1.5 0 003.5 15h9a1.5 1.5 0 001.5-1.5v-6A1.5 1.5 0 0012.5 6H12V4a4 4 0 00-8 0zm6.5 2V4a2.5 2.5 0 00-5 0v2h5z"/>
+        </svg>
+      </span>
+    {:else}
+      <!-- Copy / Window action icon matching design2.png -->
+      <button type="button" class="status-item" title="Open in Terminal">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M0 2a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H2a2 2 0 01-2-2V2zm2-1a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V2a1 1 0 00-1-1H2z"/>
+          <path d="M5.5 10a.5.5 0 01-.5-.5v-3a.5.5 0 011 0v3a.5.5 0 01-.5.5zm5 0a.5.5 0 01-.5-.5v-3a.5.5 0 011 0v3a.5.5 0 01-.5.5z"/>
+        </svg>
+      </button>
+    {/if}
 
     <!-- Notification Bell -->
     <button
@@ -87,8 +97,8 @@
 <style>
   .statusbar {
     height: var(--statusbar-height);
-    background-color: var(--bg-toolbar);
-    border-top: 1px solid var(--border-default);
+    background-color: var(--bg-window-frame, #24272A);
+    border-top: none;
     display: flex;
     align-items: center;
     justify-content: space-between;

@@ -394,17 +394,19 @@
 <style>
   .sidebar {
     background-color: var(--bg-canvas);
-    border-right: 1px solid var(--border-subtle);
+    border: 1px solid var(--border-panel, rgba(255, 255, 255, 0.08));
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     flex-shrink: 0;
     transition: width 0.15s ease-out;
-    height: calc(100vh - var(--titlebar-height) - var(--statusbar-height));
+    height: 100%;
   }
 
   .sidebar.collapsed {
-    border-right: none;
+    border: none;
+    width: 0 !important;
   }
 
   /* Header Top */

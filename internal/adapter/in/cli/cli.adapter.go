@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
 	"os/signal"
 	"strings"
@@ -15,9 +16,12 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	adminapi "github.com/vietthanh1999/ohjanus/internal/adapter/in/admin"
 	"github.com/vietthanh1999/ohjanus/internal/adapter/in/mcp"
 	"github.com/vietthanh1999/ohjanus/internal/adapter/in/transport/stdio"
+	cliapproval "github.com/vietthanh1999/ohjanus/internal/adapter/out/approval/cli"
 	auditfile "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/file"
+	auditmemory "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/memory"
 	auditmulti "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/multi"
 	auditstderr "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/stderr"
 	auditstdout "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/stdout"
@@ -29,6 +33,7 @@ import (
 	credfile "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/file"
 	policyyaml "github.com/vietthanh1999/ohjanus/internal/adapter/out/policy/yaml"
 	redactregex "github.com/vietthanh1999/ohjanus/internal/adapter/out/redact/regex"
+	tokememory "github.com/vietthanh1999/ohjanus/internal/adapter/out/token/memory"
 	denyall "github.com/vietthanh1999/ohjanus/internal/adapter/out/validator/denyall"
 	pgvalidator "github.com/vietthanh1999/ohjanus/internal/adapter/out/validator/postgres"
 	valrouter "github.com/vietthanh1999/ohjanus/internal/adapter/out/validator/router"
@@ -111,6 +116,10 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 				return err
 			}
 			defer auditSink.Close()
+			// Queryable ring buffer for the Admin UI; the configured sinks
+			// remain the durable trail.
+			auditBuffer := auditmemory.New(10000)
+			combinedAudit := auditmulti.New(auditSink, auditBuffer)
 
 			patterns, err := cfg.RedactPatterns()
 			if err != nil {
@@ -139,11 +148,22 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 			}
 			defer closePools(pools)
 
+			tokenTTL, err := time.ParseDuration(cfg.Approval.TokenTTL)
+			if err != nil {
+				return fmt.Errorf("approval.token_ttl: %w", err)
+			}
+			tokenStore := tokememory.New(clock, tokenTTL)
+			approvalEng, err := buildApprovalEngine(cfg)
+			if err != nil {
+				return err
+			}
+
 			gateway := service.NewGateway(clock)
-			readSvc := service.NewReadService(gateway, validator, policyEng, pools, metas, auditSink, clock, redactor,
+			readSvc := service.NewReadService(gateway, validator, policyEng, pools, metas, combinedAudit, clock, redactor,
 				1000, cfg.Limits.MaxQueryLength, cfg.QueryTimeout())
 			schemaSvc := service.NewSchemaService(gateway, pools, metas)
-			writeSvc := service.NewWriteService(gateway)
+			writeSvc := service.NewWriteService(gateway, validator, policyEng, pools, tokenStore, approvalEng,
+				combinedAudit, clock, redactor, tokenTTL, cfg.QueryTimeout(), cfg.Limits.MaxQueryLength)
 			server := mcp.NewServer(cfg.Server.Name, cfg.Server.Version, cfg.Auth.Mode, tokenResolver, clock, readSvc, writeSvc, schemaSvc)
 
 			auditSink.Emit(context.Background(), domain.AuditEvent{
@@ -152,6 +172,12 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 				RequestID: domain.NewRequestID(),
 				Status:    "success",
 			})
+
+			if cfg.Admin.Enabled {
+				if err := startAdmin(ctx, cfg, logger, tokenStore, tokenResolver, auditBuffer, combinedAudit, pools, metas, clock); err != nil {
+					return err
+				}
+			}
 			logger.Info("janus serving", "transport", "stdio", "connections", len(metas))
 
 			return stdio.New(server, os.Stdin, os.Stdout, logger).Serve(ctx)
@@ -214,6 +240,32 @@ func openPools(ctx context.Context, cfg *config.Config, creds *credchain.Chain) 
 func closePools(pools map[string]out.Pool) {
 	for _, p := range pools {
 		_ = p.Close()
+	}
+}
+
+// startAdmin pre-binds the Admin port (fail fast) then serves it in the
+// background next to the MCP transport.
+func startAdmin(ctx context.Context, cfg *config.Config, logger *slog.Logger, tokenStore out.TokenStore, tokenResolver out.TokenResolver, auditReader out.AuditReader, auditSink out.AuditSink, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta, clock out.Clock) error {
+	ln, err := net.Listen("tcp", cfg.Admin.Listen)
+	if err != nil {
+		return fmt.Errorf("admin listen %s: %w", cfg.Admin.Listen, err)
+	}
+	admin := adminapi.New(cfg.Admin.Listen, cfg.Auth.Mode, tokenStore, tokenResolver, auditReader, auditSink, pools, metas, clock)
+	go func() {
+		if err := admin.ServeListener(ctx, ln); err != nil {
+			logger.Error("admin server stopped", "err", err)
+		}
+	}()
+	logger.Info("admin api serving", "listen", cfg.Admin.Listen)
+	return nil
+}
+
+func buildApprovalEngine(cfg *config.Config) (out.ApprovalEngine, error) {
+	switch cfg.Approval.Method {
+	case "", "cli":
+		return cliapproval.NewApprovalEngine(), nil
+	default:
+		return nil, fmt.Errorf("approval.method %q not implemented in v0.2 (use cli)", cfg.Approval.Method)
 	}
 }
 

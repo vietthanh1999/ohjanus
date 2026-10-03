@@ -103,28 +103,29 @@
       </svg>
     </button>
 
-    <!-- Settings Gear -->
+    <!-- Settings Gear with Amber Dot -->
     <button
-      class="util-btn"
+      class="util-btn settings-btn"
       title="Settings (Cmd+,)"
       onclick={() => appState.settingsModalOpen = true}
     >
       <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
         <path d="M7.07 1a1 1 0 00-.97.757l-.24 1.026a5.526 5.526 0 00-1.282.74L3.6 3.057a1 1 0 00-1.205.247l-.98 1.135a1 1 0 00-.173 1.218l.617.848a5.534 5.534 0 00-.012 1.48l-.618.847a1 1 0 00.173 1.218l.98 1.136a1 1 0 001.206.246l.978-.466c.394.3.826.55 1.282.74l.24 1.026A1 1 0 007.07 15h1.86a1 1 0 00.97-.757l.24-1.026c.456-.19.888-.44 1.282-.74l.978.466a1 1 0 001.206-.246l.98-1.136a1 1 0 00-.173-1.218l-.617-.847c.105-.486.105-.993 0-1.48l.617-.848a1 1 0 00.173-1.218l-.98-1.135a1 1 0 00-1.206-.247l-.978.466a5.527 5.527 0 00-1.282-.74l-.24-1.026A1 1 0 008.93 1H7.07zm.93 5a2 2 0 110 4 2 2 0 010-4z"/>
       </svg>
+      <span class="badge-dot"></span>
     </button>
   </div>
 </header>
 
 <style>
   .titlebar {
-    height: var(--titlebar-height);
-    background-color: var(--bg-canvas);
-    border-bottom: 1px solid var(--border-subtle);
+    height: 38px;
+    background: linear-gradient(90deg, #1C2426 0%, #202628 30%, #24272A 70%, #24272A 100%);
+    border-bottom: none;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 12px;
+    padding: 0 10px;
     z-index: 50;
     flex-shrink: 0;
   }
@@ -132,13 +133,14 @@
   .left-section {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
   }
 
   .traffic-lights {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
+    margin-left: 2px;
   }
 
   .light {
@@ -155,35 +157,38 @@
   .context-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
 
+  /* Exact rectangular cyan avatar from design */
   .avatar {
-    width: 19px;
-    height: 19px;
-    border-radius: 50%;
-    background-color: var(--profile-bg);
-    color: var(--profile-fg);
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 3px;
+    background-color: #0891B2;
+    color: #FFFFFF;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.2px;
   }
 
   .selector-btn {
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 2px 4px;
-    border-radius: 3px;
+    padding: 3px 6px;
+    border-radius: 4px;
     color: var(--text-primary);
     font-size: 12px;
     font-weight: 400;
   }
 
   .selector-btn:hover {
-    background-color: var(--bg-hover);
+    background-color: rgba(255, 255, 255, 0.08);
   }
 
   .branch-btn {
@@ -204,22 +209,22 @@
   .quick-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
   }
 
   .quick-btn {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 3px;
+    border-radius: 4px;
     color: var(--text-muted);
     transition: all 0.1s ease;
   }
 
   .quick-btn:hover {
-    background-color: var(--bg-hover);
+    background-color: rgba(255, 255, 255, 0.08);
     color: var(--text-primary);
   }
 
@@ -231,22 +236,38 @@
   }
 
   .util-btn {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 3px;
+    border-radius: 4px;
     color: var(--text-muted);
+    position: relative;
     transition: all 0.1s ease;
   }
 
   .util-btn:hover {
-    background-color: var(--bg-hover);
+    background-color: rgba(255, 255, 255, 0.08);
     color: var(--text-primary);
   }
 
+  .settings-btn {
+    position: relative;
+  }
+
+  .badge-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: #E5A122;
+    box-shadow: 0 0 0 1px #24272A;
+  }
+
   .ai-btn:hover, .ai-btn.active {
-    color: #9DA0A8;
+    color: #DFE1E5;
   }
 </style>

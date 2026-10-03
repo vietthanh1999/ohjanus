@@ -12,6 +12,11 @@ server:
       cert_file: ""
       key_file: ""
 
+# Admin API for the UI (separate port from MCP, Bearer MCP token auth).
+admin:
+  enabled: true
+  listen: "127.0.0.1:8788"
+
 auth:
   mode: token                 # token | none (none is dev only)
   tokens:

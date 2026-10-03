@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"time"
 
 	"github.com/vietthanh1999/ohjanus/internal/core/domain"
@@ -151,11 +149,6 @@ func (s *ReadService) rowLimitFor(connection string) int {
 	return 1000
 }
 
-func sqlHash(sql string) string {
-	sum := sha256.Sum256([]byte(sql))
-	return "sha256:" + hex.EncodeToString(sum[:])
-}
-
 func (s *ReadService) emitDenied(ctx context.Context, req domain.ReadRequest, vq *domain.ValidatedQuery, err error) {
 	if s.audit == nil {
 		return
@@ -171,12 +164,12 @@ func (s *ReadService) emitDenied(ctx context.Context, req domain.ReadRequest, vq
 		Error:      err.Error(),
 	}
 	if vq != nil {
-		e.SQLHash = sqlHash(vq.NormalizedSQL)
+		e.SQLHash = domain.HashSQL(vq.NormalizedSQL)
 		e.SQLNormalized = s.redact.RedactString(vq.NormalizedSQL)
 		e.StatementType = vq.StatementType
 		e.Tables = vq.Tables
 	} else {
-		e.SQLHash = sqlHash(req.SQL)
+		e.SQLHash = domain.HashSQL(req.SQL)
 		e.SQLNormalized = s.redact.RedactString(req.SQL)
 	}
 	if de, ok := err.(*domain.Error); ok {
@@ -196,7 +189,7 @@ func (s *ReadService) emitExecuted(ctx context.Context, req domain.ReadRequest, 
 		TokenID:        domain.TokenIDFrom(ctx),
 		Connection:     req.Connection,
 		Tool:           "db_read",
-		SQLHash:        sqlHash(vq.NormalizedSQL),
+		SQLHash:        domain.HashSQL(vq.NormalizedSQL),
 		SQLNormalized:  s.redact.RedactString(vq.NormalizedSQL),
 		StatementType:  vq.StatementType,
 		Tables:         vq.Tables,

@@ -91,20 +91,36 @@ class AppStateManager {
   // Navigation & Tabs
   tabs = $state<TabItem[]>([
     {
+      id: 'commands',
+      title: 'commands [[Dev][ReadOnly] 10.220.6.4]',
+      type: 'table',
+      closable: true,
+      icon: 'table',
+      env: 'Dev'
+    },
+    {
+      id: 'events',
+      title: 'events [[Dev][ReadOnly] 10.220.6.4]',
+      type: 'table',
+      closable: true,
+      icon: 'table',
+      env: 'Dev'
+    },
+    {
+      id: 'connection_credential',
+      title: 'connectio...credential [[Dev][ReadOnly] 10.220.6.4]',
+      type: 'table',
+      closable: true,
+      icon: 'table',
+      env: 'Dev'
+    },
+    {
       id: 'console_2',
       title: 'console_2 [[PRD] 10.250.6.23]',
       type: 'console',
       closable: true,
       icon: 'lightning',
       env: 'PRD'
-    },
-    {
-      id: 'connection_credential',
-      title: 'connection_credential [[Dev][ReadOnly] 10.220.6.4]',
-      type: 'table',
-      closable: true,
-      icon: 'table',
-      env: 'Dev'
     },
     {
       id: 'approvals',
@@ -144,7 +160,7 @@ class AppStateManager {
     }
   ]);
 
-  activeTabId = $state<string>('console_2');
+  activeTabId = $state<string>('connection_credential');
 
   // Sidebar Layout
   sidebarWidth = $state<number>(290);

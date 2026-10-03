@@ -117,7 +117,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background-color: var(--bg-canvas);
+    background-color: var(--bg-window-frame, #24272A);
   }
 
   .main-layout {
@@ -125,6 +125,8 @@
     display: flex;
     overflow: hidden;
     position: relative;
+    padding: 0 4px 4px 4px;
+    gap: 4px;
   }
 
   .work-area {
@@ -134,6 +136,9 @@
     overflow: hidden;
     background-color: var(--bg-canvas);
     min-width: 0;
+    border-radius: 8px;
+    border: 1px solid var(--border-panel, rgba(255, 255, 255, 0.08));
+    position: relative;
   }
 
   .view-content {

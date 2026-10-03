@@ -42,6 +42,10 @@ func (f *fakePool) Explain(context.Context, domain.Query) (*domain.Plan, error) 
 	return &domain.Plan{Text: "Seq Scan"}, nil
 }
 
+func (f *fakePool) Exec(context.Context, domain.Query) (*domain.ExecResult, error) {
+	return &domain.ExecResult{RowsAffected: 1}, nil
+}
+
 func (f *fakePool) Schema(context.Context, string, string) ([]domain.Schema, error) { return nil, nil }
 func (f *fakePool) Ping(context.Context) error                                      { return nil }
 func (f *fakePool) Close() error                                                    { return nil }

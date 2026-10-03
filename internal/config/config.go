@@ -14,6 +14,7 @@ import (
 // Config mirrors configs/janus.example.yaml (§3.1 of the spec).
 type Config struct {
 	Server        ServerConfig        `yaml:"server"`
+	Admin         AdminConfig         `yaml:"admin"`
 	Auth          AuthConfig          `yaml:"auth"`
 	Connections   []ConnectionConfig  `yaml:"connections"`
 	Policy        PolicyConfig        `yaml:"policy"`
@@ -41,6 +42,12 @@ type TLSConfig struct {
 	Enabled  bool   `yaml:"enabled"`
 	CertFile string `yaml:"cert_file"`
 	KeyFile  string `yaml:"key_file"`
+}
+
+// AdminConfig controls the Admin API for the UI (port 8788, separate from MCP).
+type AdminConfig struct {
+	Enabled bool   `yaml:"enabled"`
+	Listen  string `yaml:"listen"`
 }
 
 type AuthConfig struct {
@@ -199,6 +206,9 @@ func Load(path string) (*Config, error) {
 func (c *Config) SetDefaults() {
 	if c.Server.Transport == "" {
 		c.Server.Transport = "stdio"
+	}
+	if c.Admin.Listen == "" {
+		c.Admin.Listen = "127.0.0.1:8788"
 	}
 	if c.Auth.Mode == "" {
 		c.Auth.Mode = "token"
