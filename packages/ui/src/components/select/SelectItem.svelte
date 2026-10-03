@@ -46,9 +46,14 @@
       <span class="ohjanus-select-check-empty" aria-hidden="true"></span>
     {/if}
   {/if}
-  {#if children}
-    {@render children()}
-  {:else}
-    {label ?? itemValue}
+  <span class="ohjanus-select-option-label">
+    {#if children}
+      {@render children()}
+    {:else}
+      {label ?? itemValue}
+    {/if}
+  </span>
+  {#if !ctx?.multiple && selected}
+    <span class="ohjanus-select-check" aria-hidden="true"><Icon name="check" size={12} /></span>
   {/if}
 </button>

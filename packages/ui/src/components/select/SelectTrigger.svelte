@@ -31,5 +31,5 @@
   {:else}
     <span class="ohjanus-select-value-empty">Select...</span>
   {/if}
-  <span class="ohjanus-select-caret" aria-hidden="true"><Icon name="chevron-down" size={10} /></span>
+  <span class="ohjanus-select-caret" class:open={ctx?.open} aria-hidden="true"><Icon name="chevron-down" size={11} /></span>
 </button>

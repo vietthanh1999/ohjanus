@@ -47,12 +47,36 @@
 
   let search = $state('');
   let open = $state(false);
+  let rootEl: HTMLDivElement | undefined = $state();
 
   let filtered = $derived(
     searchable && search
       ? options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()))
       : options
   );
+
+  function handleDocumentClick(e: MouseEvent) {
+    if (open && rootEl && !rootEl.contains(e.target as Node)) {
+      open = false;
+    }
+  }
+
+  function handleDocumentKeydown(e: KeyboardEvent) {
+    if (open && e.key === 'Escape') {
+      open = false;
+    }
+  }
+
+  $effect(() => {
+    if (open) {
+      window.addEventListener('click', handleDocumentClick, true);
+      window.addEventListener('keydown', handleDocumentKeydown, true);
+      return () => {
+        window.removeEventListener('click', handleDocumentClick, true);
+        window.removeEventListener('keydown', handleDocumentKeydown, true);
+      };
+    }
+  });
 
   function isSelected(optValue: string): boolean {
     return Array.isArray(value) ? value.includes(optValue) : value === optValue;
@@ -115,7 +139,7 @@
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="ohjanus-select {invalid ? 'invalid' : ''} {disabled ? 'disabled' : ''} {className}" {style}>
+<div bind:this={rootEl} class="ohjanus-select {invalid ? 'invalid' : ''} {disabled ? 'disabled' : ''} {className}" {style}>
   {#if searchable}
     <input
       type="text"
@@ -135,7 +159,7 @@
       aria-expanded={open}
     >
       <span class:ohjanus-select-placeholder={!displayLabel()}>{displayLabel() || placeholder}</span>
-      <span class="ohjanus-select-caret" aria-hidden="true"><Icon name="chevron-down" size={10} /></span>
+      <span class="ohjanus-select-caret" class:open aria-hidden="true"><Icon name="chevron-down" size={11} /></span>
     </button>
   {/if}
   {#if clearable && (Array.isArray(value) ? value.length : value)}
@@ -161,7 +185,10 @@
                 <span class="ohjanus-select-check-empty" aria-hidden="true"></span>
               {/if}
             {/if}
-            {opt.label}
+            <span class="ohjanus-select-option-label">{opt.label}</span>
+            {#if !multiple && isSelected(opt.value)}
+              <span class="ohjanus-select-check" aria-hidden="true"><Icon name="check" size={12} /></span>
+            {/if}
           </button>
         </li>
       {:else}
