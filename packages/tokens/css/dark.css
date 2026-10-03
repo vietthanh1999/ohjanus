@@ -1,0 +1,64 @@
+:root, [data-theme="dark"] {
+  /* Surfaces — DataGrip Dark Exact */
+  --bg-window-frame: #1E1F22;
+  --bg-canvas: #1E1F22;
+  --bg-sidebar: #2B2D30;
+  --bg-toolbar: #2B2D30;
+  --bg-table-header: #25272A;
+  --bg-table-row: #1E1F22;
+  --bg-hover: #313438;
+  --bg-selected: #2E3A4E;
+  --bg-active-tab: #1E1F22;
+  --bg-inactive-tab: #2B2D30;
+  --bg-floating: #2B2D30;
+  --bg-execution-block: rgba(31, 67, 136, 0.45);
+
+  /* Borders */
+  --border-panel: #393B40;
+  --border-subtle: #2B2D30;
+  --border-default: #393B40;
+  --border-strong: #4E5157;
+  --border-accent: #3574F0;
+  --border-execution: #3569C8;
+
+  /* Typography / Foreground */
+  --text-primary: #DFE1E5;
+  --text-secondary: #9DA0A8;
+  --text-muted: #7A7E85;
+  --text-null: #6F737A;
+  --text-disabled: #5A5D63;
+
+  /* Actions & Status */
+  --action-primary: #3574F0;
+  --action-primary-hover: #4682F7;
+  --action-success: #57D38C;
+  --action-success-hover: #66E39C;
+  --action-warning: #EDA200;
+  --action-danger: #E55353;
+  --action-danger-hover: #F76565;
+
+  /* Badges & Profile */
+  --badge-counter-bg: #393B40;
+  --badge-counter-fg: #9DA0A8;
+  --license-border: #275A38;
+  --license-bg: #14281B;
+  --license-fg: #57D38C;
+  --profile-bg: #0E7490;
+  --profile-fg: #FFFFFF;
+
+  /* Syntax Highlighting */
+  --syntax-keyword: #CC7832;
+  --syntax-function: #56A8F5;
+  --syntax-string: #6AAB73;
+  --syntax-number: #6897BB;
+  --syntax-identifier: #DFE1E5;
+  --syntax-alias: #C792EA;
+  --syntax-comment: #7A7E85;
+  --syntax-code-lens: #7A7E85;
+  --syntax-spell-warn: #56A8F5;
+
+  /* macOS Traffic Lights */
+  --window-close: #FF5F56;
+  --window-minimize: #FFBD2E;
+  --window-maximize: #27C93F;
+}

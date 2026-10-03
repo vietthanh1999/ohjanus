@@ -1,0 +1,13 @@
+{
+  "name": "ohjanus-monorepo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter ui dev",
+    "build": "pnpm -r --filter \"./packages/*\" build && pnpm --filter ui build",
+    "check": "pnpm -r check"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

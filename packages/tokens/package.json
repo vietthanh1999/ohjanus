@@ -1,0 +1,35 @@
+{
+  "name": "@ohjanus/tokens",
+  "version": "0.1.0",
+  "description": "Design tokens and theming for OhJanus UI Kit",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./css/tokens.css": "./css/tokens.css",
+    "./css/dark.css": "./css/dark.css",
+    "./css/light.css": "./css/light.css",
+    "./*": "./dist/*"
+  },
+  "files": [
+    "dist",
+    "css"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "svelte": "^5.57.0",
+    "svelte-check": "^4.7.6",
+    "typescript": "^5.5.0"
+  }
+}

@@ -19,6 +19,10 @@
     "vite": "^8.3.0"
   },
   "dependencies": {
+    "@ohjanus/tokens": "workspace:*",
+    "@ohjanus/icons": "workspace:*",
+    "@ohjanus/primitives": "workspace:*",
+    "@ohjanus/ui": "workspace:*",
     "lucide-svelte": "^1.0.1"
   }
 }
