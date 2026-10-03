@@ -19,7 +19,7 @@
     "src"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node ../../scripts/sync-svelte-dist.mjs",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "peerDependencies": {
