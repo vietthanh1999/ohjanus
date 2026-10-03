@@ -1,0 +1,29 @@
+# Example production compose: janus (single binary, UI embedded) behind
+# Caddy with automatic HTTPS. Copy janus.example.yaml -> janus.yaml
+# (git-ignored) and set JANUS_ANALYTICS_DSN before starting.
+services:
+  janus:
+    build: .
+    volumes:
+      - ./janus.yaml:/etc/janus/janus.yaml:ro
+    environment:
+      JANUS_ANALYTICS_DSN: ${JANUS_ANALYTICS_DSN}
+    expose:
+      - "8788"
+    stdin_open: true # keep stdin open for stdio transport
+    tty: true
+    restart: unless-stopped
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - janus
+volumes:
+  caddy_data:
+  caddy_config:

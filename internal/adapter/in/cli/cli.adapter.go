@@ -114,6 +114,12 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 				return fmt.Errorf("transport %q must be stdio|http|sse", cfg.Server.Transport)
 			}
 			logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: parseLogLevel(cfg.Observability.LogLevel)}))
+			if err := checkAuthMode(cfg.Auth.Mode); err != nil {
+				return err
+			}
+			if cfg.Auth.Mode == "none" {
+				logger.Warn("authentication disabled via JANUS_ALLOW_NO_AUTH; never use outside local development")
+			}
 
 			clock := systemclock.Clock{}
 			auditSink, err := buildAuditSink(cfg, logger)
@@ -346,6 +352,15 @@ func startAdmin(ctx context.Context, cfg *config.Config, logger *slog.Logger, to
 		}
 	}()
 	logger.Info("admin api serving", "listen", cfg.Admin.Listen)
+	return nil
+}
+
+// checkAuthMode refuses the dev-only no-auth mode unless explicitly opted
+// in. A single misconfigured line must never silently open the gateway.
+func checkAuthMode(mode string) error {
+	if mode == "none" && os.Getenv("JANUS_ALLOW_NO_AUTH") != "1" {
+		return fmt.Errorf("auth.mode \"none\" disables all authentication; refusing to serve (dev only: set JANUS_ALLOW_NO_AUTH=1)")
+	}
 	return nil
 }
 

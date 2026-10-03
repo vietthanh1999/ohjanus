@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vietthanh1999/ohjanus/internal/adapter/in/admin/uistatic"
 	"github.com/vietthanh1999/ohjanus/internal/core/domain"
 	"github.com/vietthanh1999/ohjanus/internal/core/port/in"
 	"github.com/vietthanh1999/ohjanus/internal/core/port/out"
@@ -38,6 +39,7 @@ type Server struct {
 	schema    in.SchemaUseCase
 	mux       *http.ServeMux
 	srv       *http.Server
+	ui        http.Handler
 }
 
 // New wires an Admin server. authStore may be nil when token management
@@ -66,15 +68,32 @@ func New(addr, authMode string, tokens out.TokenStore, resolver out.TokenResolve
 	mux.HandleFunc("/api/v1/query", s.withAuth(domain.ScopeRead, s.handleQuery))
 	mux.HandleFunc("/api/v1/explain", s.withAuth(domain.ScopeRead, s.handleExplain))
 	s.mux = mux
+	if ui, ok := uistatic.Handler(); ok {
+		s.ui = ui
+	}
 	s.srv = &http.Server{Addr: addr, Handler: s.Handler(), ReadHeaderTimeout: 5 * time.Second}
 	return s
 }
 
-// Handler returns the mux wrapped in CORS handling for browser clients
-// (Vite dev server). Auth still uses the Authorization header; the API
-// never relies on cookies so a wildcard origin is safe here.
+// Handler routes API/health/metrics to the mux and everything else to the
+// embedded Admin UI (same origin, so the UI needs no CORS or host config).
+// Without a UI build only the API is served. Static UI files carry no
+// secrets; every data call still goes through the authed /api endpoints.
 func (s *Server) Handler() http.Handler {
-	return corsMiddleware(s.mux)
+	api := corsMiddleware(s.mux)
+	if s.ui == nil {
+		return api
+	}
+	ui := s.ui
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		p := r.URL.Path
+		if p == "/healthz" || p == "/readyz" || p == "/metrics" ||
+			strings.HasPrefix(p, "/api/") {
+			api.ServeHTTP(w, r)
+			return
+		}
+		ui.ServeHTTP(w, r)
+	})
 }
 
 // corsMiddleware answers preflights and stamps permissive headers on

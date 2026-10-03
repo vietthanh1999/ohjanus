@@ -24,9 +24,11 @@ help:
 setup:
 	pnpm install
 
-# Backend only: fixes `vite http proxy error ... ECONNREFUSED 127.0.0.1:8788`
+# janus.dev.yaml uses auth.mode none, which serve refuses unless explicitly
+# allowed (see JANUS_ALLOW_NO_AUTH guard in cli.adapter.go). Scoped to dev
+# targets only — production serve must set it deliberately or use tokens.
 dev-api:
-	go run ./cmd/janus serve --config $(CONFIG)
+	JANUS_ALLOW_NO_AUTH=1 go run ./cmd/janus serve --config $(CONFIG)
 
 # Frontend only: expects API on :8788 (see ui/vite.config.ts)
 dev-ui:
@@ -35,17 +37,24 @@ dev-ui:
 # Both together, single terminal. Ctrl+C stops all.
 dev:
 	trap 'kill 0' INT TERM; \
-	go run ./cmd/janus serve --config $(CONFIG) & \
+	JANUS_ALLOW_NO_AUTH=1 go run ./cmd/janus serve --config $(CONFIG) & \
 	pnpm --filter ui dev & \
 	wait
 
 build-ui:
 	pnpm --filter ui build
 
+# Stage the built UI for go:embed into the janus binary.
+sync-ui: build-ui
+	rm -rf internal/adapter/in/admin/uistatic/dist
+	mkdir -p internal/adapter/in/admin/uistatic/dist
+	cp -r ui/dist/. internal/adapter/in/admin/uistatic/dist/
+
 check-ui:
 	pnpm --filter ui check
 
-build:
+# Full production artifact: UI embedded into the Go binary.
+build: sync-ui
 	go build -ldflags "$(LDFLAGS)" -o $(BINARY) ./cmd/janus
 
 test:

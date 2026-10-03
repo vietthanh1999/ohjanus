@@ -1,0 +1,5 @@
+# Reverse-proxy the Admin UI + API with automatic HTTPS.
+# Replace janus.example.com with your domain (or use http://host:8080 for LAN).
+janus.example.com {
+	reverse_proxy janus:8788
+}

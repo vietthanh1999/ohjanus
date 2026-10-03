@@ -1,0 +1,10 @@
+.git
+node_modules
+ui/node_modules
+packages/*/node_modules
+ui/dist
+.turbo
+.vite
+*.log
+janus
+janus.yaml

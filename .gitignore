@@ -80,6 +80,10 @@ package/
 /dist/
 /out/
 packages/*/dist/
+# Built UI staged for go:embed (make sync-ui / docker). Only the .gitkeep
+# placeholder is committed so clean checkouts still compile (API-only).
+internal/adapter/in/admin/uistatic/dist/*
+!internal/adapter/in/admin/uistatic/dist/.gitkeep
 storybook-static/
 
 # Vite / Vitest cache

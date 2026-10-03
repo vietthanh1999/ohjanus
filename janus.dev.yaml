@@ -1,4 +1,6 @@
 # Dev config for UI work: Admin API live, no auth, no real databases.
+# auth.mode none is refused unless JANUS_ALLOW_NO_AUTH=1 (Makefile dev
+# targets export it; never set it in production).
 # Start:  go run ./cmd/janus serve --config ./janus.dev.yaml
 # UI:     pnpm dev   (Vite proxies /api -> 127.0.0.1:8788)
 # Add connections later by copying the commented block + setting the DSN env.
