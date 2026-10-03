@@ -29,6 +29,9 @@ export * from './components/card/index.js';
 // Table Compound
 export * from './components/table/index.js';
 
+// DataGrid (database IDE grid)
+export * from './components/data-grid/index.js';
+
 // Dialog & Modal
 export * from './components/modal/index.js';
 export * from './components/dialog/index.js';

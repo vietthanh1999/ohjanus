@@ -19,6 +19,7 @@
 @import './components/text/styles.css';
 @import './components/heading/styles.css';
 @import './components/table/styles.css';
+@import './components/data-grid/styles.css';
 @import './components/dialog/styles.css';
 @import './components/breadcrumb/styles.css';
 @import './components/command/styles.css';
