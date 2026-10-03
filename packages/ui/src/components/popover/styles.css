@@ -19,7 +19,8 @@
 }
 .ohjanus-popover-align-start { left: 0; }
 .ohjanus-popover-align-center { left: 50%; transform: translateX(-50%); }
-.ohjanus-popover-align-end { right: 0; } {
+.ohjanus-popover-align-end {
+  right: 0;
   padding: 12px;
   max-width: 300px;
 }
