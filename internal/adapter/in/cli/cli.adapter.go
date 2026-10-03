@@ -19,6 +19,7 @@ import (
 	"github.com/vietthanh1999/ohjanus/internal/adapter/in/mcp"
 	mcphttp "github.com/vietthanh1999/ohjanus/internal/adapter/in/transport/http"
 	"github.com/vietthanh1999/ohjanus/internal/adapter/in/transport/stdio"
+	apiapproval "github.com/vietthanh1999/ohjanus/internal/adapter/out/approval/api"
 	cliapproval "github.com/vietthanh1999/ohjanus/internal/adapter/out/approval/cli"
 	auditfile "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/file"
 	auditmemory "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/memory"
@@ -162,7 +163,7 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 				return fmt.Errorf("approval.token_ttl: %w", err)
 			}
 			tokenStore := tokememory.New(clock, tokenTTL)
-			approvalEng, err := buildApprovalEngine(cfg)
+			approvalEng, err := buildApprovalEngine(cfg, tokenStore, clock)
 			if err != nil {
 				return err
 			}
@@ -348,12 +349,16 @@ func startAdmin(ctx context.Context, cfg *config.Config, logger *slog.Logger, to
 	return nil
 }
 
-func buildApprovalEngine(cfg *config.Config) (out.ApprovalEngine, error) {
+func buildApprovalEngine(cfg *config.Config, tokens out.TokenStore, clock out.Clock) (out.ApprovalEngine, error) {
 	switch cfg.Approval.Method {
 	case "", "cli":
 		return cliapproval.NewApprovalEngine(), nil
+	case "api":
+		// Headless/container-safe: decisions arrive via the Admin API/UI
+		// (approve/reject endpoints) instead of a terminal prompt.
+		return apiapproval.NewApprovalEngine(tokens, clock), nil
 	default:
-		return nil, fmt.Errorf("approval.method %q not implemented in v0.2 (use cli)", cfg.Approval.Method)
+		return nil, fmt.Errorf("approval.method %q not implemented (use cli or api)", cfg.Approval.Method)
 	}
 }
 

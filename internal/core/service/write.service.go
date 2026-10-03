@@ -182,13 +182,22 @@ func (s *WriteService) Execute(ctx context.Context, req domain.ExecuteRequest) (
 		approved, err := s.approval.Approve(ctx, out.ApprovalRequest{
 			Connection: token.Connection, Statement: token.Statement,
 			SQL: token.SQL, Params: token.Params, Estimate: 0,
+			PreviewTokenID: token.ID,
 		})
 		if err != nil {
 			return fail("error", err)
 		}
 		if !approved {
-			_, _ = s.tokens.Reject(ctx, token.ID, domain.TokenIDFrom(ctx), "rejected by approver")
-			return fail("denied", domain.NewError(domain.CodeTokenMismatch, "write request was rejected by approver"))
+			// Prefer the human-supplied reason when the token was already
+			// decided via the Admin API (api approval engine).
+			reason := "rejected by approver"
+			if decided, err := s.tokens.Get(ctx, token.ID); err == nil &&
+				decided.State == domain.TokenRejected && decided.DecidedReason != "" {
+				reason = decided.DecidedReason
+			} else {
+				_, _ = s.tokens.Reject(ctx, token.ID, domain.TokenIDFrom(ctx), reason)
+			}
+			return fail("denied", domain.NewError(domain.CodeTokenMismatch, "write request was rejected: "+reason))
 		}
 		if _, err := s.tokens.Approve(ctx, token.ID, domain.TokenIDFrom(ctx), "approved"); err != nil {
 			return fail("error", err)

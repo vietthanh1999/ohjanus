@@ -58,7 +58,10 @@ policy:
 
 approval:
   enabled: true
-  method: "cli"               # cli | http | webhook
+  # cli prompts on the terminal (interactive use only). api waits for a
+  # decision made via the Admin API/UI approve endpoints — use this for
+  # headless and container deployments where no TTY exists.
+  method: "cli"               # cli | api
   cli:
     prompt: true
   token_ttl: "5m"

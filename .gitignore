@@ -74,10 +74,12 @@ node_modules/
 package/
 .svelte/
 
-# Build output (Vite / SvelteKit adapter-static)
-build/
-dist/
-out/
+# Build output (Vite / SvelteKit adapter-static). NOTE: anchored to root —
+# a bare out/ would also swallow Go source trees like internal/adapter/out/.
+/build/
+/dist/
+/out/
+packages/*/dist/
 storybook-static/
 
 # Vite / Vitest cache
@@ -161,3 +163,5 @@ site/
 
 # Designs / assets (screenshots & large media)
 docs/designs/
+
+packages/primitives/dist
