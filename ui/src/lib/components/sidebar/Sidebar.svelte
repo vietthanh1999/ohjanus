@@ -393,15 +393,16 @@
 
 <style>
   .sidebar {
-    background-color: var(--bg-canvas);
-    border: 1px solid var(--border-panel, rgba(255, 255, 255, 0.08));
-    border-radius: 8px;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     flex-shrink: 0;
     transition: width 0.15s ease-out;
     height: 100%;
+    gap: 0;
   }
 
   .sidebar.collapsed {
@@ -447,8 +448,11 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 150px;
+    min-height: 120px;
     overflow: hidden;
+    background-color: var(--bg-canvas, #1E1F22);
+    border: none;
+    border-radius: 8px;
   }
 
   .tree-viewport, .services-viewport {
@@ -518,23 +522,25 @@
 
   /* Horizontal Splitter */
   .horizontal-splitter {
-    height: 1px;
-    background-color: var(--border-subtle);
+    height: 6px;
+    background-color: transparent;
     cursor: row-resize;
     flex-shrink: 0;
+    z-index: 10;
   }
 
   .horizontal-splitter:hover {
-    background-color: var(--border-accent);
-    height: 3px;
+    background-color: var(--border-accent, #3574F0);
   }
 
   /* Services Panel */
   .services-pane {
     display: flex;
     flex-direction: column;
-    background-color: var(--bg-canvas);
-    border-top: 1px solid var(--border-subtle);
+    background-color: var(--bg-canvas, #1E1F22);
+    border: none;
+    border-radius: 8px;
+    overflow: hidden;
     flex-shrink: 0;
   }
 
