@@ -1,22 +1,35 @@
 <script lang="ts">
-  import { appStore } from '../../appStore.svelte';
-  import type { ConnectionInfo } from '../../types';
-  import { Card, Badge, Button, toast, Box, Flex, Grid, Stack } from '@ohjanus/ui';
+  import { appState } from '../../state/appState.svelte';
+  import { Card, Badge, Button, Alert, Text, toast, Box, Flex, Grid, Stack } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 
   let testingConn = $state<string | null>(null);
 
-  function runTest(name: string) {
+  async function runTest(name: string) {
+    if (testingConn) return;
     testingConn = name;
-    setTimeout(() => {
-      appStore.testConnection(name);
+    try {
+      const res = await appState.pingConnection(name);
+      toast.success('Connection Ping Healthy', `"${name}" responded in ${res.latency_ms} ms.`);
+    } catch (e) {
+      toast.error('Connection Test Failed', e instanceof Error ? e.message : String(e));
+    } finally {
       testingConn = null;
-      toast.success('Connection Ping Healthy', `Successfully pinged database "${name}".`);
-    }, 400);
+    }
   }
 </script>
 
 <Box class="connections-view">
+  {#if appState.dataLoading}
+    <Box style="padding: 8px 16px;"><Text size="sm" color="muted">Loading live data from Admin API…</Text></Box>
+  {:else if appState.dataError}
+    <Box style="padding: 8px 16px;">
+      <Alert variant="danger" title="Admin API unreachable">
+        <p>{appState.dataError}</p>
+        <Button variant="secondary" size="sm" onclick={() => void appState.loadAll()}>Retry</Button>
+      </Alert>
+    </Box>
+  {/if}
   <!-- Header -->
   <Flex as="header" class="view-header" align="center">
     <Flex align="center" gap="8px">
@@ -28,7 +41,7 @@
 
   <!-- Cards Grid -->
   <Grid class="cards-grid" columns="repeat(auto-fill, minmax(340px, 1fr))" gap="16px">
-    {#each appStore.connections as conn}
+      {#each appState.connections as conn}
       <Card class="conn-card-item">
         {#snippet header()}
           <Flex class="card-header-inner" justify="between" align="center">
@@ -57,55 +70,28 @@
 
         <Stack class="conn-details" gap="6px">
           <Flex class="detail-row" justify="between">
-            <span class="label">Host &amp; Port:</span>
-            <span class="value font-mono">{conn.host}</span>
-          </Flex>
-          <Flex class="detail-row" justify="between">
-            <span class="label">Engine Version:</span>
-            <span class="value">{conn.version}</span>
+            <span class="label">Driver:</span>
+            <span class="value font-mono">{conn.driver}</span>
           </Flex>
           <Flex class="detail-row" justify="between">
             <span class="label">Last Health Ping:</span>
-            <span class="value">{conn.lastPingAt} ({conn.latencyMs} ms)</span>
+            <span class="value">{conn.last_ping_at}{conn.latency_ms !== undefined ? ` (${conn.latency_ms} ms)` : ''}</span>
           </Flex>
         </Stack>
-
-        <!-- Pool Stats -->
-        <Box class="pool-section">
-          <Box class="pool-title">CONNECTION POOL METRICS</Box>
-          <Flex class="pool-stats font-mono" justify="between">
-            <Box class="stat-box">
-              <span class="num">{conn.pool.inUse}</span>
-              <span class="lbl">In-Use</span>
-            </Box>
-            <Box class="stat-box">
-              <span class="num">{conn.pool.idle}</span>
-              <span class="lbl">Idle</span>
-            </Box>
-            <Box class="stat-box">
-              <span class="num">{conn.pool.open}</span>
-              <span class="lbl">Open</span>
-            </Box>
-            <Box class="stat-box">
-              <span class="num">{conn.pool.max}</span>
-              <span class="lbl">Max Pool</span>
-            </Box>
-          </Flex>
-        </Box>
 
         <!-- Security Guardrails -->
         <Box class="guardrails-section">
           <Box class="sec-label">ALLOWED SCHEMAS:</Box>
           <Flex class="tags-list" wrap gap="4px">
-            {#each conn.allowedSchemas as sch}
+            {#each conn.allowed_schemas as sch}
               <Badge variant="default" size="sm">{sch}</Badge>
             {/each}
           </Flex>
 
-          {#if conn.deniedTables.length > 0}
+          {#if conn.denied_tables.length > 0}
             <Box class="sec-label" style="margin-top: 6px; color: var(--action-danger);">DENIED TABLES:</Box>
             <Flex class="tags-list" wrap gap="4px">
-              {#each conn.deniedTables as dt}
+              {#each conn.denied_tables as dt}
                 <Badge variant="danger" size="sm">{dt}</Badge>
               {/each}
             </Flex>

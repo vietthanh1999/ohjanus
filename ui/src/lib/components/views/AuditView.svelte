@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appState, type AuditRecord } from '../../state/appState.svelte';
-  import { Button, Badge, Input, toast, Box, Flex, Stack, Text } from '@ohjanus/ui';
+  import { exportAudit } from '../../api/audit';
+  import { Button, Badge, Input, Alert, toast, Box, Flex, Stack, Text } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 
   let filterStatus = $state<string>('ALL');
@@ -24,33 +25,29 @@
     return list;
   });
 
-  function exportCSV() {
-    const headers = ['id', 'ts', 'client', 'token_id', 'connection', 'statement_type', 'decision', 'duration_ms', 'sql'];
-    const rows = filteredAuditLogs.map(r => [
-      r.id,
-      r.ts,
-      r.client,
-      r.token_id,
-      r.connection,
-      r.statement_type,
-      r.policy_decision,
-      r.duration_ms,
-      `"${r.sql_normalized.replace(/"/g, '""')}"`
-    ]);
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `ohjanus_audit_${new Date().toISOString().substring(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success('Audit Log Exported', `Exported ${filteredAuditLogs.length} audit records to CSV.`);
+  async function exportCSV() {
+    // Note: the server export supports text search (q) but has no
+    // policy-decision filter, so the on-screen decision filter is not forwarded.
+    try {
+      await exportAudit('csv', { q: searchQuery.trim() || undefined });
+      toast.success('Audit Log Exported', 'Server-side CSV download started (up to 10,000 rows).');
+    } catch (e) {
+      toast.error('Export Failed', e instanceof Error ? e.message : String(e));
+    }
   }
 </script>
 
 <Box class="audit-view">
+  {#if appState.dataLoading}
+    <Box style="padding: 8px 16px;"><Text size="sm" color="muted">Loading live data from Admin API…</Text></Box>
+  {:else if appState.dataError}
+    <Box style="padding: 8px 16px;">
+      <Alert variant="danger" title="Admin API unreachable">
+        <p>{appState.dataError}</p>
+        <Button variant="secondary" size="sm" onclick={() => void appState.loadAll()}>Retry</Button>
+      </Alert>
+    </Box>
+  {/if}
   <!-- View Header & Filters -->
   <Flex as="header" class="audit-header" align="center" justify="between">
     <Stack class="header-left" gap="2px">

@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { appStore } from '../../appStore.svelte';
-  import type { McpToken } from '../../types';
+  import { appState, type McpToken } from '../../state/appState.svelte';
   import { Button, Badge, Modal, Input, Field, Alert, toast, Box, Flex, Stack, Text } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 
@@ -8,6 +7,7 @@
   let showSecretModal = $state(false);
   let generatedToken = $state<McpToken | null>(null);
   let copied = $state(false);
+  let creating = $state(false);
 
   // Form State
   let tokenName = $state('');
@@ -19,16 +19,33 @@
     admin: false
   });
 
-  function handleCreate() {
+  async function handleCreate() {
     const selectedScopes = Object.keys(scopes).filter(k => scopes[k]);
-    if (!tokenName.trim()) return;
+    if (!tokenName.trim() || creating) return;
 
-    generatedToken = appStore.createToken(tokenName, selectedScopes, ttlDays);
-    showCreateModal = false;
-    showSecretModal = true;
-    tokenName = '';
-    copied = false;
-    toast.success('MCP Token Generated', 'Opaque bearer secret created.');
+    creating = true;
+    try {
+      const secret = await appState.createToken(tokenName.trim(), selectedScopes, ttlDays);
+      generatedToken = {
+        id: 'new',
+        name: tokenName.trim(),
+        scopes: selectedScopes,
+        created_at: '',
+        expires_at: '',
+        last_used_at: '',
+        state: 'active',
+        rawToken: secret
+      };
+      showCreateModal = false;
+      showSecretModal = true;
+      tokenName = '';
+      copied = false;
+      toast.success('MCP Token Generated', 'Opaque bearer secret created.');
+    } catch (e) {
+      toast.error('Token Creation Failed', e instanceof Error ? e.message : String(e));
+    } finally {
+      creating = false;
+    }
   }
 
   function copySecret() {
@@ -40,13 +57,27 @@
     }
   }
 
-  function handleRevoke(id: string) {
-    appStore.revokeToken(id);
-    toast.error('Token Revoked', `Token ${id} has been revoked.`);
+  async function handleRevoke(id: string) {
+    try {
+      await appState.revokeToken(id);
+      toast.error('Token Revoked', `Token ${id} has been revoked.`);
+    } catch (e) {
+      toast.error('Revoke Failed', e instanceof Error ? e.message : String(e));
+    }
   }
 </script>
 
 <Box class="tokens-view">
+  {#if appState.dataLoading}
+    <Box style="padding: 8px 16px;"><Text size="sm" color="muted">Loading live data from Admin API…</Text></Box>
+  {:else if appState.dataError}
+    <Box style="padding: 8px 16px;">
+      <Alert variant="danger" title="Admin API unreachable">
+        <p>{appState.dataError}</p>
+        <Button variant="secondary" size="sm" onclick={() => void appState.loadAll()}>Retry</Button>
+      </Alert>
+    </Box>
+  {/if}
   <!-- Header -->
   <Flex as="header" class="view-header" align="center" justify="between">
     <Flex align="center" gap="8px">
@@ -76,7 +107,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each appStore.tokens as tok}
+        {#each appState.tokens as tok}
           <tr>
             <td class="id-cell">{tok.id}</td>
             <td class="name-cell font-sans">
@@ -89,9 +120,9 @@
                 </Badge>
               {/each}
             </td>
-            <td>{tok.createdAt}</td>
-            <td>{tok.expiresAt}</td>
-            <td>{tok.lastUsedAt}</td>
+            <td>{tok.created_at}</td>
+            <td>{tok.expires_at}</td>
+            <td>{tok.last_used_at}</td>
             <td>
               {#if tok.state === 'active'}
                 <Badge variant="success" size="sm">ACTIVE</Badge>
@@ -165,8 +196,8 @@
 
     {#snippet footer()}
       <Button variant="secondary" onclick={() => showCreateModal = false}>Cancel</Button>
-      <Button variant="primary" onclick={handleCreate} disabled={!tokenName.trim()}>
-        Generate Token
+      <Button variant="primary" onclick={handleCreate} disabled={!tokenName.trim() || creating}>
+        {creating ? 'Generating...' : 'Generate Token'}
       </Button>
     {/snippet}
   </Modal>

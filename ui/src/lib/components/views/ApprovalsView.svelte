@@ -30,6 +30,16 @@
 </script>
 
 <Box class="approvals-view">
+  {#if appState.dataLoading}
+    <Box style="padding: 8px 16px;"><Text size="sm" color="muted">Loading live data from Admin API…</Text></Box>
+  {:else if appState.dataError}
+    <Box style="padding: 8px 16px;">
+      <Alert variant="danger" title="Admin API unreachable">
+        <p>{appState.dataError}</p>
+        <Button variant="secondary" size="sm" onclick={() => void appState.loadAll()}>Retry</Button>
+      </Alert>
+    </Box>
+  {/if}
   <!-- Header Bar -->
   <Flex as="header" class="view-header" align="center" justify="between">
     <Stack class="header-left" gap="2px">

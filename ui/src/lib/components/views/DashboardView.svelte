@@ -1,10 +1,20 @@
 <script lang="ts">
-  import { appStore } from '../../appStore.svelte';
-  import { Card, Badge, Box, Flex, Grid, Stack } from '@ohjanus/ui';
+  import { appState } from '../../state/appState.svelte';
+  import { Card, Badge, Alert, Button, Text, Box, Flex, Grid, Stack } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 </script>
 
 <Box class="dashboard-view">
+  {#if appState.dataLoading}
+    <Box style="padding: 8px 16px;"><Text size="sm" color="muted">Loading live data from Admin API…</Text></Box>
+  {:else if appState.dataError}
+    <Box style="padding: 8px 16px;">
+      <Alert variant="danger" title="Admin API unreachable">
+        <p>{appState.dataError}</p>
+        <Button variant="secondary" size="sm" onclick={() => void appState.loadAll()}>Retry</Button>
+      </Alert>
+    </Box>
+  {/if}
   <Flex as="header" class="view-header" align="center">
     <Flex align="center" gap="8px">
       <Icon name="chart" size={16} color="#3574F0" />
@@ -16,20 +26,20 @@
     <!-- Top KPI Cards via @ohjanus/ui -->
     <Grid class="kpi-grid" columns="repeat(auto-fill, minmax(180px, 1fr))" gap="12px">
       <Card class="kpi-card-box">
-        <span class="kpi-label">24H TOTAL QUERIES</span>
-        <span class="kpi-val font-mono">14,892</span>
-        <span class="kpi-trend pos">↑ +12.4% vs yesterday</span>
+        <span class="kpi-label">TOTAL REQUESTS (AUDIT)</span>
+        <span class="kpi-val font-mono">{appState.summary ? appState.summary.requests_total.toLocaleString() : '…'}</span>
+        <span class="kpi-trend pos">live from Admin API</span>
       </Card>
 
       <Card class="kpi-card-box">
-        <span class="kpi-label">24H POLICY DENIALS</span>
-        <span class="kpi-val font-mono warn">47</span>
+        <span class="kpi-label">TOTAL POLICY DENIALS</span>
+        <span class="kpi-val font-mono warn">{appState.summary ? appState.summary.denials_total.toLocaleString() : '…'}</span>
         <span class="kpi-sub">Banned functions &amp; DDL blocked</span>
       </Card>
 
       <Card class="kpi-card-box">
         <span class="kpi-label">PENDING APPROVALS</span>
-        <span class="kpi-val font-mono pending">{appStore.pendingApprovalsCount}</span>
+        <span class="kpi-val font-mono pending">{appState.notificationCount}</span>
         <span class="kpi-sub">Human review required</span>
       </Card>
 
@@ -41,7 +51,7 @@
 
       <Card class="kpi-card-box">
         <span class="kpi-label">ACTIVE MCP TOKENS</span>
-        <span class="kpi-val font-mono">{appStore.tokens.filter(t => t.state === 'active').length}</span>
+        <span class="kpi-val font-mono">{appState.tokens.filter(t => t.state === 'active').length}</span>
         <span class="kpi-sub">Cursor &amp; Claude Desktop</span>
       </Card>
 

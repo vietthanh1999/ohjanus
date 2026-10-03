@@ -60,8 +60,30 @@ func New(addr, authMode string, tokens out.TokenStore, resolver out.TokenResolve
 	mux.HandleFunc("/api/v1/tokens/", s.withAuthFunc(s.handleTokenOne))
 	mux.HandleFunc("/api/v1/audit/export", s.withAuth(domain.ScopeRead, s.handleAuditExport))
 	s.mux = mux
-	s.srv = &http.Server{Addr: addr, Handler: mux, ReadHeaderTimeout: 5 * time.Second}
+	s.srv = &http.Server{Addr: addr, Handler: s.Handler(), ReadHeaderTimeout: 5 * time.Second}
 	return s
+}
+
+// Handler returns the mux wrapped in CORS handling for browser clients
+// (Vite dev server). Auth still uses the Authorization header; the API
+// never relies on cookies so a wildcard origin is safe here.
+func (s *Server) Handler() http.Handler {
+	return corsMiddleware(s.mux)
+}
+
+// corsMiddleware answers preflights and stamps permissive headers on
+// every response so the Admin UI can call the API cross-origin in dev.
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 // SetMetricsHandler mounts a public Prometheus scrape endpoint.
@@ -103,6 +125,11 @@ func (s *Server) withAuthFunc(next func(http.ResponseWriter, *http.Request, cont
 		ctx := r.Context()
 		if s.authMode != "none" {
 			tok := bearerToken(r)
+			if tok == "" && r.URL.Path == "/api/v1/approvals/stream" {
+				// EventSource cannot set request headers, so the live
+				// stream also accepts the token as a query parameter.
+				tok = r.URL.Query().Get("access_token")
+			}
 			if tok == "" {
 				writeError(w, r, http.StatusUnauthorized, domain.CodeUnauthenticated, "missing bearer token")
 				return
@@ -466,7 +493,8 @@ func (s *Server) connectionItems(ctx context.Context) []map[string]any {
 		items = append(items, map[string]any{
 			"name": m.Connection.Name, "driver": m.Connection.Driver,
 			"readonly": m.Connection.ReadOnly, "status": status,
-			"last_ping_at": s.clock.Now().UTC().Format(time.RFC3339),
+			"last_ping_at":    s.clock.Now().UTC().Format(time.RFC3339),
+			"allowed_schemas": m.AllowedSchemas, "denied_tables": m.DeniedTables,
 		})
 	}
 	return items

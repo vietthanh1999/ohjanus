@@ -249,6 +249,91 @@ func TestAdminSSE(t *testing.T) {
 	}
 }
 
+func TestAdminCORS(t *testing.T) {
+	s, _, _ := testServer("none")
+	ts := httptest.NewServer(s.Handler())
+	defer ts.Close()
+
+	req, _ := http.NewRequest(http.MethodOptions, ts.URL+"/api/v1/approvals", nil)
+	req.Header.Set("Origin", "http://localhost:5173")
+	req.Header.Set("Access-Control-Request-Headers", "authorization")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		t.Errorf("preflight status = %d, want 204", resp.StatusCode)
+	}
+	if got := resp.Header.Get("Access-Control-Allow-Origin"); got != "*" {
+		t.Errorf("allow-origin = %q, want *", got)
+	}
+
+	resp, err = http.Get(ts.URL + "/api/v1/approvals")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if got := resp.Header.Get("Access-Control-Allow-Origin"); got != "*" {
+		t.Errorf("GET allow-origin = %q, want *", got)
+	}
+}
+
+func TestAdminStreamQueryToken(t *testing.T) {
+	secret := "jn_stream_secret"
+	sum := sha256.Sum256([]byte(secret))
+	resolver := authconfig.New([]domain.AuthToken{
+		{ID: "tok_admin", Hash: "sha256:" + hex.EncodeToString(sum[:]), Scopes: []domain.Scope{domain.ScopeAdmin}},
+	}, systemclock.Clock{})
+	clock := systemclock.Clock{}
+	store := tokememory.New(clock, time.Minute)
+	buf := auditmemory.New(10)
+	s := New("127.0.0.1:0", "token", store, resolver, authmemory.New(clock), buf, buf, map[string]out.Pool{}, map[string]domain.ConnectionMeta{}, clock)
+	ts := httptest.NewServer(s.Handler())
+	defer ts.Close()
+
+	// Bearer header still works.
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/v1/approvals/stream", nil)
+	req.Header.Set("Authorization", "Bearer "+secret)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("header token status = %d, want 200", resp.StatusCode)
+	}
+
+	// Query fallback works for EventSource clients.
+	resp, err = http.Get(ts.URL + "/api/v1/approvals/stream?access_token=" + secret)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("query token status = %d, want 200", resp.StatusCode)
+	}
+
+	// Unknown query token is rejected, and query tokens do not leak
+	// into other endpoints.
+	resp, err = http.Get(ts.URL + "/api/v1/approvals/stream?access_token=bogus")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Errorf("bogus token status = %d, want 401", resp.StatusCode)
+	}
+	resp, err = http.Get(ts.URL + "/api/v1/approvals?access_token=" + secret)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Errorf("query token on list status = %d, want 401", resp.StatusCode)
+	}
+}
+
 func TestAdminTokens(t *testing.T) {
 	s, _, _ := testServer("none")
 	ts := httptest.NewServer(s.mux)

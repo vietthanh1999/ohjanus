@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy, onMount } from 'svelte';
   import { appState } from './lib/state/appState.svelte';
   import Titlebar from './lib/components/chrome/Titlebar.svelte';
   import StatusBar from './lib/components/chrome/StatusBar.svelte';
@@ -22,6 +23,15 @@
   import SettingsModal from './lib/components/modals/SettingsModal.svelte';
 
   let lastShiftTime = 0;
+
+  onMount(() => {
+    void appState.loadAll();
+    appState.startLive();
+  });
+
+  onDestroy(() => {
+    appState.stopLiveUpdates();
+  });
   let isDraggingVerticalSplitter = $state(false);
   let startX = 0;
   let startWidth = 0;

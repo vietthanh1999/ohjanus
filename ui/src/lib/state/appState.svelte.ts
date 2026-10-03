@@ -1,3 +1,21 @@
+import { ApiError } from '../api/client';
+import {
+  listApprovals,
+  approveApproval,
+  rejectApproval,
+  openApprovalStream
+} from '../api/approvals';
+import { listAudit } from '../api/audit';
+import { listConnections, testConnection } from '../api/connections';
+import { listTokens, createToken as apiCreateToken, revokeToken as apiRevokeToken } from '../api/tokens';
+import { getSummary } from '../api/dashboard';
+import type {
+  ApiApproval,
+  ApiAuditEvent,
+  ApiConnection,
+  ApiToken
+} from '../api/types';
+
 export interface TabItem {
   id: string;
   title: string;
@@ -50,15 +68,17 @@ export interface ConnectionItem {
   name: string;
   driver: string;
   readonly: boolean;
-  status: 'healthy' | 'degraded' | 'error';
+  status: string;
   last_ping_at: string;
-  latency_ms: number;
-  pool: {
-    open: number;
-    idle: number;
-    in_use: number;
-    max: number;
-  };
+  latency_ms?: number;
+  allowed_schemas: string[];
+  denied_tables: string[];
+}
+
+export interface DashboardSummary {
+  pending_approvals: number;
+  requests_total: number;
+  denials_total: number;
 }
 
 export interface McpToken {
@@ -69,6 +89,7 @@ export interface McpToken {
   expires_at: string;
   last_used_at: string;
   state: 'active' | 'revoked' | 'expired';
+  rawToken?: string;
 }
 
 export interface ConsoleLogEntry {
@@ -364,246 +385,17 @@ select * from transfer_job where id = 'b8262180-1075-43f8-8338-2412d4734d65'`);
     }
   ]);
 
-  // MCP Gateway Approvals Queue
-  approvals = $state<ApprovalRequest[]>([
-    {
-      id: 'appr-9812',
-      state: 'pending',
-      connection: 'prd_mh_asset',
-      statement_type: 'UPDATE',
-      sql: `UPDATE user_accounts
-SET active = false,
-    deactivation_reason = 'Dormant account auto-sweep'
-WHERE last_login < NOW() - INTERVAL '365 days'
-  AND active = true;`,
-      affected_estimate: 1420,
-      requested_by: {
-        client: 'Cursor IDE Agent (DevOps)',
-        token_id: 'jn_agent_cursor_992'
-      },
-      warnings: [
-        'Batch UPDATE on production database',
-        'Impact estimation exceeds threshold (> 1,000 rows)'
-      ],
-      created_at: '2026-10-03 11:20:00',
-      expires_at: '2026-10-03 12:20:00'
-    },
-    {
-      id: 'appr-9813',
-      state: 'pending',
-      connection: 'dev_mh_asset',
-      statement_type: 'DROP',
-      sql: `DROP TABLE deprecated_ingest_temp_2024;`,
-      affected_estimate: 0,
-      requested_by: {
-        client: 'Claude Desktop Agent (DBA)',
-        token_id: 'jn_agent_claude_104'
-      },
-      warnings: [
-        'DDL operation: irreversible drop of database object',
-        'Cannot be rolled back automatically'
-      ],
-      created_at: '2026-10-03 11:32:10',
-      expires_at: '2026-10-03 12:02:10'
-    },
-    {
-      id: 'appr-9810',
-      state: 'approved',
-      connection: 'prd_mh_asset',
-      statement_type: 'INSERT',
-      sql: `INSERT INTO category (id, code, name, created_at)
-VALUES (gen_random_uuid(), 'TECH_NEWS', 'Technology & AI News', NOW());`,
-      affected_estimate: 1,
-      requested_by: {
-        client: 'Content Sync Service',
-        token_id: 'jn_agent_sync_552'
-      },
-      warnings: [],
-      created_at: '2026-10-03 10:14:00',
-      expires_at: '2026-10-03 11:14:00',
-      decided_by: 'thanhtran',
-      decided_at: '2026-10-03 10:18:22',
-      decision_reason: 'Verified new category code is authorized by content team.'
-    },
-    {
-      id: 'appr-9807',
-      state: 'rejected',
-      connection: 'prd_mh_asset',
-      statement_type: 'DELETE',
-      sql: `DELETE FROM transfer_job WHERE status = 'FAILED';`,
-      affected_estimate: 890,
-      requested_by: {
-        client: 'Cleanup Cron Agent',
-        token_id: 'jn_agent_cleanup_001'
-      },
-      warnings: ['Destructive DELETE without date filter'],
-      created_at: '2026-10-03 09:05:00',
-      expires_at: '2026-10-03 10:05:00',
-      decided_by: 'thanhtran',
-      decided_at: '2026-10-03 09:12:00',
-      decision_reason: 'Rejected. Failed jobs must be preserved for 30 days audit retention.'
-    }
-  ]);
+  // MCP Gateway Approvals Queue — loaded from Admin API (see loadApprovals).
+  approvals = $state<ApprovalRequest[]>([]);
 
-  // MCP Gateway Audit Logs
-  auditLogs = $state<AuditRecord[]>([
-    {
-      id: 'aud-001',
-      ts: '2026-10-03 11:42:15',
-      event: 'query.executed',
-      request_id: 'req_88192a',
-      token_id: 'jn_agent_cursor_992',
-      client: 'Cursor Agent (DevOps)',
-      connection: 'prd_mh_asset',
-      statement_type: 'SELECT',
-      tables: ['transfer_job'],
-      policy_decision: 'ALLOW',
-      policy_rule: 'allow-select-all',
-      row_count: 6,
-      duration_ms: 86,
-      status: 'OK',
-      sql_normalized: 'SELECT * FROM transfer_job WHERE id = ?'
-    },
-    {
-      id: 'aud-002',
-      ts: '2026-10-03 11:32:10',
-      event: 'approval.requested',
-      request_id: 'req_88190c',
-      token_id: 'jn_agent_claude_104',
-      client: 'Claude Desktop Agent (DBA)',
-      connection: 'dev_mh_asset',
-      statement_type: 'DROP',
-      tables: ['deprecated_ingest_temp_2024'],
-      policy_decision: 'REQUIRE_APPROVAL',
-      policy_rule: 'require-approval-ddl',
-      row_count: 0,
-      duration_ms: 12,
-      status: 'OK',
-      sql_normalized: 'DROP TABLE deprecated_ingest_temp_2024'
-    },
-    {
-      id: 'aud-003',
-      ts: '2026-10-03 11:20:00',
-      event: 'approval.requested',
-      request_id: 'req_88184f',
-      token_id: 'jn_agent_cursor_992',
-      client: 'Cursor Agent (DevOps)',
-      connection: 'prd_mh_asset',
-      statement_type: 'UPDATE',
-      tables: ['user_accounts'],
-      policy_decision: 'REQUIRE_APPROVAL',
-      policy_rule: 'require-approval-production-write',
-      row_count: 0,
-      duration_ms: 18,
-      status: 'OK',
-      sql_normalized: 'UPDATE user_accounts SET active = ? WHERE last_login < ?'
-    },
-    {
-      id: 'aud-004',
-      ts: '2026-10-03 10:55:01',
-      event: 'query.denied',
-      request_id: 'req_88172d',
-      token_id: 'jn_agent_guest_301',
-      client: 'Anonymous Agent',
-      connection: 'prd_mh_asset',
-      statement_type: 'SELECT',
-      tables: ['pg_shadow'],
-      policy_decision: 'DENY',
-      policy_rule: 'deny-system-catalogs',
-      row_count: 0,
-      duration_ms: 4,
-      status: 'DENIED',
-      sql_normalized: 'SELECT * FROM pg_shadow'
-    },
-    {
-      id: 'aud-005',
-      ts: '2026-10-03 10:50:34',
-      event: 'query.executed',
-      request_id: 'req_88165b',
-      token_id: 'jn_agent_local_admin',
-      client: 'OhJanus UI Console',
-      connection: 'dev_mh_asset',
-      statement_type: 'SELECT',
-      tables: ['connection_credential'],
-      policy_decision: 'ALLOW',
-      policy_rule: 'allow-select-all',
-      row_count: 58,
-      duration_ms: 86,
-      status: 'OK',
-      sql_normalized: 'SELECT t.* FROM public.connection_credential t LIMIT 501'
-    }
-  ]);
+  // MCP Gateway Audit Logs — loaded from Admin API (see loadAudit).
+  auditLogs = $state<AuditRecord[]>([]);
 
-  // MCP Gateway Connections
-  connections = $state<ConnectionItem[]>([
-    {
-      name: 'dev_mh_asset',
-      driver: 'PostgreSQL 16.2',
-      readonly: true,
-      status: 'healthy',
-      last_ping_at: '2026-10-03 11:43:00',
-      latency_ms: 12,
-      pool: { open: 12, idle: 8, in_use: 4, max: 25 }
-    },
-    {
-      name: 'prd_mh_asset',
-      driver: 'PostgreSQL 16.2',
-      readonly: false,
-      status: 'healthy',
-      last_ping_at: '2026-10-03 11:43:10',
-      latency_ms: 18,
-      pool: { open: 35, idle: 22, in_use: 13, max: 50 }
-    },
-    {
-      name: 'analytics_clickhouse',
-      driver: 'ClickHouse 24.3',
-      readonly: true,
-      status: 'healthy',
-      last_ping_at: '2026-10-03 11:42:45',
-      latency_ms: 34,
-      pool: { open: 8, idle: 6, in_use: 2, max: 20 }
-    }
-  ]);
+  // MCP Gateway Connections — loaded from Admin API (see loadConnections).
+  connections = $state<ConnectionItem[]>([]);
 
-  // MCP Tokens
-  tokens = $state<McpToken[]>([
-    {
-      id: 'jn_agent_cursor_992',
-      name: 'Cursor IDE Dev Agent',
-      scopes: ['read', 'write_with_approval', 'explain'],
-      created_at: '2026-09-15 08:00:00',
-      expires_at: '2026-12-15 08:00:00',
-      last_used_at: '2026-10-03 11:42:15',
-      state: 'active'
-    },
-    {
-      id: 'jn_agent_claude_104',
-      name: 'Claude Desktop DBA Assistant',
-      scopes: ['read', 'write_with_approval', 'schema'],
-      created_at: '2026-09-20 10:30:00',
-      expires_at: '2026-12-20 10:30:00',
-      last_used_at: '2026-10-03 11:32:10',
-      state: 'active'
-    },
-    {
-      id: 'jn_agent_sync_552',
-      name: 'Automated Content Sync Worker',
-      scopes: ['read', 'write_with_approval'],
-      created_at: '2026-10-01 00:00:00',
-      expires_at: '2027-01-01 00:00:00',
-      last_used_at: '2026-10-03 10:14:00',
-      state: 'active'
-    },
-    {
-      id: 'jn_agent_temp_eval',
-      name: 'Security Audit Scanner (Temporary)',
-      scopes: ['read'],
-      created_at: '2026-10-01 14:00:00',
-      expires_at: '2026-10-02 14:00:00',
-      last_used_at: '2026-10-02 13:58:00',
-      state: 'expired'
-    }
-  ]);
+  // MCP Tokens — loaded from Admin API (see loadTokens).
+  tokens = $state<McpToken[]>([]);
 
   // Dialog & Modal Triggers
   searchModalOpen = $state<boolean>(false);
@@ -676,89 +468,205 @@ VALUES (gen_random_uuid(), 'TECH_NEWS', 'Technology & AI News', NOW());`,
     }, 400);
   }
 
-  // Approve / Reject actions
-  confirmApprovalAction() {
-    if (!this.selectedApprovalForAction) return;
+  // ---- Admin API wiring ----
+  // Per user decision: error states are shown, never silently mocked.
 
-    const item = this.approvals.find(a => a.id === this.selectedApprovalForAction!.id);
-    if (item) {
-      item.state = this.approvalDecisionMode === 'approve' ? 'approved' : 'rejected';
-      item.decided_by = 'thanhtran';
-      item.decided_at = new Date().toISOString().replace('T', ' ').substring(0, 19);
-      item.decision_reason = this.approvalDecisionReason || (this.approvalDecisionMode === 'approve' ? 'Approved via Admin UI' : 'Rejected via Admin UI');
+  dataLoading = $state<boolean>(true);
+  dataError = $state<string | null>(null);
 
-      // Update approval tab badge
-      const apprTab = this.tabs.find(t => t.id === 'approvals');
-      if (apprTab) {
-        const pendingCount = this.approvals.filter(a => a.state === 'pending').length;
-        apprTab.badge = pendingCount > 0 ? String(pendingCount) : undefined;
-      }
+  summary = $state<DashboardSummary | null>(null);
 
-      // Add to audit log
-      this.auditLogs.unshift({
-        id: 'aud-' + Date.now(),
-        ts: item.decided_at,
-        event: item.state === 'approved' ? 'approval.granted' : 'approval.rejected',
-        request_id: 'req_' + item.id,
-        token_id: item.requested_by.token_id,
-        client: item.requested_by.client,
-        connection: item.connection,
-        statement_type: item.statement_type,
-        tables: [item.statement_type],
-        policy_decision: item.state === 'approved' ? 'ALLOW' : 'DENY',
-        policy_rule: 'human-approval-decision',
-        row_count: item.affected_estimate,
-        duration_ms: 25,
-        status: item.state === 'approved' ? 'OK' : 'DENIED',
-        sql_normalized: item.sql.split('\n')[0]
-      });
+  private stopLive: (() => void) | null = null;
+  private pollTimer: ReturnType<typeof setInterval> | null = null;
+
+  private mapApproval(t: ApiApproval): ApprovalRequest {
+    return {
+      id: t.id,
+      state: t.state,
+      connection: t.connection,
+      statement_type: t.statement_type as ApprovalRequest['statement_type'],
+      sql: t.sql,
+      params: (t.params as Record<string, any> | undefined) ?? {},
+      affected_estimate: t.affected_estimate,
+      requested_by: { client: t.requested_by.token_id, token_id: t.requested_by.token_id },
+      warnings: t.warnings ?? [],
+      created_at: t.created_at,
+      expires_at: t.expires_at
+    };
+  }
+
+  private mapAudit(e: ApiAuditEvent): AuditRecord {
+    const status = e.status === 'success' ? 'OK' : e.status === 'denied' ? 'DENIED' : 'ERROR';
+    return {
+      id: e.id,
+      ts: e.ts,
+      event: e.event,
+      request_id: e.request_id,
+      token_id: e.token_id ?? '',
+      client: e.token_id ?? '',
+      connection: e.connection ?? '',
+      statement_type: e.statement_type ?? '',
+      tables: e.tables ?? [],
+      policy_decision: (e.policy_decision ?? '') as AuditRecord['policy_decision'],
+      policy_rule: e.policy_rule ?? '',
+      row_count: e.row_count ?? 0,
+      duration_ms: e.duration_ms ?? 0,
+      status,
+      sql_normalized: e.sql_normalized ?? ''
+    };
+  }
+
+  private mapConnection(c: ApiConnection): ConnectionItem {
+    return {
+      name: c.name,
+      driver: c.driver,
+      readonly: c.readonly,
+      status: c.status,
+      last_ping_at: c.last_ping_at,
+      allowed_schemas: c.allowed_schemas ?? [],
+      denied_tables: c.denied_tables ?? []
+    };
+  }
+
+  private mapToken(t: ApiToken): McpToken {
+    return {
+      id: t.id,
+      name: t.name,
+      scopes: t.scopes,
+      created_at: t.created_at ?? '—',
+      expires_at: t.expires_at ?? '—',
+      last_used_at: t.last_used_at ?? '—',
+      state: t.state
+    };
+  }
+
+  async loadApprovals() {
+    const page = await listApprovals({ limit: 100 });
+    this.approvals = page.items.map((t) => this.mapApproval(t));
+  }
+
+  async loadAudit() {
+    const page = await listAudit({ limit: 100 });
+    this.auditLogs = page.items.map((e) => this.mapAudit(e));
+  }
+
+  async loadConnections() {
+    const { items } = await listConnections();
+    const prev = new Map(this.connections.map((c) => [c.name, c.latency_ms]));
+    this.connections = items.map((c) => ({ ...this.mapConnection(c), latency_ms: prev.get(c.name) }));
+  }
+
+  async loadTokens() {
+    const { items } = await listTokens();
+    this.tokens = items.map((t) => this.mapToken(t));
+  }
+
+  async loadSummary() {
+    this.summary = await getSummary();
+  }
+
+  async loadAll() {
+    this.dataLoading = true;
+    this.dataError = null;
+    try {
+      await Promise.all([
+        this.loadApprovals(),
+        this.loadAudit(),
+        this.loadConnections(),
+        this.loadTokens(),
+        this.loadSummary()
+      ]);
+    } catch (e) {
+      this.dataError = e instanceof ApiError ? e.message : String(e);
+    } finally {
+      this.dataLoading = false;
     }
+  }
 
+  /** Live approval updates via SSE, with 10s polling fallback. */
+  startLive() {
+    this.stopLive?.();
+    let stopped = false;
+    const stop = () => {
+      stopped = true;
+    };
+    this.stopLive = stop;
+
+    const poll = async () => {
+      if (stopped) return;
+      try {
+        await this.loadApprovals();
+      } catch {
+        // Error state is surfaced by explicit reloads; polling stays quiet.
+      }
+    };
+
+    try {
+      const closeStream = openApprovalStream(() => void poll());
+      const prevStop = stop;
+      this.stopLive = () => {
+        prevStop();
+        closeStream();
+        if (this.pollTimer) clearInterval(this.pollTimer);
+        this.pollTimer = null;
+      };
+      // Fallback polling in case the stream silently drops.
+      this.pollTimer = setInterval(() => void poll(), 10000);
+    } catch {
+      this.pollTimer = setInterval(() => void poll(), 10000);
+    }
+  }
+
+  stopLiveUpdates() {
+    this.stopLive?.();
+    this.stopLive = null;
+  }
+
+  // Approve / Reject actions (async, Admin API backed).
+  async confirmApprovalAction() {
+    if (!this.selectedApprovalForAction) return;
+    const id = this.selectedApprovalForAction.id;
+    const mode = this.approvalDecisionMode;
+    const reason = this.approvalDecisionReason || (mode === 'approve' ? 'Approved via Admin UI' : '');
+    if (mode === 'approve') {
+      await approveApproval(id, reason);
+    } else {
+      await rejectApproval(id, reason);
+    }
+    await this.loadApprovals();
+    await this.loadAudit().catch(() => {});
+    const apprTab = this.tabs.find((t) => t.id === 'approvals');
+    if (apprTab) {
+      const pendingCount = this.approvals.filter((a) => a.state === 'pending').length;
+      apprTab.badge = pendingCount > 0 ? String(pendingCount) : undefined;
+    }
     this.selectedApprovalForAction = null;
     this.approvalDecisionReason = '';
   }
 
-  // Token actions
-  createToken(name: string, scopes: string[]) {
-    const randomHex = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-    const rawSecret = `jn_${randomHex}`;
-    const id = `jn_tok_${Date.now().toString(36)}`;
-    const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
-
-    const expires = new Date();
-    expires.setDate(expires.getDate() + 90);
-    const expiresStr = expires.toISOString().replace('T', ' ').substring(0, 19);
-
-    this.tokens.unshift({
-      id,
-      name,
-      scopes,
-      created_at: now,
-      expires_at: expiresStr,
-      last_used_at: 'Never',
-      state: 'active'
-    });
-
-    this.createdTokenSecret = rawSecret;
+  // Token actions (async, Admin API backed).
+  async createToken(name: string, scopes: string[], ttlDays: number) {
+    const created = await apiCreateToken({ name, scopes, ttl_hours: ttlDays * 24 });
+    await this.loadTokens();
+    this.createdTokenSecret = created.token;
+    return created.token;
   }
 
-  revokeToken(id: string) {
-    const tok = this.tokens.find(t => t.id === id);
-    if (tok) {
-      tok.state = 'revoked';
-    }
+  async revokeToken(id: string) {
+    await apiRevokeToken(id);
+    await this.loadTokens();
   }
 
-  // Connection ping
-  pingConnection(name: string) {
-    const conn = this.connections.find(c => c.name === name);
+  // Connection ping (async, Admin API backed).
+  async pingConnection(name: string) {
+    const res = await testConnection(name);
+    const conn = this.connections.find((c) => c.name === name);
     if (conn) {
-      const start = performance.now();
-      setTimeout(() => {
-        conn.latency_ms = Math.floor(Math.random() * 15) + 8;
-        conn.last_ping_at = new Date().toISOString().replace('T', ' ').substring(0, 19);
-      }, 250);
+      conn.status = res.status;
+      conn.latency_ms = res.latency_ms;
+      conn.last_ping_at = new Date().toISOString().replace('T', ' ').substring(0, 19);
     }
+    return res;
   }
 }
 
