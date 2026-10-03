@@ -3,23 +3,24 @@
 
   interface Props {
     class?: string;
-    children?: Snippet;
+    style?: string;
     header?: Snippet;
     footer?: Snippet;
+    children?: Snippet;
   }
 
-  let { class: className = '', children, header, footer }: Props = $props();
+  let { class: className = '', style = '', header, footer, children }: Props = $props();
 </script>
 
-<div class="ohjanus-card {className}">
+<div class="ohjanus-card {className}" {style}>
   {#if header}
     <div class="ohjanus-card-header">
       {@render header()}
     </div>
   {/if}
-  <div class="ohjanus-card-body">
-    {@render children?.()}
-  </div>
+  {#if children}
+    {@render children()}
+  {/if}
   {#if footer}
     <div class="ohjanus-card-footer">
       {@render footer()}

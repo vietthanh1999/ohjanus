@@ -1,23 +1,24 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
+  import { Flex } from '@ohjanus/ui';
 
   let isAiOpen = $state(false);
 </script>
 
 <header class="titlebar">
   <!-- Left: Traffic Lights & Context Selectors -->
-  <div class="left-section">
-    <div class="traffic-lights">
+  <Flex class="left-section" align="center" gap="14px">
+    <Flex class="traffic-lights" align="center" gap="7px">
       <span class="light close" title="Close"></span>
       <span class="light minimize" title="Minimize"></span>
       <span class="light maximize" title="Maximize"></span>
-    </div>
+    </Flex>
 
-    <div class="context-group">
+    <Flex class="context-group" align="center" gap="6px">
       <!-- Profile Avatar -->
-      <div class="avatar" title="Viet Thanh">
+      <Flex class="avatar" align="center" justify="center" title="Viet Thanh">
         VT
-      </div>
+      </Flex>
 
       <!-- Project Selector -->
       <button class="selector-btn" title="Current Workspace Project">
@@ -34,12 +35,12 @@
           <path d="M4 6l4 4 4-4H4z" />
         </svg>
       </button>
-    </div>
-  </div>
+    </Flex>
+  </Flex>
 
   <!-- Center: Quick Actions Bar -->
-  <div class="center-section">
-    <div class="quick-actions">
+  <Flex class="center-section" align="center" justify="center">
+    <Flex class="quick-actions" align="center" gap="4px">
       <!-- Database cylinder icon -->
       <button
         class="quick-btn"
@@ -75,11 +76,11 @@
           <path d="M3 8a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm6.5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm6.5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
         </svg>
       </button>
-    </div>
-  </div>
+    </Flex>
+  </Flex>
 
   <!-- Right: Utilities (AI Assistant, Search, Settings) -->
-  <div class="right-section">
+  <Flex class="right-section" align="center" gap="4px">
     <!-- AI Assistant Spiral -->
     <button
       class="util-btn ai-btn"
@@ -114,7 +115,7 @@
       </svg>
       <span class="badge-dot"></span>
     </button>
-  </div>
+  </Flex>
 </header>
 
 <style>
@@ -130,19 +131,6 @@
     flex-shrink: 0;
   }
 
-  .left-section {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .traffic-lights {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    margin-left: 2px;
-  }
-
   .light {
     width: 12px;
     height: 12px;
@@ -154,22 +142,13 @@
   .light.minimize { background-color: var(--window-minimize); }
   .light.maximize { background-color: var(--window-maximize); }
 
-  .context-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
   /* Exact rectangular cyan avatar from design */
-  .avatar {
+  :global(.avatar) {
     height: 18px;
     padding: 0 5px;
     border-radius: 3px;
     background-color: #0891B2;
     color: #FFFFFF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-size: 11px;
     font-weight: 700;
     line-height: 1;
@@ -199,19 +178,6 @@
     color: var(--text-muted);
   }
 
-  /* Center quick actions */
-  .center-section {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .quick-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
   .quick-btn {
     width: 26px;
     height: 26px;
@@ -226,13 +192,6 @@
   .quick-btn:hover {
     background-color: rgba(255, 255, 255, 0.08);
     color: var(--text-primary);
-  }
-
-  /* Right utility */
-  .right-section {
-    display: flex;
-    align-items: center;
-    gap: 4px;
   }
 
   .util-btn {

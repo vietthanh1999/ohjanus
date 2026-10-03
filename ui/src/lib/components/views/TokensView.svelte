@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appStore } from '../../appStore.svelte';
   import type { McpToken } from '../../types';
+  import { Button, Badge, Modal, Input, Field, Alert, toast, Box, Flex, Stack, Text } from '@ohjanus/ui';
 
   let showCreateModal = $state(false);
   let showSecretModal = $state(false);
@@ -26,32 +27,39 @@
     showSecretModal = true;
     tokenName = '';
     copied = false;
+    toast.success('MCP Token Generated', 'Opaque bearer secret created.');
   }
 
   function copySecret() {
     if (generatedToken?.rawToken) {
       navigator.clipboard.writeText(generatedToken.rawToken);
       copied = true;
+      toast.info('Copied', 'Token secret copied to clipboard.');
       setTimeout(() => copied = false, 2000);
     }
   }
+
+  function handleRevoke(id: string) {
+    appStore.revokeToken(id);
+    toast.error('Token Revoked', `Token ${id} has been revoked.`);
+  }
 </script>
 
-<div class="tokens-view">
+<Box class="tokens-view">
   <!-- Header -->
-  <div class="view-header">
-    <div>
+  <Flex as="header" class="view-header" align="center" justify="between">
+    <Flex align="center">
       <span class="header-icon">🔑</span>
       <span class="view-title">MCP Client Tokens Management</span>
       <span class="view-desc">Issue and manage secure opaque tokens for AI agents (Cursor, Claude Desktop, custom bots)</span>
-    </div>
-    <button class="btn-primary" onclick={() => showCreateModal = true}>
+    </Flex>
+    <Button variant="primary" onclick={() => showCreateModal = true}>
       + Generate New Token
-    </button>
-  </div>
+    </Button>
+  </Flex>
 
   <!-- Tokens List Table -->
-  <div class="table-container font-mono">
+  <Box class="table-container font-mono">
     <table class="data-grid">
       <thead>
         <tr>
@@ -74,23 +82,30 @@
             </td>
             <td class="scopes-cell">
               {#each tok.scopes as sc}
-                <span class="scope-tag scope-{sc}">{sc}</span>
+                <Badge variant="default" size="sm" class="scope-pill">
+                  {sc}
+                </Badge>
               {/each}
             </td>
             <td>{tok.createdAt}</td>
             <td>{tok.expiresAt}</td>
             <td>{tok.lastUsedAt}</td>
             <td>
-              <span class="state-pill state-{tok.state}">{tok.state.toUpperCase()}</span>
+              {#if tok.state === 'active'}
+                <Badge variant="success" size="sm">ACTIVE</Badge>
+              {:else}
+                <Badge variant="danger" size="sm">REVOKED</Badge>
+              {/if}
             </td>
             <td style="text-align: right;">
               {#if tok.state === 'active'}
-                <button 
-                  class="btn-danger btn-sm"
-                  onclick={() => appStore.revokeToken(tok.id)}
+                <Button
+                  variant="danger"
+                  size="xs"
+                  onclick={() => handleRevoke(tok.id)}
                 >
                   Revoke
-                </button>
+                </Button>
               {:else}
                 <span style="color: var(--text-muted); font-size: 11px;">Revoked</span>
               {/if}
@@ -99,33 +114,23 @@
         {/each}
       </tbody>
     </table>
-  </div>
-</div>
+  </Box>
+</Box>
 
-<!-- Create Token Modal -->
+<!-- Create Token Modal via @ohjanus/ui -->
 {#if showCreateModal}
-  <div class="modal-backdrop" onclick={() => showCreateModal = false}>
-    <div class="modal-dialog animate-fade-in" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header">
-        <span>Generate New MCP Token</span>
-        <button class="icon-btn" onclick={() => showCreateModal = false}>✕</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="tok-name">Agent / Client Name:</label>
-          <input 
-            id="tok-name"
-            type="text" 
-            placeholder="e.g., Cursor IDE - Production Investigator" 
+  <Modal open={showCreateModal} onClose={() => showCreateModal = false} title="Generate New MCP Token" width="500px">
+    {#snippet children()}
+      <Stack class="modal-form-stack" gap="14px">
+        <Field label="Agent / Client Name:" required>
+          <Input
+            placeholder="e.g., Cursor IDE - Production Investigator"
             bind:value={tokenName}
-            style="width: 100%;"
           />
-        </div>
+        </Field>
 
-        <div class="form-group" style="margin-top: 12px;">
-          <label>Allowed Janus Scopes (§1.2):</label>
-          <div class="scopes-grid">
+        <Field label="Allowed Janus Scopes (§1.2):">
+          <Stack class="scopes-grid" gap="8px">
             <label class="chk-label">
               <input type="checkbox" bind:checked={scopes.read} />
               <span><code>read</code> (db_list_connections, db_schema, db_read, db_explain)</span>
@@ -142,52 +147,49 @@
               <input type="checkbox" bind:checked={scopes.admin} />
               <span><code>admin</code> (manage tokens &amp; connection configurations)</span>
             </label>
-          </div>
-        </div>
+          </Stack>
+        </Field>
 
-        <div class="form-group" style="margin-top: 12px;">
-          <label for="tok-ttl">Token Validity (TTL Days):</label>
-          <select id="tok-ttl" bind:value={ttlDays} style="width: 100%;">
+        <Field label="Token Validity (TTL Days):">
+          <select id="tok-ttl" bind:value={ttlDays} class="ohjanus-select">
             <option value={7}>7 Days</option>
             <option value={30}>30 Days (Recommended)</option>
             <option value={90}>90 Days</option>
             <option value={365}>1 Year</option>
           </select>
-        </div>
-      </div>
+        </Field>
+      </Stack>
+    {/snippet}
 
-      <div class="modal-footer">
-        <button class="btn-secondary" onclick={() => showCreateModal = false}>Cancel</button>
-        <button class="btn-primary" onclick={handleCreate} disabled={!tokenName.trim()}>
-          Generate Token
-        </button>
-      </div>
-    </div>
-  </div>
+    {#snippet footer()}
+      <Button variant="secondary" onclick={() => showCreateModal = false}>Cancel</Button>
+      <Button variant="primary" onclick={handleCreate} disabled={!tokenName.trim()}>
+        Generate Token
+      </Button>
+    {/snippet}
+  </Modal>
 {/if}
 
-<!-- One-Time Secret Reveal Modal -->
+<!-- One-Time Secret Reveal Modal via @ohjanus/ui -->
 {#if showSecretModal && generatedToken}
-  <div class="modal-backdrop">
-    <div class="modal-dialog animate-fade-in" style="width: 520px;">
-      <div class="modal-header">
-        <span>🎉 MCP Token Generated Successfully</span>
-      </div>
+  <Modal open={showSecretModal} onClose={() => showSecretModal = false} title="🎉 MCP Token Generated Successfully" width="520px">
+    {#snippet children()}
+      <Stack class="secret-reveal-stack" gap="12px">
+        <Alert variant="warning" title="WARNING:">
+          <p style="margin-top: 2px;">
+            This token secret is displayed only <strong>ONCE</strong> and cannot be retrieved later. Copy and paste it into your client configuration now.
+          </p>
+        </Alert>
 
-      <div class="modal-body">
-        <div class="alert-box">
-          ⚠️ <strong>WARNING:</strong> This token secret is displayed only <strong>ONCE</strong> and cannot be retrieved later. Copy and paste it into your client configuration now.
-        </div>
-
-        <div style="margin: 12px 0 6px; font-weight: 600;">Opaque Bearer Token:</div>
-        <div class="secret-box font-mono">
+        <Text weight="semibold" size="sm">Opaque Bearer Token:</Text>
+        <Flex class="secret-box font-mono" align="center" justify="between">
           <span>{generatedToken.rawToken}</span>
-          <button class="copy-btn" onclick={copySecret}>
+          <Button variant="secondary" size="xs" onclick={copySecret}>
             {copied ? '✓ Copied' : 'Copy'}
-          </button>
-        </div>
+          </Button>
+        </Flex>
 
-        <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted);">
+        <Text size="xs" color="muted">
           Example Cursor config (<code>~/.cursor/mcp.json</code>):
           <pre class="mcp-config-snippet font-mono">{`{
   "mcpServers": {
@@ -197,16 +199,16 @@
     }
   }
 }`}</pre>
-        </div>
-      </div>
+        </Text>
+      </Stack>
+    {/snippet}
 
-      <div class="modal-footer">
-        <button class="btn-primary" onclick={() => showSecretModal = false}>
-          I Have Safely Saved the Token
-        </button>
-      </div>
-    </div>
-  </div>
+    {#snippet footer()}
+      <Button variant="primary" onclick={() => showSecretModal = false}>
+        Done
+      </Button>
+    {/snippet}
+  </Modal>
 {/if}
 
 <style>
@@ -214,22 +216,33 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--surface-canvas);
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
   }
 
   .view-header {
-    height: 48px;
-    background: var(--surface-toolbar);
-    border-bottom: 1px solid var(--border-default);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    height: 52px;
     padding: 0 16px;
+    border-bottom: 1px solid var(--border-default);
+    background-color: var(--bg-toolbar);
   }
 
-  .header-icon { font-size: 16px; margin-right: 8px; }
-  .view-title { font-weight: 600; font-size: 13px; margin-right: 12px; }
-  .view-desc { font-size: 11px; color: var(--text-muted); }
+  .header-icon {
+    font-size: 16px;
+    margin-right: 6px;
+  }
+
+  .view-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+
+  .view-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-left: 12px;
+  }
 
   .table-container {
     flex: 1;
@@ -239,117 +252,85 @@
   .data-grid {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: 11.5px;
   }
 
   .data-grid th {
-    background: var(--surface-table-header);
-    height: var(--table-header-height);
-    border-right: 1px solid var(--border-default);
+    background-color: var(--bg-table-header);
     border-bottom: 1px solid var(--border-default);
-    padding: 0 10px;
+    padding: 6px 12px;
     text-align: left;
-    color: var(--text-secondary);
-    position: sticky;
-    top: 0;
+    color: var(--text-muted);
+    font-weight: 600;
   }
 
   .data-grid td {
-    height: 32px;
-    border-right: 1px solid var(--border-subtle);
     border-bottom: 1px solid var(--border-subtle);
-    padding: 0 10px;
+    padding: 8px 12px;
+    color: var(--text-primary);
+  }
+
+  .data-grid tr:hover {
+    background-color: var(--bg-hover);
+  }
+
+  .id-cell {
+    color: var(--syntax-number, #6897BB);
   }
 
   .scopes-cell {
     display: flex;
-    align-items: center;
     gap: 4px;
-    height: 32px;
+    flex-wrap: wrap;
   }
 
-  .scope-tag {
-    font-size: 10px;
-    padding: 1px 5px;
-    border-radius: 3px;
-    background: #25272A;
-    border: 1px solid var(--border-default);
-    color: #DFE1E5;
-  }
-
-  .scope-write_execute { border-color: var(--action-warning); color: var(--action-warning); }
-  .scope-admin { border-color: var(--action-danger); color: var(--action-danger); }
-
-  .state-pill {
-    font-size: 9px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 8px;
-  }
-
-  .state-active { background: rgba(87, 211, 140, 0.2); color: var(--action-success); }
-  .state-revoked { background: rgba(229, 83, 83, 0.2); color: var(--action-danger); }
-
-  .btn-sm {
-    padding: 2px 8px;
-    font-size: 11px;
+  :global(.scope-pill) {
+    font-size: 10px !important;
   }
 
   .scopes-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 6px;
-    background: #18191B;
-    padding: 8px;
+    background-color: var(--bg-canvas, #1E1F22);
+    border: 1px solid var(--border-default, #393B40);
     border-radius: 4px;
-    border: 1px solid var(--border-default);
+    padding: 10px;
   }
 
   .chk-label {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11px;
+    gap: 8px;
+    font-size: 11.5px;
     cursor: pointer;
   }
 
-  .alert-box {
-    background: rgba(237, 162, 0, 0.15);
-    border: 1px solid var(--action-warning);
-    padding: 8px 12px;
+  .ohjanus-select {
+    width: 100%;
+    height: 30px;
+    background-color: var(--bg-canvas, #1E1F22);
+    border: 1px solid var(--border-default, #393B40);
     border-radius: 4px;
-    color: #FFE082;
-    font-size: 11px;
-    line-height: 1.4;
+    color: var(--text-primary, #DFE1E5);
+    padding: 0 8px;
+    outline: none;
   }
 
   .secret-box {
-    background: #151618;
-    border: 1px solid var(--border-accent);
-    padding: 8px 12px;
+    background-color: var(--bg-canvas);
+    border: 1px dashed var(--action-warning);
     border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 13px;
-    color: var(--action-success);
-  }
-
-  .copy-btn {
-    background: var(--surface-hover);
-    border: 1px solid var(--border-default);
-    color: #fff;
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-size: 11px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #FACC15;
+    word-break: break-all;
   }
 
   .mcp-config-snippet {
-    background: #151618;
+    background-color: var(--bg-canvas);
     border: 1px solid var(--border-default);
-    padding: 8px;
     border-radius: 4px;
-    margin-top: 4px;
+    padding: 8px;
+    margin-top: 6px;
+    font-size: 10.5px;
+    color: var(--syntax-string, #6AAB73);
   }
 </style>

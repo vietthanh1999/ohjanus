@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/csv"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -26,6 +27,7 @@ type Server struct {
 	authMode  string
 	tokens    out.TokenStore
 	resolver  out.TokenResolver
+	authStore out.AuthTokenStore
 	audit     out.AuditReader
 	auditSink out.AuditSink
 	pools     map[string]out.Pool
@@ -35,11 +37,13 @@ type Server struct {
 	srv       *http.Server
 }
 
-// New wires an Admin server.
-func New(addr, authMode string, tokens out.TokenStore, resolver out.TokenResolver, audit out.AuditReader, sink out.AuditSink, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta, clock out.Clock) *Server {
+// New wires an Admin server. authStore may be nil when token management
+// is unavailable (endpoints return 503).
+func New(addr, authMode string, tokens out.TokenStore, resolver out.TokenResolver, authStore out.AuthTokenStore, audit out.AuditReader, sink out.AuditSink, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta, clock out.Clock) *Server {
 	s := &Server{
 		addr: addr, authMode: authMode, tokens: tokens, resolver: resolver,
-		audit: audit, auditSink: sink, pools: pools, metas: metas, clock: clock,
+		authStore: authStore,
+		audit:     audit, auditSink: sink, pools: pools, metas: metas, clock: clock,
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", s.handleHealth)
@@ -52,6 +56,9 @@ func New(addr, authMode string, tokens out.TokenStore, resolver out.TokenResolve
 	mux.HandleFunc("/api/v1/connections/", s.withAuthFunc(s.handleConnectionSub))
 	mux.HandleFunc("/api/v1/connections", s.withAuth(domain.ScopeRead, s.handleConnections))
 	mux.HandleFunc("/api/v1/dashboard/summary", s.withAuth(domain.ScopeRead, s.handleSummary))
+	mux.HandleFunc("/api/v1/tokens", s.withAuth(domain.ScopeAdmin, s.handleTokens))
+	mux.HandleFunc("/api/v1/tokens/", s.withAuthFunc(s.handleTokenOne))
+	mux.HandleFunc("/api/v1/audit/export", s.withAuth(domain.ScopeRead, s.handleAuditExport))
 	s.mux = mux
 	s.srv = &http.Server{Addr: addr, Handler: mux, ReadHeaderTimeout: 5 * time.Second}
 	return s
@@ -115,10 +122,14 @@ func (s *Server) withAuthFunc(next func(http.ResponseWriter, *http.Request, cont
 	}
 }
 
-// requiredScope maps mutating approval calls to the admin scope so agents
-// holding write_execute cannot approve their own writes.
+// requiredScope maps calls to scopes. Mutating approval and token calls
+// require admin so agents holding write_execute cannot approve their own
+// writes or mint new tokens.
 func requiredScope(r *http.Request) domain.Scope {
 	if strings.HasSuffix(r.URL.Path, "/approve") || strings.HasSuffix(r.URL.Path, "/reject") {
+		return domain.ScopeAdmin
+	}
+	if r.URL.Path == "/api/v1/tokens" || strings.HasPrefix(r.URL.Path, "/api/v1/tokens/") {
 		return domain.ScopeAdmin
 	}
 	return domain.ScopeRead
@@ -502,6 +513,162 @@ func (s *Server) handleSummary(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"pending_approvals": pending, "requests_total": total, "denials_total": denied,
 	})
+}
+
+// ---- tokens ----
+
+func tokenItem(t domain.AuthToken, now time.Time) map[string]any {
+	state := "active"
+	if t.Expired(now) {
+		state = "expired"
+	}
+	var expires any
+	if !t.ExpiresAt.IsZero() {
+		expires = t.ExpiresAt.UTC().Format(time.RFC3339)
+	}
+	scopes := make([]string, 0, len(t.Scopes))
+	for _, s := range t.Scopes {
+		scopes = append(scopes, string(s))
+	}
+	return map[string]any{
+		"id": t.ID, "name": t.Name, "scopes": scopes,
+		"expires_at": expires, "state": state,
+	}
+}
+
+func (s *Server) handleTokens(w http.ResponseWriter, r *http.Request) {
+	if s.authStore == nil {
+		writeError(w, r, http.StatusServiceUnavailable, domain.CodeInternal, "token management is not enabled")
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		items := []map[string]any{}
+		for _, t := range s.authStore.List() {
+			items = append(items, tokenItem(t, s.clock.Now()))
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"items": items})
+	case http.MethodPost:
+		var body struct {
+			Name     string   `json:"name"`
+			Scopes   []string `json:"scopes"`
+			TTLHours float64  `json:"ttl_hours"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "invalid body")
+			return
+		}
+		scopes := make([]domain.Scope, 0, len(body.Scopes))
+		for _, sc := range body.Scopes {
+			scopes = append(scopes, domain.Scope(sc))
+		}
+		var expires time.Time
+		if body.TTLHours > 0 {
+			expires = s.clock.Now().Add(time.Duration(body.TTLHours * float64(time.Hour)))
+		}
+		secret, t, err := s.authStore.Create(body.Name, scopes, expires)
+		if err != nil {
+			writeError(w, r, http.StatusBadRequest, domain.CodeInternal, err.Error())
+			return
+		}
+		s.emitTokenEvent(r.Context(), "token.created", t.ID)
+		item := tokenItem(t, s.clock.Now())
+		item["token"] = secret // shown exactly once
+		writeJSON(w, http.StatusCreated, item)
+	default:
+		writeError(w, r, http.StatusMethodNotAllowed, domain.CodeInternal, "method not allowed")
+	}
+}
+
+func (s *Server) handleTokenOne(w http.ResponseWriter, r *http.Request, ctx context.Context) {
+	if s.authStore == nil {
+		writeError(w, r, http.StatusServiceUnavailable, domain.CodeInternal, "token management is not enabled")
+		return
+	}
+	if r.Method != http.MethodDelete {
+		writeError(w, r, http.StatusNotFound, domain.CodeInternal, "not found")
+		return
+	}
+	id := strings.TrimPrefix(r.URL.Path, "/api/v1/tokens/")
+	if id == "" {
+		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "missing token id")
+		return
+	}
+	// Never revoke your own token through the API.
+	if id == adminTokenID(ctx) {
+		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "cannot revoke the token in use")
+		return
+	}
+	if err := s.authStore.Revoke(id); err != nil {
+		writeError(w, r, http.StatusNotFound, errorCode(err), errMsg(err))
+		return
+	}
+	s.emitTokenEvent(ctx, "token.revoked", id)
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Server) emitTokenEvent(ctx context.Context, event, id string) {
+	if s.auditSink == nil {
+		return
+	}
+	s.auditSink.Emit(ctx, domain.AuditEvent{
+		TS: s.clock.Now(), Event: event,
+		RequestID: domain.NewRequestID(), TokenID: adminTokenID(ctx),
+		Tool: "admin", Status: "success", Error: id,
+	})
+}
+
+// ---- audit export ----
+
+func (s *Server) handleAuditExport(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, r, http.StatusMethodNotAllowed, domain.CodeInternal, "method not allowed")
+		return
+	}
+	if s.audit == nil {
+		writeError(w, r, http.StatusServiceUnavailable, domain.CodeInternal, "audit query is not enabled")
+		return
+	}
+	format := r.URL.Query().Get("format")
+	if format == "" {
+		format = "jsonl"
+	}
+	q := r.URL.Query()
+	filter := out.AuditFilter{
+		Event: q.Get("event"), Connection: q.Get("connection"),
+		TokenID: q.Get("token_id"), RequestID: q.Get("request_id"),
+		Status: q.Get("status"), Search: q.Get("q"),
+		Limit: 10000,
+	}
+	page, err := s.audit.Query(r.Context(), filter)
+	if err != nil {
+		writeError(w, r, http.StatusInternalServerError, domain.CodeInternal, err.Error())
+		return
+	}
+	switch format {
+	case "jsonl":
+		w.Header().Set("Content-Type", "application/jsonl")
+		w.Header().Set("Content-Disposition", `attachment; filename="janus-audit.jsonl"`)
+		enc := json.NewEncoder(w)
+		for _, e := range page.Events {
+			_ = enc.Encode(e)
+		}
+	case "csv":
+		w.Header().Set("Content-Type", "text/csv")
+		w.Header().Set("Content-Disposition", `attachment; filename="janus-audit.csv"`)
+		cw := csv.NewWriter(w)
+		_ = cw.Write([]string{"id", "ts", "event", "request_id", "token_id", "connection", "tool", "statement_type", "status", "duration_ms", "error", "sql_hash"})
+		for _, e := range page.Events {
+			_ = cw.Write([]string{
+				e.ID, e.TS.UTC().Format(time.RFC3339), e.Event, e.RequestID, e.TokenID,
+				e.Connection, e.Tool, string(e.StatementType), e.Status,
+				strconv.FormatInt(e.DurationMs, 10), e.Error, e.SQLHash,
+			})
+		}
+		cw.Flush()
+	default:
+		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "format must be jsonl|csv")
+	}
 }
 
 // ---- helpers ----

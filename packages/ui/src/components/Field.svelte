@@ -2,7 +2,9 @@
   import type { Snippet } from 'svelte';
 
   interface Props {
+    id?: string;
     label?: string;
+    hint?: string;
     description?: string;
     error?: string;
     required?: boolean;
@@ -11,18 +13,22 @@
   }
 
   let {
+    id,
     label,
+    hint,
     description,
     error,
     required = false,
     class: className = '',
     children
   }: Props = $props();
+
+  const descText = $derived(hint ?? description);
 </script>
 
 <div class="ohjanus-field {className}">
   {#if label}
-    <label class="ohjanus-field-label">
+    <label class="ohjanus-field-label" for={id}>
       {label}
       {#if required}
         <span class="ohjanus-field-required">*</span>
@@ -30,8 +36,8 @@
     </label>
   {/if}
 
-  {#if description}
-    <p class="ohjanus-field-description">{description}</p>
+  {#if descText}
+    <p class="ohjanus-field-description">{descText}</p>
   {/if}
 
   <div class="ohjanus-field-control">

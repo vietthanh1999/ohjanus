@@ -57,6 +57,7 @@ type AuthConfig struct {
 
 type TokenConfig struct {
 	ID        string    `yaml:"id"`
+	Name      string    `yaml:"name"`
 	Hash      string    `yaml:"hash"`
 	Scopes    []string  `yaml:"scopes"`
 	ExpiresAt time.Time `yaml:"expires_at"`
@@ -370,7 +371,7 @@ func (c *Config) AuthTokens() []domain.AuthToken {
 		for _, s := range t.Scopes {
 			scopes = append(scopes, domain.Scope(s))
 		}
-		tokens = append(tokens, domain.AuthToken{ID: t.ID, Hash: t.Hash, Scopes: scopes, ExpiresAt: t.ExpiresAt})
+		tokens = append(tokens, domain.AuthToken{ID: t.ID, Name: t.Name, Hash: t.Hash, Scopes: scopes, ExpiresAt: t.ExpiresAt})
 	}
 	return tokens
 }

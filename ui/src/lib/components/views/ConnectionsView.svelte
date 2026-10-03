@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appStore } from '../../appStore.svelte';
   import type { ConnectionInfo } from '../../types';
+  import { Card, Badge, Button, toast, Box, Flex, Grid, Stack } from '@ohjanus/ui';
 
   let testingConn = $state<string | null>(null);
 
@@ -9,124 +10,129 @@
     setTimeout(() => {
       appStore.testConnection(name);
       testingConn = null;
+      toast.success('Connection Ping Healthy', `Successfully pinged database "${name}".`);
     }, 400);
   }
 </script>
 
-<div class="connections-view">
+<Box class="connections-view">
   <!-- Header -->
-  <div class="view-header">
-    <div>
+  <Flex as="header" class="view-header" align="center">
+    <Flex align="center">
       <span class="header-icon">🔌</span>
       <span class="view-title">Database Connections &amp; Connection Pools</span>
       <span class="view-desc">Zero credential leakage: backend resolves credentials from OS Keychain / Vault</span>
-    </div>
-  </div>
+    </Flex>
+  </Flex>
 
   <!-- Cards Grid -->
-  <div class="cards-grid">
+  <Grid class="cards-grid" columns="repeat(auto-fill, minmax(340px, 1fr))" gap="16px">
     {#each appStore.connections as conn}
-      <div class="conn-card">
-        <div class="card-header">
-          <div class="header-left">
-            <span class="db-icon">🐘</span>
-            <span class="conn-title">{conn.name}</span>
-            {#if conn.readonly}
-              <span class="ro-badge">🔒 READ-ONLY</span>
+      <Card class="conn-card-item">
+        {#snippet header()}
+          <Flex class="card-header-inner" justify="between" align="center">
+            <Flex class="header-left" align="center" gap="8px">
+              <span class="db-icon">🐘</span>
+              <span class="conn-title">{conn.name}</span>
+              {#if conn.readonly}
+                <Badge variant="warning" size="sm">🔒 READ-ONLY</Badge>
+              {:else}
+                <Badge variant="info" size="sm">⚡ READ-WRITE</Badge>
+              {/if}
+            </Flex>
+            {#if conn.status === 'healthy'}
+              <Badge variant="success" size="sm">● HEALTHY</Badge>
             {:else}
-              <span class="rw-badge">⚡ READ-WRITE</span>
+              <Badge variant="danger" size="sm">● DEGRADED</Badge>
             {/if}
-          </div>
-          <span class="status-badge {conn.status}">● {conn.status.toUpperCase()}</span>
-        </div>
+          </Flex>
+        {/snippet}
 
-        <div class="conn-details">
-          <div class="detail-row">
+        <Stack class="conn-details" gap="6px">
+          <Flex class="detail-row" justify="between">
             <span class="label">Host &amp; Port:</span>
             <span class="value font-mono">{conn.host}</span>
-          </div>
-          <div class="detail-row">
+          </Flex>
+          <Flex class="detail-row" justify="between">
             <span class="label">Engine Version:</span>
             <span class="value">{conn.version}</span>
-          </div>
-          <div class="detail-row">
+          </Flex>
+          <Flex class="detail-row" justify="between">
             <span class="label">Last Health Ping:</span>
             <span class="value">{conn.lastPingAt} ({conn.latencyMs} ms)</span>
-          </div>
-        </div>
+          </Flex>
+        </Stack>
 
         <!-- Pool Stats -->
-        <div class="pool-section">
-          <div class="pool-title">CONNECTION POOL METRICS</div>
-          <div class="pool-stats font-mono">
-            <div class="stat-box">
+        <Box class="pool-section">
+          <Box class="pool-title">CONNECTION POOL METRICS</Box>
+          <Flex class="pool-stats font-mono" justify="between">
+            <Box class="stat-box">
               <span class="num">{conn.pool.inUse}</span>
               <span class="lbl">In-Use</span>
-            </div>
-            <div class="stat-box">
+            </Box>
+            <Box class="stat-box">
               <span class="num">{conn.pool.idle}</span>
               <span class="lbl">Idle</span>
-            </div>
-            <div class="stat-box">
+            </Box>
+            <Box class="stat-box">
               <span class="num">{conn.pool.open}</span>
               <span class="lbl">Open</span>
-            </div>
-            <div class="stat-box">
+            </Box>
+            <Box class="stat-box">
               <span class="num">{conn.pool.max}</span>
               <span class="lbl">Max Pool</span>
-            </div>
-          </div>
-        </div>
+            </Box>
+          </Flex>
+        </Box>
 
         <!-- Security Guardrails -->
-        <div class="guardrails-section">
-          <div class="sec-label">ALLOWED SCHEMAS:</div>
-          <div class="tags-list">
+        <Box class="guardrails-section">
+          <Box class="sec-label">ALLOWED SCHEMAS:</Box>
+          <Flex class="tags-list" wrap gap="4px">
             {#each conn.allowedSchemas as sch}
-              <span class="tag-pill">{sch}</span>
+              <Badge variant="default" size="sm">{sch}</Badge>
             {/each}
-          </div>
+          </Flex>
 
           {#if conn.deniedTables.length > 0}
-            <div class="sec-label" style="margin-top: 6px; color: var(--action-danger);">DENIED TABLES:</div>
-            <div class="tags-list">
+            <Box class="sec-label" style="margin-top: 6px; color: var(--action-danger);">DENIED TABLES:</Box>
+            <Flex class="tags-list" wrap gap="4px">
               {#each conn.deniedTables as dt}
-                <span class="tag-pill denied">{dt}</span>
+                <Badge variant="danger" size="sm">{dt}</Badge>
               {/each}
-            </div>
+            </Flex>
           {/if}
-        </div>
+        </Box>
 
-        <!-- Actions -->
-        <div class="card-footer">
-          <button 
-            class="btn-secondary test-btn" 
-            class:testing={testingConn === conn.name}
+        {#snippet footer()}
+          <Button
+            variant="secondary"
+            size="sm"
             onclick={() => runTest(conn.name)}
+            loading={testingConn === conn.name}
           >
             {testingConn === conn.name ? 'Pinging...' : '⟳ Test Connection'}
-          </button>
-        </div>
-      </div>
+          </Button>
+        {/snippet}
+      </Card>
     {/each}
-  </div>
-</div>
+  </Grid>
+</Box>
 
 <style>
   .connections-view {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--surface-canvas);
+    background: var(--bg-canvas);
     overflow-y: auto;
   }
 
   .view-header {
     height: 48px;
-    background: var(--surface-toolbar);
+    background: var(--bg-toolbar);
     border-bottom: 1px solid var(--border-default);
-    display: flex;
-    align-items: center;
     padding: 0 16px;
   }
 
@@ -136,157 +142,63 @@
 
   .cards-grid {
     padding: 16px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 16px;
   }
 
-  .conn-card {
-    background: var(--surface-sidebar);
-    border: 1px solid var(--border-default);
-    border-radius: 6px;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  :global(.card-header-inner) {
+    width: 100%;
   }
 
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-default);
+  .db-icon { font-size: 16px; }
+  .conn-title { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+
+  :global(.conn-details) {
+    margin-bottom: 14px;
+    font-size: 11.5px;
   }
 
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+  :global(.detail-row .label) { color: var(--text-muted); }
+  :global(.detail-row .value) { color: var(--text-primary); }
 
-  .conn-title {
-    font-weight: 600;
-    font-size: 13px;
-  }
-
-  .ro-badge {
-    background: rgba(86, 168, 245, 0.15);
-    color: #56A8F5;
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 4px;
-    border-radius: 3px;
-  }
-
-  .rw-badge {
-    background: rgba(237, 162, 0, 0.15);
-    color: var(--action-warning);
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 4px;
-    border-radius: 3px;
-  }
-
-  .status-badge.healthy {
-    color: var(--action-success);
-    font-size: 10px;
-    font-weight: 700;
-  }
-
-  .conn-details {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 11px;
-  }
-
-  .detail-row {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .label { color: var(--text-muted); }
-  .value { color: var(--text-primary); }
-
-  .pool-section {
-    background: #18191B;
-    border: 1px solid var(--border-default);
+  :global(.pool-section) {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-subtle);
     border-radius: 4px;
-    padding: 8px 10px;
+    padding: 10px;
+    margin-bottom: 12px;
   }
 
-  .pool-title {
-    font-size: 9px;
-    font-weight: 700;
+  :global(.pool-title) {
+    font-size: 10px;
+    font-weight: 600;
     color: var(--text-muted);
     letter-spacing: 0.5px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
 
-  .pool-stats {
-    display: flex;
-    justify-content: space-between;
+  :global(.pool-stats) {
+    text-align: center;
   }
 
-  .stat-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .stat-box .num {
+  :global(.stat-box .num) {
+    display: block;
     font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-weight: 700;
+    color: var(--action-primary);
   }
 
-  .stat-box .lbl {
-    font-size: 9px;
+  :global(.stat-box .lbl) {
+    font-size: 9.5px;
     color: var(--text-muted);
   }
 
-  .guardrails-section {
-    font-size: 10px;
+  :global(.guardrails-section) {
+    margin-bottom: 8px;
   }
 
-  .sec-label {
-    font-weight: 700;
+  :global(.sec-label) {
+    font-size: 10px;
+    font-weight: 600;
     color: var(--text-muted);
     margin-bottom: 4px;
-  }
-
-  .tags-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  .tag-pill {
-    background: #25272A;
-    border: 1px solid var(--border-default);
-    padding: 1px 6px;
-    border-radius: 3px;
-    font-size: 10px;
-  }
-
-  .tag-pill.denied {
-    border-color: rgba(229, 83, 83, 0.4);
-    color: #FFB3B3;
-  }
-
-  .card-footer {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 8px;
-    border-top: 1px solid var(--border-default);
-  }
-
-  .test-btn {
-    font-size: 11px;
-  }
-
-  .test-btn.testing {
-    opacity: 0.7;
   }
 </style>

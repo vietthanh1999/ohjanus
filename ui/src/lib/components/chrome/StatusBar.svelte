@@ -1,5 +1,6 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
+  import { Flex, Badge } from '@ohjanus/ui';
 
   function openApprovals() {
     appState.activeTabId = 'approvals';
@@ -8,7 +9,7 @@
 
 <footer class="statusbar">
   <!-- Left: Interactive Navigation Breadcrumb -->
-  <div class="breadcrumb-strip">
+  <Flex class="breadcrumb-strip" align="center" gap="4px">
     {#if appState.activeTabId === 'connection_credential'}
       <span class="crumb-item">Database</span>
       <span class="crumb-sep">&gt;</span>
@@ -42,10 +43,10 @@
       <span class="crumb-sep">&gt;</span>
       <span class="crumb-item active-crumb">{appState.activeTabId.toUpperCase()}</span>
     {/if}
-  </div>
+  </Flex>
 
   <!-- Right: Document, Buffer Stats & System Status -->
-  <div class="status-right">
+  <Flex class="status-right" align="center" gap="12px">
     {#if appState.activeTabId === 'console_2'}
       <!-- Cursor Position & Buffer Analytics -->
       <span class="status-item code-text" title="Cursor line:col (character count, line breaks)">
@@ -87,11 +88,11 @@
       {/if}
     </button>
 
-    <!-- License Badge -->
-    <div class="license-pill" title="Community / Evaluation License">
+    <!-- License Badge via @ohjanus/ui Badge -->
+    <Badge variant="license" size="sm" class="license-pill" title="Community / Evaluation License">
       Non-commercial use
-    </div>
-  </div>
+    </Badge>
+  </Flex>
 </footer>
 
 <style>
@@ -108,14 +109,6 @@
     user-select: none;
     z-index: 50;
     flex-shrink: 0;
-  }
-
-  /* Left Breadcrumbs */
-  .breadcrumb-strip {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    overflow: hidden;
   }
 
   .crumb-item {
@@ -139,14 +132,6 @@
   .crumb-sep {
     color: var(--text-muted);
     font-size: 10px;
-  }
-
-  /* Right Status */
-  .status-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
   }
 
   .status-item {
@@ -190,17 +175,7 @@
     line-height: 11px;
   }
 
-  .license-pill {
-    display: flex;
-    align-items: center;
-    height: 18px;
-    padding: 0 8px;
-    border-radius: 9px;
-    background-color: var(--license-bg);
-    border: 1px solid var(--license-border);
-    color: var(--license-fg);
-    font-size: 10px;
-    font-weight: 500;
-    line-height: 1;
+  :global(.license-pill) {
+    font-size: 10px !important;
   }
 </style>

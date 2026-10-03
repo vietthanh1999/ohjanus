@@ -14,6 +14,7 @@ import (
 
 	auditmemory "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/memory"
 	authconfig "github.com/vietthanh1999/ohjanus/internal/adapter/out/auth/config"
+	authmemory "github.com/vietthanh1999/ohjanus/internal/adapter/out/auth/memory"
 	systemclock "github.com/vietthanh1999/ohjanus/internal/adapter/out/clock/system"
 	tokememory "github.com/vietthanh1999/ohjanus/internal/adapter/out/token/memory"
 	"github.com/vietthanh1999/ohjanus/internal/core/domain"
@@ -40,7 +41,8 @@ func testServer(authMode string) (*Server, *tokememory.Store, *auditmemory.Buffe
 	metas := map[string]domain.ConnectionMeta{
 		"analytics": {Connection: domain.Connection{Name: "analytics", Driver: "postgres", ReadOnly: true}},
 	}
-	s := New("127.0.0.1:0", authMode, store, &stubResolver{tokens: map[string]domain.AuthToken{}}, buf, buf, map[string]out.Pool{}, metas, clock)
+	authStore := authmemory.New(clock)
+	s := New("127.0.0.1:0", authMode, store, &stubResolver{tokens: map[string]domain.AuthToken{}}, authStore, buf, buf, map[string]out.Pool{}, metas, clock)
 	return s, store, buf
 }
 
@@ -135,7 +137,7 @@ func TestAdminAuth(t *testing.T) {
 	clock := systemclock.Clock{}
 	store := tokememory.New(clock, time.Minute)
 	buf := auditmemory.New(10)
-	s := New("127.0.0.1:0", "token", store, resolver, buf, buf, map[string]out.Pool{}, map[string]domain.ConnectionMeta{}, clock)
+	s := New("127.0.0.1:0", "token", store, resolver, authmemory.New(clock), buf, buf, map[string]out.Pool{}, map[string]domain.ConnectionMeta{}, clock)
 	ts := httptest.NewServer(s.mux)
 	defer ts.Close()
 
@@ -244,6 +246,96 @@ func TestAdminSSE(t *testing.T) {
 		case <-timeout:
 			t.Fatalf("timed out waiting for SSE (event=%v data=%v)", gotEvent, gotData)
 		}
+	}
+}
+
+func TestAdminTokens(t *testing.T) {
+	s, _, _ := testServer("none")
+	ts := httptest.NewServer(s.mux)
+	defer ts.Close()
+
+	var created map[string]any
+	resp, err := http.Post(ts.URL+"/api/v1/tokens", "application/json", strings.NewReader(`{"name":"ci","scopes":["read"],"ttl_hours":1}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusCreated {
+		resp.Body.Close()
+		t.Fatalf("create status = %d, want 201", resp.StatusCode)
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&created); err != nil {
+		resp.Body.Close()
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	secret, _ := created["token"].(string)
+	if !strings.HasPrefix(secret, "jn_") {
+		t.Errorf("token = %q, want jn_ prefix", secret)
+	}
+	id, _ := created["id"].(string)
+
+	var list struct {
+		Items []map[string]any `json:"items"`
+	}
+	if err := getJSON(ts.URL+"/api/v1/tokens", &list); err != nil {
+		t.Fatal(err)
+	}
+	if len(list.Items) != 1 || list.Items[0]["name"] != "ci" {
+		t.Errorf("list = %v", list.Items)
+	}
+
+	var bad map[string]any
+	if err := postJSON(ts.URL+"/api/v1/tokens", `{"name":"x","scopes":["bogus"]}`, &bad); err == nil {
+		t.Error("unknown scope should fail")
+	}
+
+	req, _ := http.NewRequest(http.MethodDelete, ts.URL+"/api/v1/tokens/"+id, nil)
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		t.Errorf("delete status = %d, want 204", resp.StatusCode)
+	}
+	if err := getJSON(ts.URL+"/api/v1/tokens", &list); err != nil {
+		t.Fatal(err)
+	}
+	if len(list.Items) != 0 {
+		t.Errorf("list after revoke = %v", list.Items)
+	}
+}
+
+func TestAdminAuditExport(t *testing.T) {
+	s, _, buf := testServer("none")
+	buf.Emit(context.Background(), domain.AuditEvent{Event: "query.executed", Connection: "analytics", Status: "success"})
+	ts := httptest.NewServer(s.mux)
+	defer ts.Close()
+
+	resp, err := http.Get(ts.URL + "/api/v1/audit/export?format=csv")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if ct := resp.Header.Get("Content-Type"); ct != "text/csv" {
+		t.Errorf("content-type = %q", ct)
+	}
+	sc := bufio.NewScanner(resp.Body)
+	lines := 0
+	for sc.Scan() {
+		lines++
+	}
+	if lines != 2 { // header + 1 event
+		t.Errorf("csv lines = %d, want 2", lines)
+	}
+
+	resp2, err := http.Get(ts.URL + "/api/v1/audit/export?format=bogus")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp2.Body.Close()
+	if resp2.StatusCode != http.StatusBadRequest {
+		t.Errorf("status = %d, want 400", resp2.StatusCode)
 	}
 }
 

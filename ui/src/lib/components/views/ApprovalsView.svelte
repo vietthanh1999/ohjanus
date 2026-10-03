@@ -1,5 +1,6 @@
 <script lang="ts">
   import { appState, type ApprovalRequest } from '../../state/appState.svelte';
+  import { Button, Badge, Alert, EmptyState, Box, Flex, Stack, Text } from '@ohjanus/ui';
 
   let selectedFilter = $state<'pending' | 'approved' | 'rejected' | 'all'>('pending');
   let selectedDetail = $state<ApprovalRequest | null>(null);
@@ -9,14 +10,14 @@
     return appState.approvals.filter(a => a.state === selectedFilter);
   });
 
-  function getStatementBadgeClass(type: string) {
+  function getStatementVariant(type: string): 'default' | 'success' | 'warning' | 'danger' | 'info' {
     switch (type) {
-      case 'SELECT': return 'badge-select';
-      case 'INSERT': return 'badge-insert';
-      case 'UPDATE': return 'badge-update';
-      case 'DELETE': return 'badge-delete';
-      case 'DROP': return 'badge-drop';
-      default: return '';
+      case 'SELECT': return 'info';
+      case 'INSERT': return 'success';
+      case 'UPDATE': return 'warning';
+      case 'DELETE': return 'danger';
+      case 'DROP': return 'danger';
+      default: return 'default';
     }
   }
 
@@ -27,21 +28,21 @@
   }
 </script>
 
-<div class="approvals-view">
+<Box class="approvals-view">
   <!-- Header Bar -->
-  <div class="view-header">
-    <div class="header-left">
-      <div class="header-title">
+  <Flex as="header" class="view-header" align="center" justify="between">
+    <Stack class="header-left" gap="2px">
+      <Flex class="header-title" align="center" gap="8px">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="#EDA200">
           <path fill-rule="evenodd" d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 00-1.044 1.262c-.596 4.477.787 7.795 2.464 9.99 1.579 2.065 3.444 3.009 4.395 3.318.066.022.135.034.204.034s.138-.012.204-.034c.951-.309 2.816-1.253 4.395-3.318 1.677-2.195 3.06-5.513 2.464-9.99a1.54 1.54 0 00-1.044-1.263 62.467 62.467 0 00-2.887-.87C9.843.266 8.69 0 8 0zm2.146 5.146a.5.5 0 01.708.708l-3 3a.5.5 0 01-.708 0l-1.5-1.5a.5.5 0 11.708-.708L7.5 7.793l2.646-2.647z"/>
         </svg>
         <span>MCP Gateway Approval Queue</span>
-      </div>
+      </Flex>
       <span class="header-desc">Review and authorize AI Agent write operations before database execution</span>
-    </div>
+    </Stack>
 
     <!-- Filter tabs -->
-    <div class="state-tabs">
+    <Flex class="state-tabs" align="center">
       <button
         class="state-tab-btn"
         class:active={selectedFilter === 'pending'}
@@ -71,182 +72,184 @@
       >
         All
       </button>
-    </div>
-  </div>
+    </Flex>
+  </Flex>
 
   <!-- Content Split: Queue List & Inspection Drawer -->
-  <div class="content-layout">
-    <div class="queue-list">
+  <Flex class="content-layout">
+    <Box class="queue-list">
       {#if filteredApprovals.length === 0}
-        <div class="empty-state">
-          <span style="font-size: 28px;">🎉</span>
-          <p style="color: var(--text-primary); font-weight: 500; margin-top: 8px;">No requests in this queue</p>
-          <span style="color: var(--text-muted); font-size: 11px;">All agent queries are up to date and policies satisfied.</span>
-        </div>
+        <EmptyState
+          title="No requests in this queue"
+          description="All agent queries are up to date and policies satisfied."
+        />
       {:else}
         {#each filteredApprovals as item (item.id)}
-          <div
-            class="approval-card"
-            class:selected={selectedDetail?.id === item.id}
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <Box
+            class={`approval-card ${selectedDetail?.id === item.id ? 'selected' : ''}`}
             onclick={() => selectedDetail = item}
           >
             <!-- Card Header -->
-            <div class="card-top">
-              <div class="card-badges">
-                <span class="stmt-badge {getStatementBadgeClass(item.statement_type)}">
+            <Flex class="card-top" align="center" justify="between">
+              <Flex class="card-badges" align="center" gap="8px">
+                <Badge variant={getStatementVariant(item.statement_type)} size="sm">
                   {item.statement_type}
-                </span>
+                </Badge>
                 <span class="conn-pill">{item.connection}</span>
                 {#if item.state === 'pending'}
-                  <span class="status-pill status-pending">Pending Review</span>
+                  <Badge variant="warning" size="sm">Pending Review</Badge>
                 {:else if item.state === 'approved'}
-                  <span class="status-pill status-approved">Approved</span>
+                  <Badge variant="success" size="sm">Approved</Badge>
                 {:else}
-                  <span class="status-pill status-rejected">Rejected</span>
+                  <Badge variant="danger" size="sm">Rejected</Badge>
                 {/if}
-              </div>
+              </Flex>
 
-              <div class="time-meta">
+              <Box class="time-meta">
                 <span class="expiry-time">Exp: {item.expires_at.substring(11, 16)}</span>
-              </div>
-            </div>
+              </Box>
+            </Flex>
 
             <!-- Requester info -->
-            <div class="requester-row">
+            <Flex class="requester-row" align="center" gap="12px">
               <span class="agent-client">🤖 {item.requested_by.client}</span>
               <span class="token-tag code-text">{item.requested_by.token_id}</span>
               <span class="rows-affected">Est. ~{item.affected_estimate.toLocaleString()} rows</span>
-            </div>
+            </Flex>
 
             <!-- Risk Warnings -->
             {#if item.warnings && item.warnings.length > 0}
-              <div class="warning-box">
+              <Alert variant="warning">
                 {#each item.warnings as warn}
-                  <div class="warn-line">
+                  <Flex class="warn-line" align="center" gap="6px">
                     <span class="warn-icon">⚠️</span>
                     <span>{warn}</span>
-                  </div>
+                  </Flex>
                 {/each}
-              </div>
+              </Alert>
             {/if}
 
             <!-- SQL Snippet -->
-            <div class="sql-preview code-text">
+            <Box class="sql-preview code-text">
               {item.sql}
-            </div>
+            </Box>
 
             <!-- Action buttons for Pending -->
             {#if item.state === 'pending'}
-              <div class="card-actions">
-                <button
-                  class="action-btn reject-btn"
-                  onclick={(e) => {
+              <Flex class="card-actions" align="center" justify="end" gap="8px">
+                <Button
+                  variant="danger"
+                  size="xs"
+                  onclick={(e: MouseEvent) => {
                     e.stopPropagation();
                     openActionModal(item, 'reject');
                   }}
                 >
                   Reject...
-                </button>
-                <button
-                  class="action-btn approve-btn"
-                  onclick={(e) => {
+                </Button>
+                <Button
+                  variant="primary"
+                  size="xs"
+                  onclick={(e: MouseEvent) => {
                     e.stopPropagation();
                     openActionModal(item, 'approve');
                   }}
                 >
                   Approve & Execute
-                </button>
-              </div>
+                </Button>
+              </Flex>
             {:else}
-              <div class="decision-meta">
+              <Box class="decision-meta">
                 <span>Decided by <strong>{item.decided_by}</strong> on {item.decided_at}</span>
                 {#if item.decision_reason}
                   <span class="reason-note">Reason: "{item.decision_reason}"</span>
                 {/if}
-              </div>
+              </Box>
             {/if}
-          </div>
+          </Box>
         {/each}
       {/if}
-    </div>
+    </Box>
 
     <!-- Right: Detail Inspection Pane -->
-    <div class="detail-drawer">
+    <Box class="detail-drawer">
       {#if selectedDetail}
-        <div class="drawer-header">
+        <Flex class="drawer-header" align="center" justify="between">
           <span style="font-weight: 600; color: var(--text-primary);">Request Inspection: {selectedDetail.id}</span>
           <button class="jb-icon-btn" onclick={() => selectedDetail = null}>✕</button>
-        </div>
-        <div class="drawer-body">
-          <div class="meta-section">
-            <div class="meta-row">
+        </Flex>
+        <Stack class="drawer-body" gap="8px">
+          <Box class="meta-section">
+            <Flex class="meta-row" align="center" justify="between">
               <span class="meta-label">Connection:</span>
               <span class="meta-val">{selectedDetail.connection} (PostgreSQL 16)</span>
-            </div>
-            <div class="meta-row">
+            </Flex>
+            <Flex class="meta-row" align="center" justify="between">
               <span class="meta-label">Requesting Client:</span>
               <span class="meta-val">{selectedDetail.requested_by.client}</span>
-            </div>
-            <div class="meta-row">
+            </Flex>
+            <Flex class="meta-row" align="center" justify="between">
               <span class="meta-label">Agent Token ID:</span>
               <span class="meta-val code-text">{selectedDetail.requested_by.token_id}</span>
-            </div>
-            <div class="meta-row">
+            </Flex>
+            <Flex class="meta-row" align="center" justify="between">
               <span class="meta-label">Submitted At:</span>
               <span class="meta-val code-text">{selectedDetail.created_at}</span>
-            </div>
-            <div class="meta-row">
+            </Flex>
+            <Flex class="meta-row" align="center" justify="between">
               <span class="meta-label">Expires At:</span>
               <span class="meta-val code-text">{selectedDetail.expires_at}</span>
-            </div>
-          </div>
+            </Flex>
+          </Box>
 
-          <div class="section-title">Full SQL Statement</div>
+          <Box class="section-title">Full SQL Statement</Box>
           <pre class="full-sql code-text">{selectedDetail.sql}</pre>
 
-          <div class="section-title">Execution Safety Assessment</div>
-          <div class="safety-box">
-            <div class="safety-item">
+          <Box class="section-title">Execution Safety Assessment</Box>
+          <Stack class="safety-box" gap="6px">
+            <Flex class="safety-item" align="center" gap="8px">
               <span class="safe-dot" class:risk={selectedDetail.affected_estimate > 100}></span>
               <span>Blast Radius: {selectedDetail.affected_estimate} row(s) estimated</span>
-            </div>
-            <div class="safety-item">
+            </Flex>
+            <Flex class="safety-item" align="center" gap="8px">
               <span class="safe-dot" class:risk={selectedDetail.statement_type === 'DROP'}></span>
               <span>Statement Type: {selectedDetail.statement_type}</span>
-            </div>
-            <div class="safety-item">
+            </Flex>
+            <Flex class="safety-item" align="center" gap="8px">
               <span class="safe-dot"></span>
               <span>AST Validator: Parsed successfully via pg_query_go</span>
-            </div>
-          </div>
+            </Flex>
+          </Stack>
 
           {#if selectedDetail.state === 'pending'}
-            <div class="drawer-actions">
-              <button
-                class="jb-btn-danger"
+            <Flex class="drawer-actions" gap="8px">
+              <Button
+                variant="danger"
                 style="flex: 1;"
                 onclick={() => openActionModal(selectedDetail!, 'reject')}
               >
                 Reject Request
-              </button>
-              <button
-                class="jb-btn-primary"
-                style="flex: 1; background-color: var(--action-success);"
+              </Button>
+              <Button
+                variant="primary"
+                style="flex: 1;"
                 onclick={() => openActionModal(selectedDetail!, 'approve')}
               >
                 Approve Request
-              </button>
-            </div>
+              </Button>
+            </Flex>
           {/if}
-        </div>
+        </Stack>
       {:else}
-        <div class="drawer-empty">
+        <Flex class="drawer-empty" align="center" justify="center">
           <p>Select an approval request to inspect full AST validation and EXPLAIN execution plan</p>
-        </div>
+        </Flex>
       {/if}
-    </div>
-  </div>
-</div>
+    </Box>
+  </Flex>
+</Box>
 
 <style>
   .approvals-view {
@@ -261,9 +264,6 @@
     height: 48px;
     background-color: var(--bg-toolbar);
     border-bottom: 1px solid var(--border-default);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     padding: 0 16px;
     flex-shrink: 0;
   }
@@ -274,9 +274,6 @@
   }
 
   .header-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
@@ -288,8 +285,6 @@
   }
 
   .state-tabs {
-    display: flex;
-    align-items: center;
     background-color: #1E1F22;
     padding: 2px;
     border-radius: 4px;
@@ -315,15 +310,14 @@
   .count-pill {
     background-color: #EDA200;
     color: #1E1F22;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     padding: 0 4px;
-    border-radius: 6px;
+    border-radius: 10px;
   }
 
   .content-layout {
     flex: 1;
-    display: flex;
     overflow: hidden;
   }
 
@@ -334,14 +328,6 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-  }
-
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 0;
   }
 
   .approval-card {
@@ -366,32 +352,6 @@
     box-shadow: 0 0 0 1px var(--border-accent);
   }
 
-  .card-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .card-badges {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .stmt-badge {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 3px;
-    letter-spacing: 0.5px;
-  }
-
-  .badge-select { background-color: rgba(53, 116, 240, 0.2); color: #79a8ff; border: 1px solid rgba(53, 116, 240, 0.4); }
-  .badge-insert { background-color: rgba(87, 211, 140, 0.2); color: #57D38C; border: 1px solid rgba(87, 211, 140, 0.4); }
-  .badge-update { background-color: rgba(237, 162, 0, 0.2); color: #ffc44d; border: 1px solid rgba(237, 162, 0, 0.4); }
-  .badge-delete { background-color: rgba(249, 115, 22, 0.2); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.4); }
-  .badge-drop   { background-color: rgba(229, 83, 83, 0.2); color: #ff8585; border: 1px solid rgba(229, 83, 83, 0.4); }
-
   .conn-pill {
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
@@ -401,26 +361,12 @@
     border-radius: 3px;
   }
 
-  .status-pill {
-    font-size: 10px;
-    font-weight: 500;
-    padding: 1px 6px;
-    border-radius: 3px;
-  }
-
-  .status-pending { background-color: rgba(237, 162, 0, 0.15); color: #ffc44d; }
-  .status-approved { background-color: rgba(87, 211, 140, 0.15); color: #57D38C; }
-  .status-rejected { background-color: rgba(229, 83, 83, 0.15); color: #ff8585; }
-
   .time-meta {
     font-size: 11px;
     color: var(--text-muted);
   }
 
   .requester-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
     font-size: 11px;
     color: var(--text-secondary);
   }
@@ -443,24 +389,6 @@
     font-weight: 500;
   }
 
-  .warning-box {
-    background-color: rgba(237, 162, 0, 0.08);
-    border-left: 3px solid #EDA200;
-    padding: 6px 10px;
-    border-radius: 2px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .warn-line {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: #ffc44d;
-  }
-
   .sql-preview {
     background-color: #1E1F22;
     border: 1px solid var(--border-subtle);
@@ -475,41 +403,7 @@
   }
 
   .card-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
     margin-top: 4px;
-  }
-
-  .action-btn {
-    padding: 4px 12px;
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: 500;
-    transition: all 0.15s ease;
-  }
-
-  .reject-btn {
-    background-color: #393B40;
-    color: #DFE1E5;
-    border: 1px solid #4E5157;
-  }
-
-  .reject-btn:hover {
-    background-color: var(--action-danger);
-    color: #FFFFFF;
-    border-color: var(--action-danger);
-  }
-
-  .approve-btn {
-    background-color: var(--action-success);
-    color: #14281B;
-    font-weight: 600;
-  }
-
-  .approve-btn:hover {
-    background-color: var(--action-success-hover);
   }
 
   .decision-meta {
@@ -523,13 +417,13 @@
   }
 
   .reason-note {
+    color: #DFE1E5;
     font-style: italic;
-    color: var(--text-secondary);
   }
 
   /* Right Drawer */
   .detail-drawer {
-    width: 380px;
+    width: 440px;
     background-color: var(--bg-toolbar);
     border-left: 1px solid var(--border-default);
     display: flex;
@@ -542,41 +436,28 @@
     padding: 0 12px;
     background-color: #25272A;
     border-bottom: 1px solid var(--border-default);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
   }
 
   .drawer-body {
-    padding: 14px;
+    padding: 16px;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .drawer-empty {
-    padding: 40px 20px;
-    color: var(--text-muted);
-    text-align: center;
-    font-size: 12px;
   }
 
   .meta-section {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
     background-color: #1E1F22;
-    padding: 8px 10px;
+    border: 1px solid var(--border-default);
     border-radius: 4px;
-    border: 1px solid var(--border-subtle);
+    padding: 8px 12px;
   }
 
   .meta-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     font-size: 11px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .meta-row:last-child {
+    border-bottom: none;
   }
 
   .meta-label {
@@ -585,60 +466,64 @@
 
   .meta-val {
     color: var(--text-primary);
+    font-weight: 500;
   }
 
   .section-title {
     font-size: 11px;
     font-weight: 600;
     color: var(--text-secondary);
+    margin-top: 8px;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .full-sql {
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
-    padding: 10px;
     border-radius: 4px;
+    padding: 10px;
     font-size: 11px;
-    line-height: 18px;
+    line-height: 16px;
     color: #DFE1E5;
-    white-space: pre-wrap;
-    max-height: 220px;
+    max-height: 180px;
     overflow-y: auto;
+    white-space: pre-wrap;
+    margin: 0;
   }
 
   .safety-box {
     background-color: #1E1F22;
     border: 1px solid var(--border-default);
     border-radius: 4px;
-    padding: 8px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    padding: 10px 12px;
   }
 
   .safety-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     font-size: 11px;
-    color: var(--text-secondary);
+    color: var(--text-primary);
   }
 
   .safe-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background-color: var(--action-success);
+    background-color: #57D38C;
   }
 
   .safe-dot.risk {
-    background-color: var(--action-danger);
+    background-color: #E55353;
   }
 
   .drawer-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
+    margin-top: 12px;
+  }
+
+  .drawer-empty {
+    flex: 1;
+    padding: 24px;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
   }
 </style>

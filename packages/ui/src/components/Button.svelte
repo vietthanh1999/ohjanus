@@ -3,8 +3,8 @@
   import { buttonVariants } from './button.variants.js';
 
   interface Props {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'link';
-    size?: 'xs' | 'sm' | 'md' | 'lg';
+    variant?: 'default' | 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'danger' | 'link';
+    size?: 'default' | 'xs' | 'sm' | 'md' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
     disabled?: boolean;
     loading?: boolean;
     type?: 'button' | 'submit' | 'reset';

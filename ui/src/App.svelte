@@ -12,7 +12,8 @@
   import ConnectionsView from './lib/components/views/ConnectionsView.svelte';
   import DashboardView from './lib/components/views/DashboardView.svelte';
 
-  // Modals
+  // Modals & UI Components
+  import { Toaster, Box, Flex } from '@ohjanus/ui';
   import ApprovalDecisionModal from './lib/components/modals/ApprovalDecisionModal.svelte';
   import CreateTokenModal from './lib/components/modals/CreateTokenModal.svelte';
   import DdlModal from './lib/components/modals/DdlModal.svelte';
@@ -64,12 +65,12 @@
 
 <svelte:window onkeydown={handleGlobalKeydown} />
 
-<div class="app-root">
+<Box class="app-root">
   <!-- Top: Window Titlebar -->
   <Titlebar />
 
   <!-- Center: Main Layout (Sidebar + Work Area) -->
-  <div class="main-layout">
+  <Flex class="main-layout">
     <!-- Left Pane: Sidebar (Database Explorer + Services) -->
     <Sidebar />
 
@@ -79,7 +80,7 @@
       <TabBar />
 
       <!-- Active Content View -->
-      <div class="view-content">
+      <Box class="view-content">
         {#if appState.activeTabId === 'console_2'}
           <SqlConsoleView />
         {:else if appState.activeTabId === 'connection_credential'}
@@ -95,20 +96,21 @@
         {:else if appState.activeTabId === 'dashboard'}
           <DashboardView />
         {/if}
-      </div>
+      </Box>
     </main>
-  </div>
+  </Flex>
 
   <!-- Bottom: Global Status Bar -->
   <StatusBar />
 
-  <!-- Global Modals -->
+  <!-- Global Modals & Notifications -->
   <ApprovalDecisionModal />
   <CreateTokenModal />
   <DdlModal />
   <SearchPaletteModal />
   <SettingsModal />
-</div>
+  <Toaster position="bottom-right" />
+</Box>
 
 <style>
   .app-root {

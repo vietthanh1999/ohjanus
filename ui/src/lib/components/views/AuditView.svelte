@@ -1,5 +1,6 @@
 <script lang="ts">
   import { appState, type AuditRecord } from '../../state/appState.svelte';
+  import { Button, Badge, Input, toast, Box, Flex, Stack, Text } from '@ohjanus/ui';
 
   let filterStatus = $state<string>('ALL');
   let searchQuery = $state<string>('');
@@ -44,34 +45,31 @@
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    toast.success('Audit Log Exported', `Exported ${filteredAuditLogs.length} audit records to CSV.`);
   }
 </script>
 
-<div class="audit-view">
+<Box class="audit-view">
   <!-- View Header & Filters -->
-  <div class="audit-header">
-    <div class="header-left">
-      <div class="header-title">
+  <Flex as="header" class="audit-header" align="center" justify="between">
+    <Stack class="header-left" gap="2px">
+      <Flex class="header-title" align="center" gap="8px">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="#56A8F5">
           <path d="M4 1.5H3a2 2 0 00-2 2V14a2 2 0 002 2h10a2 2 0 002-2V3.5a2 2 0 00-2-2h-1v1h1a1 1 0 011 1V14a1 1 0 01-1 1H3a1 1 0 01-1-1V3.5a1 1 0 011-1h1v-1z"/>
         </svg>
         <span>MCP Gateway Audit Log Trail</span>
-      </div>
+      </Flex>
       <span class="header-desc">End-to-end provenance records of all incoming queries and tool requests</span>
-    </div>
+    </Stack>
 
-    <div class="header-right">
-      <!-- Search Input -->
-      <div class="search-box">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-          <path fill-rule="evenodd" d="M11.5 7a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"/>
-        </svg>
-        <input
-          type="text"
+    <Flex class="header-right" align="center" gap="8px">
+      <!-- Search Input via UI Kit -->
+      <Box style="width: 240px;">
+        <Input
           placeholder="Filter by client, token, SQL..."
           bind:value={searchQuery}
         />
-      </div>
+      </Box>
 
       <!-- Decision Filter -->
       <select class="filter-select" bind:value={filterStatus}>
@@ -81,17 +79,17 @@
         <option value="DENY">DENIED</option>
       </select>
 
-      <!-- Export Button -->
-      <button class="export-btn" title="Export current audit dataset to CSV" onclick={exportCSV}>
+      <!-- Export Button via UI Kit -->
+      <Button variant="secondary" size="sm" onclick={exportCSV}>
         <span>⤓ Export CSV</span>
-      </button>
-    </div>
-  </div>
+      </Button>
+    </Flex>
+  </Flex>
 
   <!-- Main Content Layout -->
-  <div class="content-layout">
+  <Flex class="content-layout">
     <!-- Grid -->
-    <div class="table-container">
+    <Box class="table-container">
       <table class="audit-table code-text">
         <thead>
           <tr>
@@ -107,6 +105,8 @@
         </thead>
         <tbody>
           {#each filteredAuditLogs as item (item.id)}
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
             <tr
               class:selected={selectedAudit?.id === item.id}
               onclick={() => selectedAudit = item}
@@ -114,11 +114,11 @@
               <td class="cell-ts">{item.ts}</td>
               <td class="cell-decision">
                 {#if item.policy_decision === 'ALLOW'}
-                  <span class="decision-pill pill-allow">ALLOW</span>
+                  <Badge variant="success" size="sm">ALLOW</Badge>
                 {:else if item.policy_decision === 'REQUIRE_APPROVAL'}
-                  <span class="decision-pill pill-approval">APPROVAL</span>
+                  <Badge variant="warning" size="sm">APPROVAL</Badge>
                 {:else}
-                  <span class="decision-pill pill-deny">DENY</span>
+                  <Badge variant="danger" size="sm">DENY</Badge>
                 {/if}
               </td>
               <td class="cell-client truncate" title={item.client}>
@@ -135,58 +135,58 @@
           {/each}
         </tbody>
       </table>
-    </div>
+    </Box>
 
     <!-- Right Drawer Detail -->
     {#if selectedAudit}
-      <div class="audit-drawer">
-        <div class="drawer-header">
+      <Box class="audit-drawer">
+        <Flex class="drawer-header" align="center" justify="between">
           <span style="font-weight: 600; color: var(--text-primary);">Audit Detail: {selectedAudit.id}</span>
           <button class="jb-icon-btn" onclick={() => selectedAudit = null}>✕</button>
-        </div>
-        <div class="drawer-body">
-          <div class="drawer-row">
+        </Flex>
+        <Stack class="drawer-body" gap="8px">
+          <Flex class="drawer-row" align="center" justify="between">
             <span class="d-label">Timestamp:</span>
             <span class="d-val code-text">{selectedAudit.ts}</span>
-          </div>
-          <div class="drawer-row">
+          </Flex>
+          <Flex class="drawer-row" align="center" justify="between">
             <span class="d-label">Request ID:</span>
             <span class="d-val code-text">{selectedAudit.request_id}</span>
-          </div>
-          <div class="drawer-row">
+          </Flex>
+          <Flex class="drawer-row" align="center" justify="between">
             <span class="d-label">Token ID:</span>
             <span class="d-val code-text">{selectedAudit.token_id}</span>
-          </div>
-          <div class="drawer-row">
+          </Flex>
+          <Flex class="drawer-row" align="center" justify="between">
             <span class="d-label">Requesting Client:</span>
             <span class="d-val">{selectedAudit.client}</span>
-          </div>
-          <div class="drawer-row">
+          </Flex>
+          <Flex class="drawer-row" align="center" justify="between">
             <span class="d-label">Database Target:</span>
             <span class="d-val">{selectedAudit.connection}</span>
-          </div>
-          <div class="drawer-row">
+          </Flex>
+          <Flex class="drawer-row" align="center" justify="between">
             <span class="d-label">Policy Decision:</span>
             <span class="d-val"><strong>{selectedAudit.policy_decision}</strong></span>
-          </div>
-          <div class="drawer-row">
+          </Flex>
+          <Flex class="drawer-row" align="center" justify="between">
             <span class="d-label">Policy Rule Matched:</span>
             <span class="d-val code-text">{selectedAudit.policy_rule}</span>
-          </div>
-          <div class="drawer-row">
+          </Flex>
+          <Flex class="drawer-row" align="center" justify="between">
             <span class="d-label">Execution Duration:</span>
             <span class="d-val code-text">{selectedAudit.duration_ms} ms</span>
-          </div>
+          </Flex>
 
-          <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-top: 8px;">
+          <Text size="xs" weight="semibold" color="secondary" style="margin-top: 8px;">
             Executed Query
-          </div>
+          </Text>
           <pre class="sql-box code-text">{selectedAudit.sql_normalized}</pre>
-        </div>
-      </div>
+        </Stack>
+      </Box>
     {/if}
-  </div>
-</div>
+  </Flex>
+</Box>
 
 <style>
   .audit-view {
@@ -201,9 +201,6 @@
     height: 48px;
     background-color: var(--bg-toolbar);
     border-bottom: 1px solid var(--border-default);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     padding: 0 16px;
     flex-shrink: 0;
   }
@@ -214,9 +211,6 @@
   }
 
   .header-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
@@ -225,33 +219,6 @@
   .header-desc {
     font-size: 11px;
     color: var(--text-muted);
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .search-box {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background-color: #1E1F22;
-    border: 1px solid var(--border-default);
-    border-radius: 4px;
-    padding: 0 8px;
-    height: 26px;
-    color: var(--text-muted);
-  }
-
-  .search-box input {
-    background: transparent;
-    border: none;
-    outline: none;
-    font-size: 11px;
-    color: var(--text-primary);
-    width: 180px;
   }
 
   .filter-select {
@@ -264,25 +231,8 @@
     color: var(--text-primary);
   }
 
-  .export-btn {
-    height: 26px;
-    background-color: #393B40;
-    border: 1px solid var(--border-strong);
-    border-radius: 4px;
-    padding: 0 10px;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-primary);
-    transition: background-color 0.15s ease;
-  }
-
-  .export-btn:hover {
-    background-color: #4E5157;
-  }
-
   .content-layout {
     flex: 1;
-    display: flex;
     overflow: hidden;
   }
 
@@ -336,17 +286,6 @@
     font-size: 11px;
   }
 
-  .decision-pill {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 3px;
-  }
-
-  .pill-allow { background-color: rgba(87, 211, 140, 0.15); color: #57D38C; border: 1px solid rgba(87, 211, 140, 0.4); }
-  .pill-approval { background-color: rgba(237, 162, 0, 0.15); color: #ffc44d; border: 1px solid rgba(237, 162, 0, 0.4); }
-  .pill-deny { background-color: rgba(229, 83, 83, 0.15); color: #ff8585; border: 1px solid rgba(229, 83, 83, 0.4); }
-
   .cell-client {
     color: #DFE1E5;
   }
@@ -386,23 +325,14 @@
     padding: 0 12px;
     background-color: #25272A;
     border-bottom: 1px solid var(--border-default);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
   }
 
   .drawer-body {
     padding: 14px;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
   }
 
   .drawer-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     font-size: 11px;
     padding: 4px 0;
     border-bottom: 1px solid var(--border-subtle);

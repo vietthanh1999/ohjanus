@@ -1,5 +1,6 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
+  import { DialogPrimitive, Badge, Kbd, Box, Flex } from '@ohjanus/ui';
 
   let query = $state('');
 
@@ -33,72 +34,62 @@
     query = '';
   }
 
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') {
-      appState.searchModalOpen = false;
-    }
+  function close() {
+    appState.searchModalOpen = false;
+    query = '';
   }
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
+<DialogPrimitive open={appState.searchModalOpen} onClose={close}>
+  <Box class="palette-modal">
+    <Flex class="palette-input-wrap" align="center" gap="10px">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="var(--text-muted)">
+        <path fill-rule="evenodd" d="M11.5 7a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"/>
+      </svg>
+      <!-- svelte-ignore a11y_autofocus -->
+      <input
+        type="text"
+        class="palette-input"
+        placeholder="Search Everywhere (Tables, Consoles, Gateway, Actions)..."
+        bind:value={query}
+        autofocus
+      />
+      <Kbd>ESC</Kbd>
+    </Flex>
 
-{#if appState.searchModalOpen}
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="jb-modal-backdrop" onclick={() => appState.searchModalOpen = false}>
-    <div class="palette-modal" onclick={(e) => e.stopPropagation()}>
-      <div class="palette-input-wrap">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="var(--text-muted)">
-          <path fill-rule="evenodd" d="M11.5 7a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"/>
-        </svg>
-        <!-- svelte-ignore a11y_autofocus -->
-        <input
-          type="text"
-          class="palette-input"
-          placeholder="Search Everywhere (Tables, Consoles, Gateway, Actions)..."
-          bind:value={query}
-          autofocus
-        />
-        <span class="esc-tag">ESC</span>
-      </div>
-
-      <div class="palette-results">
-        {#each filtered as item}
-          <!-- svelte-ignore a11y_click_events_have_key_events -->
-          <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <div class="result-row" onclick={() => selectItem(item.action)}>
-            <div class="row-left">
-              <span class="category-badge">{item.category}</span>
-              <span class="row-title">{item.title}</span>
-            </div>
-            <span class="row-desc">{item.desc}</span>
-          </div>
-        {/each}
-      </div>
-    </div>
-  </div>
-{/if}
+    <Box class="palette-results">
+      {#each filtered as item}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <Flex class="result-row" align="center" justify="between" onclick={() => selectItem(item.action)}>
+          <Flex class="row-left" align="center" gap="8px">
+            <Badge variant="outline" size="sm">{item.category}</Badge>
+            <span class="row-title">{item.title}</span>
+          </Flex>
+          <span class="row-desc">{item.desc}</span>
+        </Flex>
+      {/each}
+    </Box>
+  </Box>
+</DialogPrimitive>
 
 <style>
-  .palette-modal {
+  :global(.palette-modal) {
     width: 560px;
-    background-color: var(--bg-sidebar);
-    border: 1px solid var(--border-strong);
+    background-color: var(--bg-sidebar, #2B2D30);
+    border: 1px solid var(--border-strong, #43454A);
     border-radius: 6px;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    margin-top: -120px;
+    margin-top: -100px;
   }
 
-  .palette-input-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  :global(.palette-input-wrap) {
     padding: 10px 14px;
-    border-bottom: 1px solid var(--border-default);
-    background-color: #25272A;
+    border-bottom: 1px solid var(--border-default, #393B40);
+    background-color: var(--bg-canvas, #1E1F22);
   }
 
   .palette-input {
@@ -107,61 +98,33 @@
     border: none;
     outline: none;
     font-size: 13px;
-    color: var(--text-primary);
+    color: var(--text-primary, #DFE1E5);
   }
 
-  .esc-tag {
-    font-size: 10px;
-    background-color: #313438;
-    color: var(--text-muted);
-    padding: 2px 6px;
-    border-radius: 3px;
-  }
-
-  .palette-results {
+  :global(.palette-results) {
     max-height: 320px;
     overflow-y: auto;
     padding: 4px 0;
   }
 
-  .result-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  :global(.result-row) {
     padding: 8px 14px;
     cursor: pointer;
     transition: background-color 0.1s ease;
   }
 
-  .result-row:hover {
-    background-color: var(--bg-hover);
-  }
-
-  .row-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .category-badge {
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    background-color: #1E1F22;
-    border: 1px solid var(--border-default);
-    padding: 1px 6px;
-    border-radius: 3px;
-    color: var(--text-secondary);
+  :global(.result-row:hover) {
+    background-color: var(--bg-hover, #2E3136);
   }
 
   .row-title {
     font-size: 12px;
     font-weight: 500;
-    color: var(--text-primary);
+    color: var(--text-primary, #DFE1E5);
   }
 
   .row-desc {
     font-size: 11px;
-    color: var(--text-muted);
+    color: var(--text-muted, #767980);
   }
 </style>

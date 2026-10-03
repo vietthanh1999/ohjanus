@@ -15,6 +15,7 @@ const (
 // AuthToken is an MCP authentication token (metadata only, never the secret).
 type AuthToken struct {
 	ID        string
+	Name      string
 	Hash      string
 	Scopes    []Scope
 	ExpiresAt time.Time

@@ -3,8 +3,6 @@ package cli
 import (
 	"context"
 	"crypto/rand"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"log/slog"
 	"net"
@@ -25,7 +23,7 @@ import (
 	auditmulti "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/multi"
 	auditstderr "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/stderr"
 	auditstdout "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/stdout"
-	authconfig "github.com/vietthanh1999/ohjanus/internal/adapter/out/auth/config"
+	authmemory "github.com/vietthanh1999/ohjanus/internal/adapter/out/auth/memory"
 	systemclock "github.com/vietthanh1999/ohjanus/internal/adapter/out/clock/system"
 	pgconnector "github.com/vietthanh1999/ohjanus/internal/adapter/out/connector/postgres"
 	credchain "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/chain"
@@ -133,7 +131,9 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 			}
 			redactor := redactregex.New(patterns, columns)
 
-			tokenResolver := authconfig.New(cfg.AuthTokens(), clock)
+			tokenResolver := authmemory.New(clock)
+			tokenResolver.Seed(cfg.AuthTokens())
+			authStore := tokenResolver
 			policyEng := policyyaml.New(cfg.PolicyRules(), domain.Action(cfg.Policy.DefaultAction))
 			metas := cfg.ConnectionMetas()
 
@@ -174,7 +174,7 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 			})
 
 			if cfg.Admin.Enabled {
-				if err := startAdmin(ctx, cfg, logger, tokenStore, tokenResolver, auditBuffer, combinedAudit, pools, metas, clock); err != nil {
+				if err := startAdmin(ctx, cfg, logger, tokenStore, tokenResolver, authStore, auditBuffer, combinedAudit, pools, metas, clock); err != nil {
 					return err
 				}
 			}
@@ -245,12 +245,12 @@ func closePools(pools map[string]out.Pool) {
 
 // startAdmin pre-binds the Admin port (fail fast) then serves it in the
 // background next to the MCP transport.
-func startAdmin(ctx context.Context, cfg *config.Config, logger *slog.Logger, tokenStore out.TokenStore, tokenResolver out.TokenResolver, auditReader out.AuditReader, auditSink out.AuditSink, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta, clock out.Clock) error {
+func startAdmin(ctx context.Context, cfg *config.Config, logger *slog.Logger, tokenStore out.TokenStore, tokenResolver out.TokenResolver, authStore out.AuthTokenStore, auditReader out.AuditReader, auditSink out.AuditSink, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta, clock out.Clock) error {
 	ln, err := net.Listen("tcp", cfg.Admin.Listen)
 	if err != nil {
 		return fmt.Errorf("admin listen %s: %w", cfg.Admin.Listen, err)
 	}
-	admin := adminapi.New(cfg.Admin.Listen, cfg.Auth.Mode, tokenStore, tokenResolver, auditReader, auditSink, pools, metas, clock)
+	admin := adminapi.New(cfg.Admin.Listen, cfg.Auth.Mode, tokenStore, tokenResolver, authStore, auditReader, auditSink, pools, metas, clock)
 	go func() {
 		if err := admin.ServeListener(ctx, ln); err != nil {
 			logger.Error("admin server stopped", "err", err)
@@ -350,13 +350,11 @@ func newTokenCmd(cfgPath *string) *cobra.Command {
 		Use:   "create",
 		Short: "Create a token (prints the secret once)",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			secret, err := randomString(32)
+			secret, err := authmemory.GenerateSecret()
 			if err != nil {
 				return err
 			}
-			secret = "jn_" + secret
-			sum := sha256.Sum256([]byte(secret))
-			hash := "sha256:" + hex.EncodeToString(sum[:])
+			hash := authmemory.HashSecret(secret)
 			id := name
 			if id == "" {
 				r, err := randomString(8)
