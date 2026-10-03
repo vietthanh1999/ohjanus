@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { Icon } from '@ohjanus/icons';
   import { getContext } from 'svelte';
 
   interface Props {
@@ -30,5 +31,5 @@
   {:else}
     <span class="ohjanus-select-value-empty">Select...</span>
   {/if}
-  <span class="ohjanus-select-caret" aria-hidden="true">▾</span>
+  <span class="ohjanus-select-caret" class:open={ctx?.open} aria-hidden="true"><Icon name="chevron-down" size={11} /></span>
 </button>

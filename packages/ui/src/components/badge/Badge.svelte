@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { Icon } from '@ohjanus/icons';
 
   interface Props {
     variant?: 'default' | 'success' | 'warning' | 'danger' | 'destructive' | 'info' | 'outline' | 'secondary' | 'counter' | 'license';
@@ -33,6 +34,6 @@
       class="ohjanus-badge-remove"
       aria-label="Remove"
       onclick={() => onremove?.()}
-    >×</button>
+    ><Icon name="x" size={10} /></button>
   {/if}
 </span>

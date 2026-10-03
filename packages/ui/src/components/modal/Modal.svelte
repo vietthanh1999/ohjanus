@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { Icon } from '@ohjanus/icons';
   import { DialogPrimitive } from '@ohjanus/primitives';
 
   interface Props {
@@ -33,7 +34,7 @@
         onclick={onClose}
         aria-label="Close modal"
       >
-        ×
+        <Icon name="x" size={14} />
       </button>
     </div>
 

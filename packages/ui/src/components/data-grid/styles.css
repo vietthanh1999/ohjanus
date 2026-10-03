@@ -1,0 +1,93 @@
+/* DataGrid — database IDE grid (DataGrip-style result sets) */
+.ohjanus-data-grid {
+  width: 100%;
+  overflow: auto;
+  position: relative;
+  background-color: var(--bg-canvas, #1E1F22);
+}
+.ohjanus-data-grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-code, 'JetBrains Mono', monospace);
+  font-size: var(--font-size-sm, 12px);
+  text-align: left;
+}
+.ohjanus-data-grid-sticky .ohjanus-data-grid-head-cell,
+.ohjanus-data-grid-sticky .ohjanus-data-grid-row-num-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.ohjanus-data-grid-head-cell {
+  height: var(--table-header-height, 30px);
+  background-color: var(--bg-canvas, #1E1F22);
+  border-bottom: 1px solid var(--border-subtle, #2B2D30);
+  border-right: 1px solid var(--border-subtle, #2B2D30);
+  color: var(--text-secondary, #9DA0A8);
+  font-family: var(--font-ui, Inter, sans-serif);
+  font-weight: 500;
+  font-size: var(--font-size-sm, 12px);
+  padding: 0 8px;
+  text-align: left;
+  user-select: none;
+  white-space: nowrap;
+}
+.ohjanus-data-grid-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ohjanus-data-grid-row-num-head {
+  width: 36px;
+  background-color: var(--bg-canvas, #1E1F22);
+  border-bottom: 1px solid var(--border-subtle, #2B2D30);
+  border-right: 1px solid var(--border-subtle, #2B2D30);
+}
+.ohjanus-data-grid-row-num {
+  width: 36px;
+  height: var(--table-row-height, 28px);
+  background-color: var(--bg-canvas, #1E1F22);
+  border-bottom: 1px solid #25272A;
+  border-right: 1px solid var(--border-subtle, #2B2D30);
+  color: var(--text-muted, #7A7E85);
+  text-align: right;
+  padding-right: 8px;
+  font-size: var(--font-size-sm, 12px);
+  user-select: none;
+  white-space: nowrap;
+}
+.ohjanus-data-grid-row {
+  transition: background-color var(--transition-fast, 100ms);
+}
+.ohjanus-data-grid-row:hover {
+  background-color: var(--bg-hover, #2E3136);
+}
+.ohjanus-data-grid-row.selected {
+  background-color: var(--bg-selected, rgba(46, 58, 78, 0.35));
+}
+.ohjanus-data-grid-cell {
+  height: var(--table-row-height, 28px);
+  border-bottom: 1px solid #25272A;
+  border-right: 1px solid var(--border-subtle, #2B2D30);
+  padding: 0 8px;
+  color: var(--text-primary, #DFE1E5);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.ohjanus-data-grid-cell.focused {
+  outline: 1px solid var(--action-primary, #3574F0);
+  outline-offset: -1px;
+  background-color: var(--bg-selected, rgba(53, 116, 240, 0.15));
+}
+.ohjanus-data-grid-cell.null {
+  color: var(--text-null, #7A7E85);
+  font-style: italic;
+}
+.ohjanus-data-grid-cell.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+}
+.ohjanus-data-grid-align-left { text-align: left; }
+.ohjanus-data-grid-align-center { text-align: center; }
+.ohjanus-data-grid-align-right { text-align: right; }

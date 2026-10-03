@@ -1,10 +1,20 @@
 <script lang="ts">
-  import { appStore } from '../../appStore.svelte';
-  import { Card, Badge, Box, Flex, Grid, Stack } from '@ohjanus/ui';
+  import { appState } from '../../state/appState.svelte';
+  import { Card, Badge, Alert, Button, Text, Box, Flex, Grid, Stack } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 </script>
 
 <Box class="dashboard-view">
+  {#if appState.dataLoading}
+    <Box style="padding: 8px 16px;"><Text size="sm" color="muted">Loading live data from Admin API…</Text></Box>
+  {:else if appState.dataError}
+    <Box style="padding: 8px 16px;">
+      <Alert variant="danger" title="Admin API unreachable">
+        <p>{appState.dataError}</p>
+        <Button variant="secondary" size="sm" onclick={() => void appState.loadAll()}>Retry</Button>
+      </Alert>
+    </Box>
+  {/if}
   <Flex as="header" class="view-header" align="center">
     <Flex align="center" gap="8px">
       <Icon name="chart" size={16} color="#3574F0" />
@@ -16,20 +26,20 @@
     <!-- Top KPI Cards via @ohjanus/ui -->
     <Grid class="kpi-grid" columns="repeat(auto-fill, minmax(180px, 1fr))" gap="12px">
       <Card class="kpi-card-box">
-        <span class="kpi-label">24H TOTAL QUERIES</span>
-        <span class="kpi-val font-mono">14,892</span>
-        <span class="kpi-trend pos">↑ +12.4% vs yesterday</span>
+        <span class="kpi-label">TOTAL REQUESTS (AUDIT)</span>
+        <span class="kpi-val font-mono">{appState.summary ? appState.summary.requests_total.toLocaleString() : '…'}</span>
+        <span class="kpi-trend pos">live from Admin API</span>
       </Card>
 
       <Card class="kpi-card-box">
-        <span class="kpi-label">24H POLICY DENIALS</span>
-        <span class="kpi-val font-mono warn">47</span>
+        <span class="kpi-label">TOTAL POLICY DENIALS</span>
+        <span class="kpi-val font-mono warn">{appState.summary ? appState.summary.denials_total.toLocaleString() : '…'}</span>
         <span class="kpi-sub">Banned functions &amp; DDL blocked</span>
       </Card>
 
       <Card class="kpi-card-box">
         <span class="kpi-label">PENDING APPROVALS</span>
-        <span class="kpi-val font-mono pending">{appStore.pendingApprovalsCount}</span>
+        <span class="kpi-val font-mono pending">{appState.notificationCount}</span>
         <span class="kpi-sub">Human review required</span>
       </Card>
 
@@ -41,7 +51,7 @@
 
       <Card class="kpi-card-box">
         <span class="kpi-label">ACTIVE MCP TOKENS</span>
-        <span class="kpi-val font-mono">{appStore.tokens.filter(t => t.state === 'active').length}</span>
+        <span class="kpi-val font-mono">{appState.tokens.filter(t => t.state === 'active').length}</span>
         <span class="kpi-sub">Cursor &amp; Claude Desktop</span>
       </Card>
 
@@ -58,7 +68,7 @@
         {#snippet header()}
           <Flex class="panel-header-inner" justify="between" align="center">
             <span>REAL-TIME QUERY THROUGHPUT (REQS / SEC)</span>
-            <Badge variant="success" size="sm">● LIVE</Badge>
+            <Badge variant="success" size="sm"><span class="status-dot ok" aria-hidden="true"></span>LIVE</Badge>
           </Flex>
         {/snippet}
         <Flex class="chart-bars font-mono" align="end" gap="6px">
@@ -120,13 +130,13 @@
   }
 
   :global(.dashboard-view .view-header) {
-    height: 48px;
+    height: 52px;
     background: var(--bg-toolbar);
     border-bottom: 1px solid var(--border-default);
     padding: 0 16px;
   }
 
-  :global(.dashboard-view .view-title) { font-weight: 600; font-size: 13px; }
+  :global(.dashboard-view .view-title) { font-weight: 600; font-size: var(--font-size-lg, 16px); }
 
   :global(.dashboard-view .dashboard-body) {
     padding: 16px;
@@ -135,21 +145,21 @@
   :global(.kpi-card-box .ohjanus-card-body) {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 12px 14px;
+    gap: 6px;
+    padding: 14px 16px;
   }
 
-  :global(.dashboard-view .kpi-label) { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; }
-  :global(.dashboard-view .kpi-val) { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+  :global(.dashboard-view .kpi-label) { font-size: var(--font-size-2xs, 11px); font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; }
+  :global(.dashboard-view .kpi-val) { font-size: var(--font-size-2xl, 26px); font-weight: 700; color: var(--text-primary); }
   :global(.dashboard-view .kpi-val.pos) { color: var(--action-success); }
   :global(.dashboard-view .kpi-val.warn) { color: var(--action-danger); }
   :global(.dashboard-view .kpi-val.pending) { color: var(--action-warning); }
-  :global(.dashboard-view .kpi-trend.pos) { font-size: 10.5px; color: var(--action-success); font-weight: 500; }
-  :global(.dashboard-view .kpi-sub) { font-size: 10.5px; color: var(--text-muted); }
+  :global(.dashboard-view .kpi-trend.pos) { font-size: var(--font-size-xs, 12px); color: var(--action-success); font-weight: 500; }
+  :global(.dashboard-view .kpi-sub) { font-size: var(--font-size-xs, 12px); color: var(--text-muted); }
 
   :global(.dashboard-view .panel-header-inner) {
     width: 100%;
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
     font-weight: 600;
     color: var(--text-muted);
   }
@@ -177,7 +187,7 @@
   }
 
   :global(.dashboard-view .bar-label) {
-    font-size: 9px;
+    font-size: var(--font-size-2xs, 11px);
     color: var(--text-muted);
     margin-top: 4px;
   }
@@ -193,7 +203,7 @@
     margin-bottom: 4px;
   }
 
-  :global(.dashboard-view .denial-time) { font-size: 10.5px; color: var(--text-muted); }
-  :global(.denial-sql) { font-size: 11px; color: var(--action-danger); margin-bottom: 2px; }
-  :global(.denial-agent) { font-size: 10px; color: var(--text-muted); }
+  :global(.dashboard-view .denial-time) { font-size: var(--font-size-2xs, 11px); color: var(--text-muted); }
+  :global(.denial-sql) { font-size: var(--font-size-xs, 12px); color: var(--action-danger); margin-bottom: 2px; }
+  :global(.denial-agent) { font-size: var(--font-size-2xs, 11px); color: var(--text-muted); }
 </style>

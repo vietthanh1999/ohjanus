@@ -1,0 +1,37 @@
+/* Toggle */
+.ohjanus-toggle-primitive {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary, #9DA0A8);
+  cursor: pointer;
+  border-radius: var(--radius-sm, 4px);
+  transition: all var(--transition-fast, 100ms);
+}
+.ohjanus-toggle-primitive:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ohjanus-toggle-sm { min-height: 24px; padding: 0 8px; font-size: 11px; }
+.ohjanus-toggle-md { min-height: 30px; padding: 0 12px; font-size: 12px; }
+.ohjanus-toggle-lg { min-height: 36px; padding: 0 16px; font-size: 13px; }
+.ohjanus-toggle-outline {
+  border-color: var(--border-default, #393B40);
+}
+.ohjanus-toggle.pressed,
+.ohjanus-toggle-primitive[aria-pressed="true"] {
+  background-color: var(--bg-hover, #313438);
+  color: var(--text-primary, #DFE1E5);
+}
+.ohjanus-toggle-outline.pressed,
+.ohjanus-toggle-primitive.ohjanus-toggle-outline[aria-pressed="true"] {
+  border-color: var(--border-accent, #3574F0);
+  background-color: var(--bg-selected, rgba(53, 116, 240, 0.15));
+}
+.ohjanus-toggle-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

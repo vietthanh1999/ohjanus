@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { appState } from '../../state/appState.svelte';
-  import { Flex } from '@ohjanus/ui';
-  import { Icon } from '@ohjanus/icons';
+  import { appState } from "../../state/appState.svelte";
+  import { Flex } from "@ohjanus/ui";
+  import { Icon } from "@ohjanus/icons";
 
   let isAiOpen = $state(false);
 </script>
@@ -23,7 +23,7 @@
 
       <!-- Project Selector -->
       <button class="selector-btn" title="Current Workspace Project">
-        <span class="project-name">VTVprime</span>
+        <span class="project-name">VThanh</span>
         <Icon name="chevron-down" size={10} />
       </button>
 
@@ -42,7 +42,8 @@
       <button
         class="quick-btn"
         title="Database Explorer"
-        onclick={() => appState.isSidebarCollapsed = !appState.isSidebarCollapsed}
+        onclick={() =>
+          (appState.isSidebarCollapsed = !appState.isSidebarCollapsed)}
       >
         <Icon name="database" size={15} />
       </button>
@@ -75,7 +76,7 @@
       class="util-btn ai-btn"
       class:active={isAiOpen}
       title="AI Assistant (Double Shift)"
-      onclick={() => isAiOpen = !isAiOpen}
+      onclick={() => (isAiOpen = !isAiOpen)}
     >
       <Icon name="cpu" size={15} />
     </button>
@@ -84,7 +85,7 @@
     <button
       class="util-btn"
       title="Search Everywhere (Cmd+K / Double Shift)"
-      onclick={() => appState.searchModalOpen = true}
+      onclick={() => (appState.searchModalOpen = true)}
     >
       <Icon name="search" size={15} />
     </button>
@@ -93,7 +94,7 @@
     <button
       class="util-btn settings-btn"
       title="Settings (Cmd+,)"
-      onclick={() => appState.settingsModalOpen = true}
+      onclick={() => (appState.settingsModalOpen = true)}
     >
       <Icon name="settings" size={15} />
       <span class="badge-dot"></span>
@@ -104,7 +105,13 @@
 <style>
   .titlebar {
     height: 38px;
-    background: linear-gradient(90deg, #1C2426 0%, #202628 30%, #24272A 70%, #24272A 100%);
+    background: linear-gradient(
+      90deg,
+      #1c2426 0%,
+      #202628 30%,
+      #24272a 70%,
+      #24272a 100%
+    );
     border-bottom: none;
     display: flex;
     align-items: center;
@@ -121,17 +128,23 @@
     display: inline-block;
   }
 
-  .light.close { background-color: var(--window-close); }
-  .light.minimize { background-color: var(--window-minimize); }
-  .light.maximize { background-color: var(--window-maximize); }
+  .light.close {
+    background-color: var(--window-close);
+  }
+  .light.minimize {
+    background-color: var(--window-minimize);
+  }
+  .light.maximize {
+    background-color: var(--window-maximize);
+  }
 
   /* Exact rectangular cyan avatar from design */
   :global(.avatar) {
     height: 18px;
     padding: 0 5px;
     border-radius: 3px;
-    background-color: #0891B2;
-    color: #FFFFFF;
+    background-color: #0891b2;
+    color: #ffffff;
     font-size: 11px;
     font-weight: 700;
     line-height: 1;
@@ -201,11 +214,12 @@
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background-color: #E5A122;
-    box-shadow: 0 0 0 1px #24272A;
+    background-color: #e5a122;
+    box-shadow: 0 0 0 1px #24272a;
   }
 
-  .ai-btn:hover, .ai-btn.active {
-    color: #DFE1E5;
+  .ai-btn:hover,
+  .ai-btn.active {
+    color: #dfe1e5;
   }
 </style>

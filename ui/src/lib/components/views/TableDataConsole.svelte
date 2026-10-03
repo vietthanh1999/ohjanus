@@ -59,9 +59,9 @@
   .log-content {
     flex: 1;
     overflow-y: auto;
-    padding: 8px 12px;
-    font-size: 12px;
-    line-height: 18px;
+    padding: 10px 14px;
+    font-size: var(--font-size-base, 14px);
+    line-height: 20px;
     font-family: var(--font-code, 'JetBrains Mono', monospace);
   }
 

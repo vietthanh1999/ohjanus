@@ -1,0 +1,72 @@
+/* Badge */
+.ohjanus-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  border-radius: var(--radius-sm, 4px);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ohjanus-badge-sm { font-size: 10px; padding: 2px 6px; }
+.ohjanus-badge-md { font-size: 11px; padding: 3px 8px; }
+
+.ohjanus-badge-default {
+  background-color: var(--bg-hover, #313438);
+  color: var(--text-secondary, #9DA0A8);
+}
+.ohjanus-badge-success {
+  background-color: rgba(87, 211, 140, 0.15);
+  color: var(--action-success, #57D38C);
+}
+.ohjanus-badge-warning {
+  background-color: rgba(237, 162, 0, 0.15);
+  color: var(--action-warning, #EDA200);
+}
+.ohjanus-badge-danger {
+  background-color: rgba(229, 83, 83, 0.15);
+  color: var(--action-danger, #E55353);
+}
+.ohjanus-badge-info {
+  background-color: rgba(86, 168, 245, 0.15);
+  color: #56A8F5;
+}
+.ohjanus-badge-counter {
+  background-color: var(--badge-counter-bg, #393B40);
+  color: var(--badge-counter-fg, #9DA0A8);
+  font-weight: 700;
+}
+.ohjanus-badge-license {
+  background-color: var(--license-bg, #14281B);
+  border: 1px solid var(--license-border, #275A38);
+  color: var(--license-fg, #57D38C);
+  border-radius: 10px;
+}
+
+/* Badge spec variants */
+.ohjanus-badge-outline {
+  background-color: transparent;
+  border: 1px solid var(--border-default, #393B40);
+  color: var(--text-secondary, #9DA0A8);
+}
+.ohjanus-badge-secondary {
+  background-color: var(--bg-hover, #313438);
+  color: var(--text-primary, #DFE1E5);
+}
+.ohjanus-badge-destructive {
+  background-color: rgba(229, 83, 83, 0.15);
+  color: var(--action-danger, #E55353);
+}
+.ohjanus-badge-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 9999px;
+  background-color: currentColor;
+  margin-right: 4px;
+}
+.ohjanus-badge-remove {
+  background: none; border: none; cursor: pointer;
+  color: inherit; font-size: 1em; line-height: 1;
+  padding: 0 0 0 4px;
+}

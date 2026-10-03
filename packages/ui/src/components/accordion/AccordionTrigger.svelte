@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { Icon } from '@ohjanus/icons';
   import { getContext } from 'svelte';
 
   interface AccordionContext {
@@ -31,5 +32,5 @@
   onclick={() => ctx?.toggle(itemValue)}
 >
   <span class="ohjanus-accordion-trigger-label">{@render children?.()}</span>
-  <span class="ohjanus-accordion-chevron" aria-hidden="true" data-open={open}>▾</span>
+  <span class="ohjanus-accordion-chevron" aria-hidden="true" data-open={open}><Icon name="chevron-down" size={12} /></span>
 </button>

@@ -1,0 +1,20 @@
+/* Textarea */
+.ohjanus-textarea {
+  width: 100%;
+  min-height: 64px;
+  background-color: var(--bg-canvas, #1E1F22);
+  border: 1px solid var(--border-default, #393B40);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--text-primary, #DFE1E5);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 8px 10px;
+  outline: none;
+  resize: vertical;
+}
+.ohjanus-textarea:focus {
+  border-color: var(--border-accent, #3574F0);
+}
+.ohjanus-textarea.invalid {
+  border-color: var(--action-danger, #E55353);
+}

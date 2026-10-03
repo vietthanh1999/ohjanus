@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Icon } from '@ohjanus/icons';
   import { CheckboxPrimitive } from '@ohjanus/primitives';
 
   interface Props {
@@ -41,9 +42,9 @@
       role="presentation"
     >
       {#if isIndeterminate}
-        <span class="ohjanus-checkbox-mark" aria-hidden="true">–</span>
+        <span class="ohjanus-checkbox-mark" aria-hidden="true"><Icon name="minus" size={10} /></span>
       {:else if isChecked}
-        <span class="ohjanus-checkbox-mark" aria-hidden="true">✓</span>
+        <span class="ohjanus-checkbox-mark" aria-hidden="true"><Icon name="check" size={10} /></span>
       {/if}
     </span>
     <span class="ohjanus-visually-hidden">{ariaLabel}</span>

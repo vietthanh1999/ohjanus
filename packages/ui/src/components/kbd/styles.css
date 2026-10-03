@@ -1,0 +1,12 @@
+/* Kbd */
+.ohjanus-kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 4px;
+  font-size: 10px;
+  font-family: var(--font-code);
+  color: var(--text-muted, #7A7E85);
+  background-color: var(--bg-hover, #313438);
+  border: 1px solid var(--border-default, #393B40);
+  border-radius: var(--radius-xs, 2px);
+}

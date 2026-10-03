@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { Icon } from '@ohjanus/icons';
   import PaginationLink from './PaginationLink.svelte';
 
   interface Props {
@@ -15,6 +16,6 @@
 </script>
 
 <PaginationLink {href} {disabled} {onclick} class="ohjanus-pagination-previous {className}" {style} aria-label="Go to previous page">
-  <span aria-hidden="true">‹</span>
+  <span aria-hidden="true"><Icon name="chevron-left" size={12} /></span>
   {@render children?.()}
 </PaginationLink>

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Icon } from '@ohjanus/icons';
+
   interface Props {
     mode?: 'single' | 'multiple' | 'range';
     selected?: Date | Date[] | { from?: Date; to?: Date };
@@ -115,9 +117,9 @@
 
 <div class="ohjanus-calendar {className}" {style} role="application" aria-label={monthLabel}>
   <div class="ohjanus-calendar-header">
-    <button type="button" class="ohjanus-calendar-nav" onclick={prevMonth} aria-label="Previous month">‹</button>
+    <button type="button" class="ohjanus-calendar-nav" onclick={prevMonth} aria-label="Previous month"><Icon name="chevron-left" size={14} /></button>
     <div class="ohjanus-calendar-caption">{monthLabel}</div>
-    <button type="button" class="ohjanus-calendar-nav" onclick={nextMonth} aria-label="Next month">›</button>
+    <button type="button" class="ohjanus-calendar-nav" onclick={nextMonth} aria-label="Next month"><Icon name="chevron-right" size={14} /></button>
   </div>
   <div class="ohjanus-calendar-grid" role="grid">
     {#each WEEKDAYS as wd}

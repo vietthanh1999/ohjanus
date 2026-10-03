@@ -1,0 +1,36 @@
+/* Switch */
+.ohjanus-switch-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.ohjanus-switch-track {
+  width: 32px;
+  height: 18px;
+  background-color: var(--bg-hover, #313438);
+  border-radius: 9px;
+  position: relative;
+  transition: background-color var(--transition-fast, 100ms);
+  display: inline-block;
+}
+.ohjanus-switch-track.checked {
+  background-color: var(--action-primary, #3574F0);
+}
+.ohjanus-switch-thumb {
+  width: 14px;
+  height: 14px;
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform var(--transition-fast, 100ms);
+}
+.ohjanus-switch-track.checked .ohjanus-switch-thumb {
+  transform: translateX(14px);
+}
+.ohjanus-switch-label {
+  font-size: 12px;
+  color: var(--text-primary, #DFE1E5);
+}

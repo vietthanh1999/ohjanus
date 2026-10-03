@@ -1,0 +1,19 @@
+/* ScrollArea */
+.ohjanus-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong, #4E5157) transparent;
+}
+.ohjanus-scroll-area::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.ohjanus-scroll-area::-webkit-scrollbar-thumb {
+  background-color: var(--border-strong, #4E5157);
+  border-radius: 4px;
+}
+.ohjanus-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ohjanus-scroll-bar {
+  pointer-events: none;
+}

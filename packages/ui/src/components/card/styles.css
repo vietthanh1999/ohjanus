@@ -1,0 +1,39 @@
+/* Card */
+.ohjanus-card {
+  background-color: var(--bg-canvas, #1E1F22);
+  border: 1px solid var(--border-panel, #393B40);
+  border-radius: var(--radius-lg, 8px);
+  overflow: hidden;
+}
+.ohjanus-card-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle, #2B2D30);
+  font-weight: 600;
+}
+.ohjanus-card-body {
+  padding: 16px;
+}
+.ohjanus-card-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-subtle, #2B2D30);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Card Compound */
+.ohjanus-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #DFE1E5);
+  margin: 0;
+}
+.ohjanus-card-description {
+  font-size: 11px;
+  color: var(--text-muted, #7A7E85);
+  margin: 2px 0 0 0;
+}
+.ohjanus-card-action {
+  margin-left: auto;
+}
+.ohjanus-card-content {
+  padding: 16px;
+}

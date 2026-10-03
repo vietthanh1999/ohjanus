@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Icon } from '@ohjanus/icons';
   import { toast } from '@ohjanus/primitives';
   import Portal from '@ohjanus/primitives/components/Portal.svelte';
 </script>
@@ -24,7 +25,7 @@
           onclick={() => toast.dismiss(item.id)}
           aria-label="Dismiss toast"
         >
-          ×
+          <Icon name="x" size={12} />
         </button>
       </div>
     {/each}

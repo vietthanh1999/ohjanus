@@ -23,10 +23,19 @@
     }
   }
 
-  function handleCreate() {
-    if (!tokenName.trim()) return;
-    appState.createToken(tokenName.trim(), selectedScopes);
-    toast.success('MCP Token Generated', `Token for "${tokenName.trim()}" created successfully.`);
+  let creating = $state(false);
+
+  async function handleCreate() {
+    if (!tokenName.trim() || creating) return;
+    creating = true;
+    try {
+      await appState.createToken(tokenName.trim(), selectedScopes, 90);
+      toast.success('MCP Token Generated', `Token for "${tokenName.trim()}" created successfully.`);
+    } catch (e) {
+      toast.error('Token Creation Failed', e instanceof Error ? e.message : String(e));
+    } finally {
+      creating = false;
+    }
   }
 
   function copySecret() {
@@ -107,8 +116,8 @@
     {#snippet footer()}
       {#if !appState.createdTokenSecret}
         <Button variant="secondary" onclick={close}>Cancel</Button>
-        <Button variant="primary" onclick={handleCreate} disabled={!tokenName.trim()}>
-          Generate Token
+        <Button variant="primary" onclick={handleCreate} disabled={!tokenName.trim() || creating}>
+          {creating ? 'Generating...' : 'Generate Token'}
         </Button>
       {:else}
         <Button variant="primary" onclick={close}>

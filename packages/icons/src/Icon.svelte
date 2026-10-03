@@ -47,6 +47,10 @@
   import Stop from 'reicon-svelte/icons/Stop.svelte';
   import Maximize from 'reicon-svelte/icons/Maximize.svelte';
   import Layout from 'reicon-svelte/icons/Layout.svelte';
+  import SortV from 'reicon-svelte/icons/SortV.svelte';
+  import Crosshairs from 'reicon-svelte/icons/Crosshairs.svelte';
+  import ChevronExpandY from 'reicon-svelte/icons/ChevronExpandY.svelte';
+  import CheckSquare from 'reicon-svelte/icons/CheckSquare.svelte';
   import type { IconName, IconProps } from './types.js';
 
   let {
@@ -155,4 +159,12 @@
   <Maximize {size} {color} {strokeWidth} class="ohjanus-icon {className}" {...restProps} />
 {:else if name === 'layout'}
   <Layout {size} {color} {strokeWidth} class="ohjanus-icon {className}" {...restProps} />
+{:else if name === 'sort'}
+  <SortV {size} {color} {strokeWidth} class="ohjanus-icon {className}" {...restProps} />
+{:else if name === 'crosshairs'}
+  <Crosshairs {size} {color} {strokeWidth} class="ohjanus-icon {className}" {...restProps} />
+{:else if name === 'expand-y'}
+  <ChevronExpandY {size} {color} {strokeWidth} class="ohjanus-icon {className}" {...restProps} />
+{:else if name === 'check-square'}
+  <CheckSquare {size} {color} {strokeWidth} class="ohjanus-icon {className}" {...restProps} />
 {/if}

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { Icon } from '@ohjanus/icons';
 
   interface Props {
     checked?: boolean;
@@ -31,6 +32,6 @@
   onclick={toggle}
   onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}
 >
-  <span class="ohjanus-dropdown-check" aria-hidden="true">{checked ? '✓' : ''}</span>
+  <span class="ohjanus-dropdown-check" aria-hidden="true">{#if checked}<Icon name="check" size={11} />{/if}</span>
   {@render children?.()}
 </div>

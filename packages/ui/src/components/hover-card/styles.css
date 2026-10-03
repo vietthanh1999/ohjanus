@@ -1,0 +1,26 @@
+/* HoverCard */
+.ohjanus-hovercard {
+  position: relative;
+  display: inline-block;
+}
+.ohjanus-hovercard-trigger {
+  display: inline-flex;
+}
+.ohjanus-hovercard-content {
+  position: absolute;
+  z-index: 1300;
+  min-width: 180px;
+  margin-top: 6px;
+  background-color: var(--bg-sidebar, #2B2D30);
+  border: 1px solid var(--border-strong, #4E5157);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  padding: 8px;
+}
+.ohjanus-hovercard-content {
+  padding: 12px;
+  max-width: 300px;
+}
+.ohjanus-hovercard-align-start { left: 0; }
+.ohjanus-hovercard-align-center { left: 50%; transform: translateX(-50%); }
+.ohjanus-hovercard-align-end { right: 0; }

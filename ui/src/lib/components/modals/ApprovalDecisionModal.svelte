@@ -6,10 +6,15 @@
     appState.selectedApprovalForAction = null;
   }
 
-  function confirm() {
+  async function confirm() {
     const isApprove = appState.approvalDecisionMode === 'approve';
     const id = appState.selectedApprovalForAction?.id ?? '';
-    appState.confirmApprovalAction();
+    try {
+      await appState.confirmApprovalAction();
+    } catch (e) {
+      toast.error('Decision Failed', e instanceof Error ? e.message : String(e));
+      return;
+    }
 
     if (isApprove) {
       toast.success('Query Approved & Executed', `Statement ${id} successfully authorized.`);

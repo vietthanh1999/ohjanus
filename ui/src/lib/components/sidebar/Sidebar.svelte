@@ -67,9 +67,9 @@
     <div class="explorer-header-top">
       <span class="explorer-title">Database Explorer</span>
       <div class="header-window-icons">
-        <button type="button" class="jb-icon-btn" title="Locate in Tree">⌖</button>
-        <button type="button" class="jb-icon-btn" title="Expand / Collapse">↕</button>
-        <button type="button" class="jb-icon-btn" title="Minimize">—</button>
+        <button type="button" class="jb-icon-btn" title="Locate in Tree"><Icon name="crosshairs" size={12} /></button>
+        <button type="button" class="jb-icon-btn" title="Expand / Collapse"><Icon name="expand-y" size={12} /></button>
+        <button type="button" class="jb-icon-btn" title="Minimize"><Icon name="minus" size={12} /></button>
         <button type="button" class="jb-icon-btn" title="More Options">
           <Icon name="more" size={12} />
         </button>
@@ -118,7 +118,7 @@
     <div class="tree-viewport">
       <!-- Node: Dev Server [Dev][ReadOnly] 10.220.6.4 -->
       <button type="button" class="tree-node depth-0" onclick={() => toggleTree('dev_srv')}>
-        <span class="chevron" class:expanded={appState.treeExpanded['dev_srv']}>›</span>
+        <span class="chevron" class:expanded={appState.treeExpanded['dev_srv']}><Icon name="chevron-right" size={12} /></span>
         <!-- Elephant/DB Icon in cyan/blue -->
         <Icon name="database" size={14} color="#3B82F6" class="node-icon" />
         <span class="node-label"><strong>[Dev][ReadOnly]</strong> 10.220.6.4</span>
@@ -127,42 +127,42 @@
       {#if appState.treeExpanded['dev_srv']}
         <!-- Schema: es -->
         <button type="button" class="tree-node depth-1" onclick={() => toggleTree('dev_schema_es')}>
-          <span class="chevron" class:expanded={appState.treeExpanded['dev_schema_es']}>›</span>
+          <span class="chevron" class:expanded={appState.treeExpanded['dev_schema_es']}><Icon name="chevron-right" size={12} /></span>
           <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
           <span class="node-label">es</span>
         </button>
 
         <!-- Schema: information_schema -->
         <button type="button" class="tree-node depth-1">
-          <span class="chevron">›</span>
+          <span class="chevron"><Icon name="chevron-right" size={12} /></span>
           <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
           <span class="node-label">information_schema</span>
         </button>
 
         <!-- Schema: marts -->
         <button type="button" class="tree-node depth-1">
-          <span class="chevron">›</span>
+          <span class="chevron"><Icon name="chevron-right" size={12} /></span>
           <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
           <span class="node-label">marts</span>
         </button>
 
         <!-- Schema: pg_catalog -->
         <button type="button" class="tree-node depth-1">
-          <span class="chevron">›</span>
+          <span class="chevron"><Icon name="chevron-right" size={12} /></span>
           <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
           <span class="node-label">pg_catalog</span>
         </button>
 
         <!-- Schema: pm -->
         <button type="button" class="tree-node depth-1">
-          <span class="chevron">›</span>
+          <span class="chevron"><Icon name="chevron-right" size={12} /></span>
           <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
           <span class="node-label">pm</span>
         </button>
 
         <!-- Schema: public (Expanded) -->
         <button type="button" class="tree-node depth-1" onclick={() => toggleTree('dev_schema_public')}>
-          <span class="chevron" class:expanded={appState.treeExpanded['dev_schema_public']}>›</span>
+          <span class="chevron" class:expanded={appState.treeExpanded['dev_schema_public']}><Icon name="chevron-right" size={12} /></span>
           <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
           <span class="node-label">public</span>
         </button>
@@ -170,7 +170,7 @@
         {#if appState.treeExpanded['dev_schema_public']}
           <!-- tables 33 -->
           <button type="button" class="tree-node depth-2" onclick={() => toggleTree('dev_tables')}>
-            <span class="chevron" class:expanded={appState.treeExpanded['dev_tables']}>›</span>
+            <span class="chevron" class:expanded={appState.treeExpanded['dev_tables']}><Icon name="chevron-right" size={12} /></span>
             <Icon name="table" size={13} color="#3B82F6" class="node-icon" />
             <span class="node-label">tables <span style="color: var(--text-muted); font-size: 11px;">33</span></span>
           </button>
@@ -183,7 +183,7 @@
               class:selected={appState.selectedTreeNode === 'category'}
               onclick={() => selectTable('category')}
             >
-              <span class="chevron">›</span>
+              <span class="chevron"><Icon name="chevron-right" size={12} /></span>
               <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
               <span class="node-label">category</span>
             </button>
@@ -195,7 +195,7 @@
               class:selected={appState.selectedTreeNode === 'connection_credential'}
               onclick={() => selectTable('connection_credential')}
             >
-              <span class="chevron">›</span>
+              <span class="chevron"><Icon name="chevron-right" size={12} /></span>
               <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
               <span class="node-label">connection_credential</span>
             </button>
@@ -207,7 +207,7 @@
               class:selected={appState.selectedTreeNode === 'content'}
               onclick={() => selectTable('content')}
             >
-              <span class="chevron">›</span>
+              <span class="chevron"><Icon name="chevron-right" size={12} /></span>
               <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
               <span class="node-label">content</span>
             </button>
@@ -219,7 +219,7 @@
               class:selected={appState.selectedTreeNode === 'content_distribution'}
               onclick={() => selectTable('content_distribution')}
             >
-              <span class="chevron">›</span>
+              <span class="chevron"><Icon name="chevron-right" size={12} /></span>
               <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
               <span class="node-label">content_distribution</span>
             </button>
@@ -231,7 +231,7 @@
               class:selected={appState.selectedTreeNode === 'content_provider_configuration'}
               onclick={() => selectTable('content_provider_configuration')}
             >
-              <span class="chevron">›</span>
+              <span class="chevron"><Icon name="chevron-right" size={12} /></span>
               <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
               <span class="node-label">content_provider_configuration</span>
             </button>
@@ -270,7 +270,7 @@
         <button type="button" class="jb-icon-btn" title="Pin / Duplicate">
           <Icon name="pin" size={12} />
         </button>
-        <button type="button" class="jb-icon-btn" title="Expand / Collapse">↕</button>
+        <button type="button" class="jb-icon-btn" title="Expand / Collapse"><Icon name="expand-y" size={12} /></button>
         <button type="button" class="jb-icon-btn" title="Close">
           <Icon name="close" size={11} />
         </button>
@@ -282,14 +282,14 @@
       <!-- Database parent group -->
       <div class="service-item parent-item">
         <input type="checkbox" checked class="service-chk" />
-        <span class="chevron expanded">›</span>
+        <span class="chevron expanded"><Icon name="chevron-right" size={12} /></span>
         <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
         <span class="node-label">Database</span>
       </div>
 
       <!-- Dev Server Group -->
       <div class="service-item depth-1">
-        <span class="chevron expanded">›</span>
+        <span class="chevron expanded"><Icon name="chevron-right" size={12} /></span>
         <Icon name="database" size={13} color="#3B82F6" class="node-icon" />
         <span class="node-label"><strong>[Dev][ReadOnly]</strong> 10.220.6.4</span>
       </div>
@@ -321,7 +321,7 @@
 
       <!-- PRD Server Group -->
       <div class="service-item depth-1">
-        <span class="chevron expanded">›</span>
+        <span class="chevron expanded"><Icon name="chevron-right" size={12} /></span>
         <Icon name="database" size={13} color="#3B82F6" class="node-icon" />
         <span class="node-label"><strong>[PRD]</strong> 10.250.6.23</span>
       </div>
@@ -405,7 +405,7 @@
     flex-direction: column;
     min-height: 120px;
     overflow: hidden;
-    background-color: var(--bg-canvas, #1E1F22);
+    background-color: var(--bg-card, #191A1C);
     border: none;
     border-radius: 8px;
   }
@@ -421,6 +421,7 @@
     height: var(--tree-row-height, 28px);
     display: flex;
     align-items: center;
+    gap: 4px;
     padding-right: 8px;
     cursor: pointer;
     font-size: var(--font-size-base, 13px);
@@ -464,7 +465,7 @@
   }
 
   :global(.node-icon) {
-    margin-right: 6px;
+    margin-right: 2px;
     width: 15px;
     height: 15px;
     flex-shrink: 0;
@@ -495,7 +496,7 @@
   .services-pane {
     display: flex;
     flex-direction: column;
-    background-color: var(--bg-canvas, #1E1F22);
+    background-color: var(--bg-card, #191A1C);
     border: none;
     border-radius: 8px;
     overflow: hidden;
@@ -524,7 +525,7 @@
   }
 
   .service-chk {
-    margin-right: 4px;
+    margin-right: 0;
     accent-color: var(--action-primary);
   }
 
@@ -532,6 +533,6 @@
     font-size: 11px;
     color: var(--text-muted);
     font-family: var(--font-code);
-    margin-left: 8px;
+    margin-left: 4px;
   }
 </style>

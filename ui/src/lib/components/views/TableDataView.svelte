@@ -207,7 +207,7 @@
   <div class="filter-bar">
     <!-- WHERE Filter Field -->
     <div class="filter-group where-group">
-      <span class="filter-icon">⌵</span>
+      <span class="filter-icon"><Icon name="filter" size={11} /></span>
       <span class="filter-label">WHERE</span>
       <input
         type="text"
@@ -218,7 +218,7 @@
 
     <!-- ORDER BY Filter Field -->
     <div class="filter-group orderby-group">
-      <span class="filter-icon">≡</span>
+      <span class="filter-icon"><Icon name="sort" size={11} /></span>
       <span class="filter-label">ORDER BY</span>
       <input
         type="text"
@@ -239,8 +239,8 @@
             <div class="header-inner">
               <Icon name="key" size={12} color="#FACC15" />
               <span class="col-name">id</span>
-              <span class="header-funnel">▽</span>
-              <span class="header-sort">⇅</span>
+              <span class="header-funnel"><Icon name="filter" size={9} /></span>
+              <span class="header-sort"><Icon name="sort" size={9} /></span>
             </div>
           </th>
 
@@ -249,8 +249,8 @@
             <div class="header-inner">
               <Icon name="clock" size={12} color="#56A8F5" />
               <span class="col-name">createdDate</span>
-              <span class="header-funnel">▽</span>
-              <span class="header-sort">⇅</span>
+              <span class="header-funnel"><Icon name="filter" size={9} /></span>
+              <span class="header-sort"><Icon name="sort" size={9} /></span>
             </div>
           </th>
 
@@ -259,8 +259,8 @@
             <div class="header-inner">
               <Icon name="clock" size={12} color="#56A8F5" />
               <span class="col-name">lastUpdatedDate</span>
-              <span class="header-funnel">▽</span>
-              <span class="header-sort">⇅</span>
+              <span class="header-funnel"><Icon name="filter" size={9} /></span>
+              <span class="header-sort"><Icon name="sort" size={9} /></span>
             </div>
           </th>
 
@@ -269,7 +269,7 @@
             <div class="header-inner">
               <Icon name="user" size={12} color="#7A7E85" />
               <span class="col-name">createdBy</span>
-              <span class="header-funnel">▽</span>
+              <span class="header-funnel"><Icon name="filter" size={9} /></span>
             </div>
           </th>
         </tr>
@@ -317,9 +317,11 @@
 
     <!-- Floating row count pill [ 58 rows ⌵ | ⋮ ] -->
     <div class="floating-row-badge" title="Filter count">
-      <span>58 rows ⌵</span>
+      <span>58 rows</span>
       <span style="color: var(--text-muted); opacity: 0.6;">|</span>
-      <span>⋮</span>
+      <Icon name="chevron-down" size={10} />
+      <span style="color: var(--text-muted); opacity: 0.6;">|</span>
+      <Icon name="more" size={12} />
     </div>
   </div>
 </div>
@@ -416,16 +418,23 @@
   .filter-input {
     flex: 1;
     height: var(--control-height-xs, 24px);
-    background-color: #1E1F22;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm, 4px);
+    background-color: transparent;
+    border: none;
+    outline: none;
     padding: 0 8px;
     font-size: var(--font-size-sm, 12px);
     color: var(--text-primary);
   }
 
   .filter-input:focus {
-    border-color: var(--border-accent);
+    border: none;
+    outline: none;
+    box-shadow: none;
+  }
+
+  .filter-input:hover {
+    border: none;
+    box-shadow: none;
   }
 
   /* 3. Data Grid */
@@ -439,11 +448,11 @@
   .jb-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: var(--font-size-base, 14px);
   }
 
   .row-num-header {
-    width: 32px;
+    width: 36px;
     background-color: var(--bg-canvas);
     border-bottom: 1px solid var(--border-subtle);
     border-right: 1px solid var(--border-subtle);
@@ -455,9 +464,9 @@
     border-bottom: 1px solid var(--border-subtle);
     border-right: 1px solid var(--border-subtle);
     color: var(--text-secondary);
-    font-weight: 400;
-    font-size: 11px;
-    padding: 0 6px;
+    font-weight: 500;
+    font-size: var(--font-size-sm, 13px);
+    padding: 0 10px;
     text-align: left;
     user-select: none;
     white-space: nowrap;
@@ -466,29 +475,32 @@
   .header-inner {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
   }
 
   .col-name {
     color: var(--text-primary);
     font-weight: 500;
+    font-size: var(--font-size-sm, 13px);
   }
 
   .header-funnel, .header-sort {
     color: var(--text-muted);
-    font-size: 9px;
+    font-size: var(--font-size-2xs, 11px);
+    display: inline-flex;
+    align-items: center;
   }
 
   .row-num-cell {
-    width: 32px;
+    width: 36px;
     height: var(--table-row-height);
     background-color: var(--bg-canvas);
     border-bottom: 1px solid #25272A;
     border-right: 1px solid var(--border-subtle);
     color: #7A7E85;
     text-align: right;
-    padding-right: 6px;
-    font-size: 11px;
+    padding-right: 8px;
+    font-size: var(--font-size-sm, 13px);
     user-select: none;
   }
 
@@ -496,8 +508,9 @@
     height: var(--table-row-height);
     border-bottom: 1px solid #25272A;
     border-right: 1px solid var(--border-subtle);
-    padding: 0 6px;
+    padding: 0 10px;
     color: var(--text-primary);
+    font-size: var(--font-size-base, 14px);
     white-space: nowrap;
   }
 
@@ -511,7 +524,7 @@
   }
 
   .uuid-cell, .date-cell {
-    font-size: 12px;
+    font-size: var(--font-size-base, 14px);
   }
 
   .null-cell {

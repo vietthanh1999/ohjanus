@@ -1,56 +1,74 @@
 <script lang="ts">
-  import { appState, type AuditRecord } from '../../state/appState.svelte';
-  import { Button, Badge, Input, toast, Box, Flex, Stack, Text } from '@ohjanus/ui';
-  import { Icon } from '@ohjanus/icons';
+  import { appState, type AuditRecord } from "../../state/appState.svelte";
+  import { exportAudit } from "../../api/audit";
+  import {
+    Button,
+    Badge,
+    Input,
+    Alert,
+    toast,
+    Box,
+    Flex,
+    Stack,
+    Text,
+  } from "@ohjanus/ui";
+  import { Icon } from "@ohjanus/icons";
 
-  let filterStatus = $state<string>('ALL');
-  let searchQuery = $state<string>('');
+  let filterStatus = $state<string>("ALL");
+  let searchQuery = $state<string>("");
   let selectedAudit = $state<AuditRecord | null>(null);
 
   let filteredAuditLogs = $derived.by(() => {
     let list = appState.auditLogs;
-    if (filterStatus !== 'ALL') {
-      list = list.filter(item => item.policy_decision === filterStatus);
+    if (filterStatus !== "ALL") {
+      list = list.filter((item) => item.policy_decision === filterStatus);
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      list = list.filter(item =>
-        item.client.toLowerCase().includes(q) ||
-        item.sql_normalized.toLowerCase().includes(q) ||
-        item.token_id.toLowerCase().includes(q) ||
-        item.connection.toLowerCase().includes(q)
+      list = list.filter(
+        (item) =>
+          item.client.toLowerCase().includes(q) ||
+          item.sql_normalized.toLowerCase().includes(q) ||
+          item.token_id.toLowerCase().includes(q) ||
+          item.connection.toLowerCase().includes(q),
       );
     }
     return list;
   });
 
-  function exportCSV() {
-    const headers = ['id', 'ts', 'client', 'token_id', 'connection', 'statement_type', 'decision', 'duration_ms', 'sql'];
-    const rows = filteredAuditLogs.map(r => [
-      r.id,
-      r.ts,
-      r.client,
-      r.token_id,
-      r.connection,
-      r.statement_type,
-      r.policy_decision,
-      r.duration_ms,
-      `"${r.sql_normalized.replace(/"/g, '""')}"`
-    ]);
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `ohjanus_audit_${new Date().toISOString().substring(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success('Audit Log Exported', `Exported ${filteredAuditLogs.length} audit records to CSV.`);
+  async function exportCSV() {
+    // Note: the server export supports text search (q) but has no
+    // policy-decision filter, so the on-screen decision filter is not forwarded.
+    try {
+      await exportAudit("csv", { q: searchQuery.trim() || undefined });
+      toast.success(
+        "Audit Log Exported",
+        "Server-side CSV download started (up to 10,000 rows).",
+      );
+    } catch (e) {
+      toast.error("Export Failed", e instanceof Error ? e.message : String(e));
+    }
   }
 </script>
 
 <Box class="audit-view">
+  {#if appState.dataLoading}
+    <Box style="padding: 8px 16px;"
+      ><Text size="sm" color="muted">Loading live data from Admin API…</Text
+      ></Box
+    >
+  {:else if appState.dataError}
+    <Box style="padding: 8px 16px;">
+      <Alert variant="danger" title="Admin API unreachable">
+        <p>{appState.dataError}</p>
+        <Button
+          variant="secondary"
+          size="sm"
+          onclick={() => void appState.loadAll()}>Retry</Button
+        >
+      </Alert>
+    </Box>
+  {/if}
   <!-- View Header & Filters -->
   <Flex as="header" class="audit-header" align="center" justify="between">
     <Stack class="header-left" gap="2px">
@@ -58,7 +76,9 @@
         <Icon name="audit" size={16} color="#56A8F5" />
         <span>MCP Gateway Audit Log Trail</span>
       </Flex>
-      <span class="header-desc">End-to-end provenance records of all incoming queries and tool requests</span>
+      <span class="header-desc"
+        >End-to-end provenance records of all incoming queries and tool requests</span
+      >
     </Stack>
 
     <Flex class="header-right" align="center" gap="8px">
@@ -90,42 +110,143 @@
   <Flex class="content-layout">
     <!-- Grid -->
     <Box class="table-container">
-      <table class="audit-table code-text">
+      <table class="audit-table jb-grid code-text">
         <thead>
           <tr>
-            <th style="width: 140px;">Timestamp</th>
-            <th style="width: 90px;">Decision</th>
-            <th style="width: 160px;">Client Agent</th>
-            <th style="width: 140px;">Connection</th>
-            <th style="width: 70px;">Type</th>
-            <th style="width: 60px;">Rows</th>
-            <th style="width: 70px;">Duration</th>
-            <th>Normalized SQL</th>
+            <th class="row-num-header"></th>
+            <th class="col-header" style="width: 150px;">
+              <div class="header-inner">
+                <Icon name="clock" size={12} color="#56A8F5" />
+                <span class="col-name">Timestamp</span>
+                <span class="header-funnel"
+                  ><Icon name="filter" size={9} /></span
+                >
+                <span class="header-sort"><Icon name="sort" size={9} /></span>
+              </div>
+            </th>
+            <th class="col-header" style="width: 110px;">
+              <div class="header-inner">
+                <Icon name="shield" size={12} color="#EDA200" />
+                <span class="col-name">Decision</span>
+                <span class="header-funnel"
+                  ><Icon name="filter" size={9} /></span
+                >
+                <span class="header-sort"><Icon name="sort" size={9} /></span>
+              </div>
+            </th>
+            <th class="col-header" style="width: 170px;">
+              <div class="header-inner">
+                <Icon name="user" size={12} color="#7A7E85" />
+                <span class="col-name">Client Agent</span>
+                <span class="header-funnel"
+                  ><Icon name="filter" size={9} /></span
+                >
+                <span class="header-sort"><Icon name="sort" size={9} /></span>
+              </div>
+            </th>
+            <th class="col-header" style="width: 150px;">
+              <div class="header-inner">
+                <Icon name="database" size={12} color="#3B82F6" />
+                <span class="col-name">Connection</span>
+                <span class="header-funnel"
+                  ><Icon name="filter" size={9} /></span
+                >
+                <span class="header-sort"><Icon name="sort" size={9} /></span>
+              </div>
+            </th>
+            <th class="col-header" style="width: 90px;">
+              <div class="header-inner">
+                <Icon name="terminal" size={12} color="#9DA0A8" />
+                <span class="col-name">Type</span>
+                <span class="header-funnel"
+                  ><Icon name="filter" size={9} /></span
+                >
+                <span class="header-sort"><Icon name="sort" size={9} /></span>
+              </div>
+            </th>
+            <th class="col-header" style="min-width: 140px;">
+              <div class="header-inner">
+                <Icon name="table" size={12} color="#3B82F6" />
+                <span class="col-name">Tables</span>
+                <span class="header-funnel"
+                  ><Icon name="filter" size={9} /></span
+                >
+                <span class="header-sort"><Icon name="sort" size={9} /></span>
+              </div>
+            </th>
+            <th class="col-header" style="width: 70px;">
+              <div class="header-inner">
+                <Icon name="chart" size={12} color="#7A7E85" />
+                <span class="col-name">Rows</span>
+                <span class="header-funnel"
+                  ><Icon name="filter" size={9} /></span
+                >
+                <span class="header-sort"><Icon name="sort" size={9} /></span>
+              </div>
+            </th>
+            <th class="col-header" style="width: 90px;">
+              <div class="header-inner">
+                <Icon name="lightning" size={12} color="#FACC15" />
+                <span class="col-name">Duration</span>
+                <span class="header-funnel"
+                  ><Icon name="filter" size={9} /></span
+                >
+                <span class="header-sort"><Icon name="sort" size={9} /></span>
+              </div>
+            </th>
+            <th class="col-header">
+              <div class="header-inner">
+                <span class="col-name">Normalized SQL</span>
+                <span class="header-funnel"
+                  ><Icon name="filter" size={9} /></span
+                >
+                <span class="header-sort"><Icon name="sort" size={9} /></span>
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody>
-          {#each filteredAuditLogs as item (item.id)}
+          {#each filteredAuditLogs as item, idx (item.id)}
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <tr
               class:selected={selectedAudit?.id === item.id}
-              onclick={() => selectedAudit = item}
+              onclick={() => (selectedAudit = item)}
             >
+              <td class="row-num-cell">{idx + 1}</td>
               <td class="cell-ts">{item.ts}</td>
               <td class="cell-decision">
-                {#if item.policy_decision === 'ALLOW'}
+                {#if item.policy_decision === "ALLOW"}
                   <Badge variant="success" size="sm">ALLOW</Badge>
-                {:else if item.policy_decision === 'REQUIRE_APPROVAL'}
+                {:else if item.policy_decision === "REQUIRE_APPROVAL"}
                   <Badge variant="warning" size="sm">APPROVAL</Badge>
                 {:else}
                   <Badge variant="danger" size="sm">DENY</Badge>
                 {/if}
               </td>
               <td class="cell-client truncate" title={item.client}>
-                🤖 {item.client}
+                <Icon name="user" size={12} />
+                {item.client}
               </td>
               <td class="cell-conn">{item.connection}</td>
               <td class="cell-type">{item.statement_type}</td>
+              <td
+                class="cell-tables truncate"
+                title={(item.tables ?? []).join(", ")}
+              >
+                {#if item.tables && item.tables.length > 0}
+                  {#each item.tables.slice(0, 3) as t}
+                    <Badge variant="default" size="sm" class="tbl-pill"
+                      >{t}</Badge
+                    >
+                  {/each}
+                  {#if item.tables.length > 3}
+                    <span class="more-tbl">+{item.tables.length - 3}</span>
+                  {/if}
+                {:else}
+                  <span class="no-tbl">—</span>
+                {/if}
+              </td>
               <td class="cell-num">{item.row_count}</td>
               <td class="cell-num">{item.duration_ms} ms</td>
               <td class="cell-sql truncate" title={item.sql_normalized}>
@@ -135,14 +256,25 @@
           {/each}
         </tbody>
       </table>
+
+      <!-- Floating row count pill -->
+      <div class="floating-row-badge" title="Filter count">
+        <span>{filteredAuditLogs.length} rows</span>
+        <span style="color: var(--text-muted); opacity: 0.6;">|</span>
+        <Icon name="more" size={12} />
+      </div>
     </Box>
 
     <!-- Right Drawer Detail -->
     {#if selectedAudit}
       <Box class="audit-drawer">
         <Flex class="drawer-header" align="center" justify="between">
-          <span style="font-weight: 600; color: var(--text-primary);">Audit Detail: {selectedAudit.id}</span>
-          <button class="jb-icon-btn" onclick={() => selectedAudit = null}>✕</button>
+          <span style="font-weight: 600; color: var(--text-primary);"
+            >Audit Detail: {selectedAudit.id}</span
+          >
+          <button class="jb-icon-btn" onclick={() => (selectedAudit = null)}
+            ><Icon name="x" size={12} /></button
+          >
         </Flex>
         <Stack class="drawer-body" gap="8px">
           <Flex class="drawer-row" align="center" justify="between">
@@ -166,8 +298,23 @@
             <span class="d-val">{selectedAudit.connection}</span>
           </Flex>
           <Flex class="drawer-row" align="center" justify="between">
+            <span class="d-label">Tables Touched:</span>
+            <span class="d-val">
+              {#if selectedAudit.tables && selectedAudit.tables.length > 0}
+                {#each selectedAudit.tables as t}
+                  <Badge variant="default" size="sm" class="tbl-pill">{t}</Badge
+                  >
+                {/each}
+              {:else}
+                <span class="no-tbl">—</span>
+              {/if}
+            </span>
+          </Flex>
+          <Flex class="drawer-row" align="center" justify="between">
             <span class="d-label">Policy Decision:</span>
-            <span class="d-val"><strong>{selectedAudit.policy_decision}</strong></span>
+            <span class="d-val"
+              ><strong>{selectedAudit.policy_decision}</strong></span
+            >
           </Flex>
           <Flex class="drawer-row" align="center" justify="between">
             <span class="d-label">Policy Rule Matched:</span>
@@ -178,7 +325,12 @@
             <span class="d-val code-text">{selectedAudit.duration_ms} ms</span>
           </Flex>
 
-          <Text size="xs" weight="semibold" color="secondary" style="margin-top: 8px;">
+          <Text
+            size="xs"
+            weight="semibold"
+            color="secondary"
+            style="margin-top: 8px;"
+          >
             Executed Query
           </Text>
           <pre class="sql-box code-text">{selectedAudit.sql_normalized}</pre>
@@ -211,23 +363,23 @@
   }
 
   :global(.audit-view .header-title) {
-    font-size: 13px;
+    font-size: var(--font-size-lg, 16px);
     font-weight: 600;
     color: var(--text-primary);
   }
 
   :global(.audit-view .header-desc) {
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-muted);
   }
 
   :global(.audit-view .filter-select) {
-    height: 26px;
-    background-color: #1E1F22;
+    height: var(--control-height-sm, 28px);
+    background-color: #1e1f22;
     border: 1px solid var(--border-default);
     border-radius: 4px;
     padding: 0 8px;
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-primary);
   }
 
@@ -241,33 +393,78 @@
   :global(.audit-view .table-container) {
     flex: 1;
     overflow: auto;
+    position: relative;
   }
 
+  /* Data grid — same language as the DB table grid (jb-table) */
   :global(.audit-view .audit-table) {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: var(--font-size-base, 14px);
   }
 
-  :global(.audit-view .audit-table th) {
+  :global(.audit-view .row-num-header) {
+    width: 32px;
+    background-color: var(--bg-canvas);
+    border-bottom: 1px solid var(--border-subtle);
+    border-right: 1px solid var(--border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  :global(.audit-view .audit-table .col-header) {
     height: var(--table-header-height);
-    background-color: var(--bg-table-header);
-    border-bottom: 1px solid var(--border-default);
-    border-right: 1px solid var(--border-default);
+    background-color: var(--bg-canvas);
+    border-bottom: 1px solid var(--border-subtle);
+    border-right: 1px solid var(--border-subtle);
     color: var(--text-secondary);
-    font-weight: 500;
-    font-size: 11px;
+    font-weight: 400;
+    font-size: var(--font-size-xs, 12px);
     padding: 0 8px;
     text-align: left;
+    user-select: none;
     white-space: nowrap;
     position: sticky;
     top: 0;
     z-index: 10;
   }
 
+  :global(.audit-view .audit-table .header-inner) {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  :global(.audit-view .audit-table .col-name) {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  :global(.audit-view .audit-table .header-funnel),
+  :global(.audit-view .audit-table .header-sort) {
+    color: var(--text-muted);
+    font-size: var(--font-size-2xs, 11px);
+    display: inline-flex;
+    align-items: center;
+  }
+
+  :global(.audit-view .row-num-cell) {
+    width: 32px;
+    height: var(--table-row-height);
+    background-color: var(--bg-canvas);
+    border-bottom: 1px solid #25272a;
+    border-right: 1px solid var(--border-subtle);
+    color: #7a7e85;
+    text-align: right;
+    padding-right: 6px;
+    font-size: var(--font-size-xs, 12px);
+    user-select: none;
+  }
+
   :global(.audit-view .audit-table td) {
-    height: 28px;
-    border-bottom: 1px solid var(--border-subtle);
+    height: var(--table-row-height);
+    border-bottom: 1px solid #25272a;
     border-right: 1px solid var(--border-subtle);
     padding: 0 8px;
     white-space: nowrap;
@@ -280,16 +477,33 @@
   }
 
   :global(.audit-view .audit-table tr.selected) {
-    background-color: var(--bg-selected);
+    background-color: rgba(46, 58, 78, 0.35);
+  }
+
+  :global(.audit-view .floating-row-badge) {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--bg-toolbar);
+    border: 1px solid var(--border-default);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: var(--font-size-xs, 12px);
+    color: var(--text-secondary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    user-select: none;
   }
 
   :global(.audit-view .cell-ts) {
     color: var(--text-muted);
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
   }
 
   :global(.audit-view .cell-client) {
-    color: #DFE1E5;
+    color: #dfe1e5;
   }
 
   :global(.audit-view .cell-conn) {
@@ -298,7 +512,28 @@
 
   :global(.audit-view .cell-type) {
     font-weight: 600;
-    font-size: 11px;
+    font-size: var(--font-size-xs, 12px);
+  }
+
+  :global(.audit-view .cell-tables) {
+    max-width: 240px;
+  }
+
+  :global(.audit-view .tbl-pill) {
+    font-size: var(--font-size-2xs, 11px) !important;
+    margin-right: 3px;
+    font-family: var(--font-code);
+  }
+
+  :global(.audit-view .more-tbl) {
+    font-size: var(--font-size-2xs, 11px);
+    color: var(--text-muted);
+  }
+
+  :global(.audit-view .no-tbl) {
+    color: var(--text-null, var(--text-muted));
+    font-style: italic;
+    font-size: var(--font-size-xs, 12px);
   }
 
   :global(.audit-view .cell-num) {
@@ -308,13 +543,13 @@
   }
 
   :global(.audit-view .cell-sql) {
-    color: #9DA0A8;
+    color: #9da0a8;
     max-width: 380px;
   }
 
   /* Right Drawer */
   :global(.audit-view .audit-drawer) {
-    width: 360px;
+    width: 380px;
     background-color: var(--bg-toolbar);
     border-left: 1px solid var(--border-default);
     display: flex;
@@ -323,20 +558,21 @@
   }
 
   :global(.audit-view .drawer-header) {
-    height: 36px;
-    padding: 0 12px;
-    background-color: #25272A;
+    height: 40px;
+    padding: 0 14px;
+    background-color: #25272a;
     border-bottom: 1px solid var(--border-default);
+    font-size: var(--font-size-md, 15px);
   }
 
   :global(.audit-view .drawer-body) {
-    padding: 14px;
+    padding: 16px;
     overflow-y: auto;
   }
 
   :global(.audit-view .drawer-row) {
-    font-size: 11px;
-    padding: 4px 0;
+    font-size: var(--font-size-xs, 12px);
+    padding: 6px 0;
     border-bottom: 1px solid var(--border-subtle);
   }
 
@@ -349,13 +585,13 @@
   }
 
   :global(.audit-view .sql-box) {
-    background-color: #1E1F22;
+    background-color: #1e1f22;
     border: 1px solid var(--border-default);
-    padding: 8px 10px;
+    padding: 10px 12px;
     border-radius: 4px;
-    font-size: 11px;
-    line-height: 16px;
-    color: #DFE1E5;
+    font-size: var(--font-size-xs, 12px);
+    line-height: var(--line-height-normal, 1.45);
+    color: #dfe1e5;
     white-space: pre-wrap;
     max-height: 200px;
     overflow-y: auto;

@@ -1,0 +1,52 @@
+/* RadioGroup */
+.ohjanus-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ohjanus-radio-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-primary, #DFE1E5);
+  cursor: pointer;
+}
+.ohjanus-radio-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ohjanus-radio-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.ohjanus-radio-dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid var(--border-default, #393B40);
+  background-color: var(--bg-canvas, #1E1F22);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast, 100ms);
+  position: relative;
+}
+.ohjanus-radio-item.checked .ohjanus-radio-dot {
+  border-color: var(--action-primary, #3574F0);
+}
+.ohjanus-radio-item.checked .ohjanus-radio-dot::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--action-primary, #3574F0);
+}
+.ohjanus-radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

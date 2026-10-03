@@ -1,0 +1,9 @@
+/* Label */
+.ohjanus-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary, #DFE1E5);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

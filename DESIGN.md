@@ -168,7 +168,7 @@ The topmost application chrome mirrors the macOS desktop IDE standard, providing
 
 ```
 +----------------------------------------------------------------------------------------------------------------------------------------+
-|  [● ● ●]   [VT] VTVprime ▾   Version Control ▾           [🗄️] [▶] [📁] [...]           [🌀]  [🔍]  [⚙️]                               |
+|  [● ● ●]   [VT] VThanh ▾   Version Control ▾           [🗄️] [▶] [📁] [...]           [🌀]  [🔍]  [⚙️]                               |
 +----------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
@@ -184,7 +184,7 @@ The topmost application chrome mirrors the macOS desktop IDE standard, providing
 - **Workspace Avatar**:
   - Circle badge `20px x 20px`, background: `#0E7490` (cyan/teal), text: `VT` in white `#FFFFFF`, font-size `10px`, weight `700`.
 - **Project Selector**:
-  - Text: `VTVprime` with down chevron `▾` (`8px` gap), font-size `12px`, weight `500`, color `#DFE1E5`.
+  - Text: `VThanh` with down chevron `▾` (`8px` gap), font-size `12px`, weight `500`, color `#DFE1E5`.
 - **Version Control Branch**:
   - Text: `Version Control ▾`, font-size `12px`, weight `400`, color `#9DA0A8`. Hover background: `#313438` with `4px` border radius.
 

@@ -1,0 +1,11 @@
+/* Collapsible */
+.ohjanus-collapsible-trigger {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+.ohjanus-collapsible-content {
+  margin-top: 6px;
+}

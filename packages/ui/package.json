@@ -102,6 +102,11 @@
       "svelte": "./src/components/container/index.ts",
       "default": "./src/components/container/index.ts"
     },
+    "./data-grid": {
+      "types": "./src/components/data-grid/index.ts",
+      "svelte": "./src/components/data-grid/index.ts",
+      "default": "./src/components/data-grid/index.ts"
+    },
     "./dialog": {
       "types": "./src/components/dialog/index.ts",
       "svelte": "./src/components/dialog/index.ts",

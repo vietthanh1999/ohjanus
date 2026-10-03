@@ -1,0 +1,116 @@
+/* Typeset — styling system for HTML / rendered markdown */
+.ohjanus-typeset {
+  --typeset-font-body: inherit;
+  --typeset-font-heading: var(--font-heading, inherit);
+  --typeset-font-mono: var(--font-mono, monospace);
+  --typeset-size: 1em;
+  --typeset-leading: 1.75;
+  --typeset-flow: 1.25em;
+  font-family: var(--typeset-font-body);
+  font-size: var(--typeset-size);
+  line-height: var(--typeset-leading);
+  color: var(--text-primary, #DFE1E5);
+  overflow-wrap: break-word;
+}
+.ohjanus-typeset > :where(* + *) {
+  margin-block-start: var(--typeset-flow);
+}
+.ohjanus-typeset :where(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--typeset-font-heading);
+  line-height: 1.25;
+  font-weight: 600;
+  margin-block-start: calc(var(--typeset-flow) * 1.25);
+}
+.ohjanus-typeset :where(h1) { font-size: 1.6em; }
+.ohjanus-typeset :where(h2) { font-size: 1.35em; }
+.ohjanus-typeset :where(h3) { font-size: 1.15em; }
+.ohjanus-typeset :where(p, li) { line-height: var(--typeset-leading); }
+.ohjanus-typeset :where(ul, ol) {
+  padding-inline-start: 1.5em;
+}
+.ohjanus-typeset :where(li + li) {
+  margin-block-start: 0.375em;
+}
+.ohjanus-typeset :where(a) {
+  color: var(--action-primary, #3574F0);
+  text-decoration: underline;
+}
+.ohjanus-typeset :where(code) {
+  font-family: var(--typeset-font-mono);
+  font-size: 0.875em;
+  background-color: var(--bg-hover, #313438);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+.ohjanus-typeset :where(pre) {
+  font-family: var(--typeset-font-mono);
+  font-size: 0.875em;
+  background-color: var(--bg-canvas, #1E1F22);
+  border: 1px solid var(--border-default, #393B40);
+  border-radius: var(--radius-md, 6px);
+  padding: 12px 14px;
+  overflow-x: auto;
+}
+.ohjanus-typeset :where(pre code) {
+  background: transparent;
+  padding: 0;
+}
+.ohjanus-typeset :where(blockquote) {
+  border-inline-start: 3px solid var(--border-strong, #4E5157);
+  padding-inline-start: 1em;
+  color: var(--text-secondary, #9DA0A8);
+  margin-inline: 0;
+}
+.ohjanus-typeset :where(hr) {
+  border: none;
+  border-top: 1px solid var(--border-default, #393B40);
+}
+.ohjanus-typeset :where(table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+.ohjanus-typeset :where(th, td) {
+  border: 1px solid var(--border-default, #393B40);
+  padding: 6px 10px;
+  text-align: start;
+}
+.ohjanus-typeset :where(th) {
+  background-color: var(--bg-table-header, #25272A);
+  font-weight: 600;
+}
+.ohjanus-typeset :where(img) {
+  max-width: 100%;
+  border-radius: var(--radius-md, 6px);
+}
+.ohjanus-typeset-docs {
+  --typeset-size: 15px;
+  --typeset-flow: 1.5em;
+}
+.ohjanus-typeset-chat {
+  --typeset-flow: 1em;
+  --typeset-leading: 1.6;
+}
+.ohjanus-typeset-reading {
+  --typeset-size: 18px;
+  --typeset-leading: 1.9;
+  --typeset-flow: 2em;
+}
+.ohjanus-typeset-compact {
+  --typeset-size: 14px;
+  --typeset-leading: 1.6;
+  --typeset-flow: 1em;
+}
+.ohjanus-typeset-large {
+  --typeset-size: 16px;
+  --typeset-leading: 2;
+  --typeset-flow: 2em;
+}
+.ohjanus-typeset-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.ohjanus-typeset .not-typeset,
+.ohjanus-typeset [data-not-typeset] {
+  all: revert;
+}
