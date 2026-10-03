@@ -2,6 +2,7 @@
   import { appStore } from '../../appStore.svelte';
   import type { McpToken } from '../../types';
   import { Button, Badge, Modal, Input, Field, Alert, toast, Box, Flex, Stack, Text } from '@ohjanus/ui';
+  import { Icon } from '@ohjanus/icons';
 
   let showCreateModal = $state(false);
   let showSecretModal = $state(false);
@@ -48,13 +49,14 @@
 <Box class="tokens-view">
   <!-- Header -->
   <Flex as="header" class="view-header" align="center" justify="between">
-    <Flex align="center">
-      <span class="header-icon">🔑</span>
+    <Flex align="center" gap="8px">
+      <span class="header-icon"><Icon name="key" size={16} color="#EDA200" /></span>
       <span class="view-title">MCP Client Tokens Management</span>
       <span class="view-desc">Issue and manage secure opaque tokens for AI agents (Cursor, Claude Desktop, custom bots)</span>
     </Flex>
     <Button variant="primary" onclick={() => showCreateModal = true}>
-      + Generate New Token
+      <Icon name="plus" size={14} />
+      <span>Generate New Token</span>
     </Button>
   </Flex>
 
@@ -185,7 +187,13 @@
         <Flex class="secret-box font-mono" align="center" justify="between">
           <span>{generatedToken.rawToken}</span>
           <Button variant="secondary" size="xs" onclick={copySecret}>
-            {copied ? '✓ Copied' : 'Copy'}
+            {#if copied}
+              <Icon name="check" size={12} />
+              <span>Copied</span>
+            {:else}
+              <Icon name="copy" size={12} />
+              <span>Copy</span>
+            {/if}
           </Button>
         </Flex>
 

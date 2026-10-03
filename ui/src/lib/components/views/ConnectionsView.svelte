@@ -2,6 +2,7 @@
   import { appStore } from '../../appStore.svelte';
   import type { ConnectionInfo } from '../../types';
   import { Card, Badge, Button, toast, Box, Flex, Grid, Stack } from '@ohjanus/ui';
+  import { Icon } from '@ohjanus/icons';
 
   let testingConn = $state<string | null>(null);
 
@@ -18,8 +19,8 @@
 <Box class="connections-view">
   <!-- Header -->
   <Flex as="header" class="view-header" align="center">
-    <Flex align="center">
-      <span class="header-icon">🔌</span>
+    <Flex align="center" gap="8px">
+      <span class="header-icon"><Icon name="database" size={16} color="#3B82F6" /></span>
       <span class="view-title">Database Connections &amp; Connection Pools</span>
       <span class="view-desc">Zero credential leakage: backend resolves credentials from OS Keychain / Vault</span>
     </Flex>
@@ -32,12 +33,18 @@
         {#snippet header()}
           <Flex class="card-header-inner" justify="between" align="center">
             <Flex class="header-left" align="center" gap="8px">
-              <span class="db-icon">🐘</span>
+              <span class="db-icon"><Icon name="database" size={15} color="#3B82F6" /></span>
               <span class="conn-title">{conn.name}</span>
               {#if conn.readonly}
-                <Badge variant="warning" size="sm">🔒 READ-ONLY</Badge>
+                <Badge variant="warning" size="sm">
+                  <Icon name="lock" size={11} />
+                  <span>READ-ONLY</span>
+                </Badge>
               {:else}
-                <Badge variant="info" size="sm">⚡ READ-WRITE</Badge>
+                <Badge variant="info" size="sm">
+                  <Icon name="lightning" size={11} />
+                  <span>READ-WRITE</span>
+                </Badge>
               {/if}
             </Flex>
             {#if conn.status === 'healthy'}

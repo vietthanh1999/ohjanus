@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Database from 'reicon-svelte/icons/Database.svelte';
+  import Search from 'reicon-svelte/icons/Search.svelte';
 
   interface Props {
     size?: number | string;
@@ -18,4 +18,4 @@
   }: Props = $props();
 </script>
 
-<Database {size} {color} {strokeWidth} class="ohjanus-icon {className}" {...restProps} />
+<Search {size} {color} {strokeWidth} class="ohjanus-icon {className}" {...restProps} />

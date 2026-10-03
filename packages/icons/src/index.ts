@@ -1,6 +1,12 @@
+export * from './types.js';
 export { default as Icon } from './Icon.svelte';
 export { default as DatabaseIcon } from './DatabaseIcon.svelte';
 export { default as TableIcon } from './TableIcon.svelte';
 export { default as ShieldIcon } from './ShieldIcon.svelte';
 export { default as KeyIcon } from './KeyIcon.svelte';
 export { default as AuditIcon } from './AuditIcon.svelte';
+export { default as SearchIcon } from './SearchIcon.svelte';
+export { default as SettingsIcon } from './SettingsIcon.svelte';
+export { default as RefreshIcon } from './RefreshIcon.svelte';
+export { default as BellIcon } from './BellIcon.svelte';
+export { default as LockIcon } from './LockIcon.svelte';

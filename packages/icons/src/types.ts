@@ -1,0 +1,58 @@
+export type IconName =
+  | 'database'
+  | 'table'
+  | 'shield'
+  | 'key'
+  | 'audit'
+  | 'search'
+  | 'settings'
+  | 'refresh'
+  | 'plus'
+  | 'minus'
+  | 'x'
+  | 'close'
+  | 'check'
+  | 'chevron-down'
+  | 'chevron-right'
+  | 'chevron-left'
+  | 'chevron-up'
+  | 'terminal'
+  | 'clock'
+  | 'filter'
+  | 'trash'
+  | 'lock'
+  | 'unlock'
+  | 'eye'
+  | 'eye-off'
+  | 'copy'
+  | 'download'
+  | 'upload'
+  | 'play'
+  | 'folder'
+  | 'bell'
+  | 'lightning'
+  | 'chart'
+  | 'cpu'
+  | 'user'
+  | 'users'
+  | 'more'
+  | 'alert-triangle'
+  | 'arrow-up'
+  | 'arrow-down'
+  | 'arrow-left'
+  | 'arrow-right'
+  | 'undo'
+  | 'redo'
+  | 'pin'
+  | 'printer'
+  | 'stop'
+  | 'maximize'
+  | 'layout';
+
+export interface IconProps {
+  size?: number | string;
+  color?: string;
+  strokeWidth?: number | string;
+  class?: string;
+  [key: string]: any;
+}

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
+  import { Icon } from '@ohjanus/icons';
 
   let isDropdownOpen = $state(false);
 </script>
@@ -18,25 +19,21 @@
         <!-- Icon -->
         <span class="tab-icon">
           {#if tab.type === 'console'}
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="#4A88C7">
-              <path d="M11.251.068a.5.5 0 01.42.58L10.07 5H14a.5.5 0 01.372.832l-8.5 9.5a.5.5 0 01-.842-.512L6.63 9.5H2.5a.5.5 0 01-.42-.772l8.5-8.5a.5.5 0 01.671-.16z"/>
-            </svg>
+            <Icon name="lightning" size={14} color="#4A88C7" />
           {:else if tab.type === 'table'}
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="#4A88C7">
-              <path d="M0 2a1 1 0 011-1h14a1 1 0 011 1v12a1 1 0 01-1 1H1a1 1 0 01-1-1V2zm1 3v2h6V5H1zm7 0v2h7V5H8zm0 3v2h7V8H8zm-1 0H1v2h6V8zm0 3H1v2h6v-2zm1 0v2h7v-2H8z"/>
-            </svg>
+            <Icon name="table" size={14} color="#4A88C7" />
           {:else if tab.type === 'approvals'}
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="#EDA200">
-              <path fill-rule="evenodd" d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 00-1.044 1.262c-.596 4.477.787 7.795 2.464 9.99 1.579 2.065 3.444 3.009 4.395 3.318.066.022.135.034.204.034s.138-.012.204-.034c.951-.309 2.816-1.253 4.395-3.318 1.677-2.195 3.06-5.513 2.464-9.99a1.54 1.54 0 00-1.044-1.263 62.467 62.467 0 00-2.887-.87C9.843.266 8.69 0 8 0zm2.146 5.146a.5.5 0 01.708.708l-3 3a.5.5 0 01-.708 0l-1.5-1.5a.5.5 0 11.708-.708L7.5 7.793l2.646-2.647z"/>
-            </svg>
+            <Icon name="shield" size={14} color="#EDA200" />
           {:else if tab.type === 'audit'}
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="#56A8F5">
-              <path d="M4 1.5H3a2 2 0 00-2 2V14a2 2 0 002 2h10a2 2 0 002-2V3.5a2 2 0 00-2-2h-1v1h1a1 1 0 011 1V14a1 1 0 01-1 1H3a1 1 0 01-1-1V3.5a1 1 0 011-1h1v-1z"/>
-            </svg>
+            <Icon name="audit" size={14} color="#56A8F5" />
+          {:else if tab.type === 'tokens'}
+            <Icon name="key" size={14} color="#3B82F6" />
+          {:else if tab.type === 'connections'}
+            <Icon name="database" size={14} color="#3B82F6" />
+          {:else if tab.type === 'dashboard'}
+            <Icon name="chart" size={14} color="#57D38C" />
           {:else}
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="#7A7E85">
-              <path d="M8 1c3.866 0 7 1.12 7 2.5v9c0 1.38-3.134 2.5-7 2.5s-7-1.12-7-2.5v-9C1 2.12 4.134 1 8 1zm5.5 2.5c0-.44-2.126-1.2-5.5-1.2s-5.5.76-5.5 1.2 2.126 1.2 5.5 1.2 5.5-.76 5.5-1.2z"/>
-            </svg>
+            <Icon name="database" size={14} color="#7A7E85" />
           {/if}
         </span>
 
@@ -48,14 +45,20 @@
           <span
             class="tab-close-icon"
             role="button"
-            tabindex="-1"
+            tabindex="0"
             title="Close Tab"
             onclick={(e) => {
               e.stopPropagation();
               appState.closeTab(tab.id);
             }}
+            onkeydown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation();
+                appState.closeTab(tab.id);
+              }
+            }}
           >
-            ×
+            <Icon name="close" size={11} />
           </span>
         {/if}
       </button>
@@ -70,9 +73,7 @@
       title="All Open Tabs"
       onclick={() => isDropdownOpen = !isDropdownOpen}
     >
-      <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M4 6l4 4 4-4H4z" />
-      </svg>
+      <Icon name="chevron-down" size={10} />
     </button>
 
     <button
@@ -80,9 +81,7 @@
       class="overflow-btn"
       title="Tab Actions"
     >
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M8 3a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 6.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>
-      </svg>
+      <Icon name="more" size={13} />
     </button>
 
     {#if isDropdownOpen}
@@ -91,28 +90,49 @@
       <div class="tabs-dropdown" onclick={() => isDropdownOpen = false}>
         <div class="dropdown-header">Database Objects</div>
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'connection_credential', title: 'connectio...credential [[Dev][ReadOnly] 10.220.6.4]', type: 'table', closable: true, icon: 'table', env: 'Dev' })}>
-          <span>🗄️ connection_credential [[Dev][ReadOnly] 10.220.6.4]</span>
+          <span class="dropdown-item-content">
+            <Icon name="table" size={14} color="#4A88C7" />
+            <span>connection_credential [[Dev][ReadOnly] 10.220.6.4]</span>
+          </span>
         </button>
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'console_2', title: 'console_2 [[PRD] 10.250.6.23]', type: 'console', closable: true, icon: 'lightning', env: 'PRD' })}>
-          <span>⚡ console_2 [[PRD] 10.250.6.23]</span>
+          <span class="dropdown-item-content">
+            <Icon name="lightning" size={14} color="#3B82F6" />
+            <span>console_2 [[PRD] 10.250.6.23]</span>
+          </span>
         </button>
         <div class="dropdown-separator"></div>
         <div class="dropdown-header">Gateway Modules (§ui.md)</div>
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'approvals', title: 'Approvals Queue', type: 'approvals', closable: true, icon: 'shield', badge: '2' })}>
-          <span>🛡️ Approvals Queue</span>
+          <span class="dropdown-item-content">
+            <Icon name="shield" size={14} color="#EDA200" />
+            <span>Approvals Queue</span>
+          </span>
           <span class="count-tag">{appState.notificationCount}</span>
         </button>
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'audit', title: 'Audit Logs', type: 'audit', closable: true, icon: 'audit' })}>
-          <span>📜 Audit Log Trail</span>
+          <span class="dropdown-item-content">
+            <Icon name="audit" size={14} color="#56A8F5" />
+            <span>Audit Log Trail</span>
+          </span>
         </button>
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'tokens', title: 'MCP Tokens', type: 'tokens', closable: true, icon: 'key' })}>
-          <span>🔑 MCP Agent Tokens</span>
+          <span class="dropdown-item-content">
+            <Icon name="key" size={14} color="#3B82F6" />
+            <span>MCP Agent Tokens</span>
+          </span>
         </button>
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'connections', title: 'Connection Pools', type: 'connections', closable: true, icon: 'database' })}>
-          <span>🔌 Connection Pools</span>
+          <span class="dropdown-item-content">
+            <Icon name="database" size={14} color="#3B82F6" />
+            <span>Connection Pools</span>
+          </span>
         </button>
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'dashboard', title: 'Gateway Dashboard', type: 'dashboard', closable: true, icon: 'chart' })}>
-          <span>📊 Telemetry Dashboard</span>
+          <span class="dropdown-item-content">
+            <Icon name="chart" size={14} color="#57D38C" />
+            <span>Telemetry Dashboard</span>
+          </span>
         </button>
       </div>
     {/if}
@@ -264,6 +284,15 @@
 
   .dropdown-item:hover {
     background-color: var(--bg-hover);
+  }
+
+  .dropdown-item-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .count-tag {

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
+  import { Icon } from '@ohjanus/icons';
 </script>
 
 <div class="log-console-container">
@@ -29,14 +30,20 @@
   <!-- Right Action Strip matching design2.png -->
   <div class="log-action-strip">
     <button type="button" class="strip-btn" title="Toggle Output Window">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M4 1.5H3a2 2 0 00-2 2V14a2 2 0 002 2h10a2 2 0 002-2V3.5a2 2 0 00-2-2h-1v1h1a1 1 0 011 1V14a1 1 0 01-1 1H3a1 1 0 01-1-1V3.5a1 1 0 011-1h1v-1z"/>
-      </svg>
+      <Icon name="audit" size={13} />
     </button>
-    <button type="button" class="strip-btn" title="Collapse">—</button>
-    <button type="button" class="strip-btn" title="Undo">↩</button>
-    <button type="button" class="strip-btn" title="Print Log">🖨️</button>
-    <button type="button" class="strip-btn" title="Clear Console" onclick={() => appState.consoleLogs = []}>🗑️</button>
+    <button type="button" class="strip-btn" title="Collapse">
+      <Icon name="minus" size={11} />
+    </button>
+    <button type="button" class="strip-btn" title="Undo">
+      <Icon name="undo" size={12} />
+    </button>
+    <button type="button" class="strip-btn" title="Print Log">
+      <Icon name="printer" size={13} />
+    </button>
+    <button type="button" class="strip-btn" title="Clear Console" onclick={() => appState.consoleLogs = []}>
+      <Icon name="trash" size={13} />
+    </button>
   </div>
 </div>
 
@@ -116,7 +123,7 @@
     color: var(--text-muted, #7A7E85);
   }
 
-  .strip-btn svg {
+  :global(.strip-btn svg) {
     width: var(--icon-size-sm, 14px);
     height: var(--icon-size-sm, 14px);
   }

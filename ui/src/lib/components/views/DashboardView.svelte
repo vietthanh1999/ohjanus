@@ -1,12 +1,13 @@
 <script lang="ts">
   import { appStore } from '../../appStore.svelte';
   import { Card, Badge, Box, Flex, Grid, Stack } from '@ohjanus/ui';
+  import { Icon } from '@ohjanus/icons';
 </script>
 
 <Box class="dashboard-view">
   <Flex as="header" class="view-header" align="center">
     <Flex align="center" gap="8px">
-      <span style="font-size: 16px;">📊</span>
+      <Icon name="chart" size={16} color="#3574F0" />
       <span class="view-title">OhJanus MCP Gateway Observability &amp; Metrics</span>
     </Flex>
   </Flex>

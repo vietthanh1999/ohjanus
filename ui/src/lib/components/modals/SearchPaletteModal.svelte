@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { DialogPrimitive, Badge, Kbd, Box, Flex } from '@ohjanus/ui';
+  import { Icon } from '@ohjanus/icons';
 
   let query = $state('');
 
@@ -43,9 +44,7 @@
 <DialogPrimitive open={appState.searchModalOpen} onClose={close}>
   <Box class="palette-modal">
     <Flex class="palette-input-wrap" align="center" gap="10px">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="var(--text-muted)">
-        <path fill-rule="evenodd" d="M11.5 7a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"/>
-      </svg>
+      <Icon name="search" size={15} color="var(--text-muted)" />
       <!-- svelte-ignore a11y_autofocus -->
       <input
         type="text"

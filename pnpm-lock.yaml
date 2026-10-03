@@ -13,6 +13,10 @@ importers:
         version: 5.9.3
 
   packages/icons:
+    dependencies:
+      reicon-svelte:
+        specifier: ^1.0.105
+        version: 1.0.105(svelte@5.57.1)
     devDependencies:
       svelte:
         specifier: ^5.57.0
@@ -432,6 +436,11 @@ packages:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
     engines: {node: '>= 14.18.0'}
 
+  reicon-svelte@1.0.105:
+    resolution: {integrity: sha512-brG4s9gIgezgvZxbA+xe42cJy4YUzi//95Otg0hd56UhoXwOmTliQ2KKj5b9KW7hxIYoMMmkO3Cqs/k6qqePSw==}
+    peerDependencies:
+      svelte: '>=3.0.0'
+
   rolldown@1.2.12:
     resolution: {integrity: sha512-8wafseiaG80xmXSfqidUNqZcylTlhmPZZt+za2m+js2sFZ8dTNlhIOV2WcbIPx2hgwPBJpEUGFAMZ9bgBBLTSQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -736,6 +745,10 @@ snapshots:
       source-map-js: 1.2.2
 
   readdirp@4.1.2: {}
+
+  reicon-svelte@1.0.105(svelte@5.57.1):
+    dependencies:
+      svelte: 5.57.1
 
   rolldown@1.2.12:
     dependencies:

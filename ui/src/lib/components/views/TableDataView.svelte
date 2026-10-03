@@ -1,5 +1,6 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
+  import { Icon } from '@ohjanus/icons';
 
   let selectedRowIndex = $state(0);
   let selectedColumn = $state('id');
@@ -90,54 +91,59 @@
     <div class="toolbar-left">
       <!-- ⟳ Reload -->
       <button type="button" class="jb-icon-btn" title="Reload (Cmd+R)" onclick={handleReload}>
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-          <path fill-rule="evenodd" d="M8 3a5 5 0 104.546 2.914.5.5 0 01.908-.417A6 6 0 118 2v1z"/>
-          <path d="M8 4.466V.534a.25.25 0 01.41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 018 4.466z"/>
-        </svg>
+        <Icon name="refresh" size={13} />
       </button>
 
       <!-- 🕒 Clock -->
       <button type="button" class="jb-icon-btn" title="Query History">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1.5a5.5 5.5 0 110 11 5.5 5.5 0 010-11zM7.25 4v4.25l3.25 1.95.75-1.23-2.5-1.5V4h-1.5z"/>
-        </svg>
+        <Icon name="clock" size={13} />
       </button>
 
       <!-- ⏹ Stop -->
       <button type="button" class="jb-icon-btn" title="Cancel Query">
-        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
-          <rect x="2" y="2" width="12" height="12" rx="1.5"/>
-        </svg>
+        <Icon name="stop" size={11} />
       </button>
 
       <span class="bar-separator"></span>
 
       <!-- + Add Row -->
-      <button type="button" class="jb-icon-btn" title="Add New Row">+</button>
+      <button type="button" class="jb-icon-btn" title="Add New Row">
+        <Icon name="plus" size={13} />
+      </button>
 
       <!-- - Delete Row -->
-      <button type="button" class="jb-icon-btn" title="Delete Row">—</button>
+      <button type="button" class="jb-icon-btn" title="Delete Row">
+        <Icon name="minus" size={13} />
+      </button>
 
       <!-- ↩ Revert -->
-      <button type="button" class="jb-icon-btn" title="Revert">↩</button>
+      <button type="button" class="jb-icon-btn" title="Revert">
+        <Icon name="undo" size={13} />
+      </button>
 
       <!-- ↪ Submit -->
-      <button type="button" class="jb-icon-btn" title="Submit">↪</button>
+      <button type="button" class="jb-icon-btn" title="Submit">
+        <Icon name="redo" size={13} />
+      </button>
 
       <span class="bar-separator"></span>
 
       <!-- ↑ Reorder Up -->
-      <button type="button" class="jb-icon-btn" title="Move Up">↑</button>
+      <button type="button" class="jb-icon-btn" title="Move Up">
+        <Icon name="arrow-up" size={13} />
+      </button>
 
       <!-- ↓ Reorder Down -->
-      <button type="button" class="jb-icon-btn" title="Move Down">↓</button>
+      <button type="button" class="jb-icon-btn" title="Move Down">
+        <Icon name="arrow-down" size={13} />
+      </button>
 
       <span class="bar-separator"></span>
 
       <!-- Tx: Auto ⌵ -->
       <button type="button" class="tx-selector" title="Transaction Isolation Mode">
         <span>Tx: Auto</span>
-        <svg width="8" height="8" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4H4z" /></svg>
+        <Icon name="chevron-down" size={8} />
       </button>
 
       <span class="bar-separator"></span>
@@ -149,23 +155,17 @@
 
       <!-- Search in Table -->
       <button type="button" class="jb-icon-btn" title="Search in Table (Cmd+F)">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-          <path fill-rule="evenodd" d="M11.5 7a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"/>
-        </svg>
+        <Icon name="search" size={12} />
       </button>
 
       <!-- Columns icon -->
       <button type="button" class="jb-icon-btn" title="Show/Hide Columns">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M0 2a1 1 0 011-1h14a1 1 0 011 1v12a1 1 0 01-1 1H1a1 1 0 01-1-1V2zm1 3v2h6V5H1zm7 0v2h7V5H8zm0 3v2h7V8H8zm-1 0H1v2h6V8zm0 3H1v2h6v-2zm1 0v2h7v-2H8z"/>
-        </svg>
+        <Icon name="table" size={12} />
       </button>
 
       <!-- Diagram icon -->
       <button type="button" class="jb-icon-btn" title="View Diagram">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M2 3h4v4H2V3zm0 6h4v4H2V9zm8-6h4v4h-4V3zm0 6h4v4h-4V9z"/>
-        </svg>
+        <Icon name="layout" size={12} />
       </button>
     </div>
 
@@ -173,23 +173,33 @@
       <!-- CSV ⌵ -->
       <button type="button" class="export-dropdown" title="Data Format">
         <span>CSV</span>
-        <svg width="8" height="8" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4H4z" /></svg>
+        <Icon name="chevron-down" size={8} />
       </button>
 
       <!-- Download ⤓ -->
-      <button type="button" class="jb-icon-btn" title="Export to File">⤓</button>
+      <button type="button" class="jb-icon-btn" title="Export to File">
+        <Icon name="download" size={12} />
+      </button>
 
       <!-- Upload ⤒ -->
-      <button type="button" class="jb-icon-btn" title="Import from File">⤒</button>
+      <button type="button" class="jb-icon-btn" title="Import from File">
+        <Icon name="upload" size={12} />
+      </button>
 
       <!-- Maximize ↗ -->
-      <button type="button" class="jb-icon-btn" title="Maximize View">↗</button>
+      <button type="button" class="jb-icon-btn" title="Maximize View">
+        <Icon name="maximize" size={12} />
+      </button>
 
       <!-- Eye 👁️ -->
-      <button type="button" class="jb-icon-btn" title="View Options">👁️</button>
+      <button type="button" class="jb-icon-btn" title="View Options">
+        <Icon name="eye" size={12} />
+      </button>
 
       <!-- Settings ⚙️ -->
-      <button type="button" class="jb-icon-btn" title="Settings">⚙️</button>
+      <button type="button" class="jb-icon-btn" title="Settings">
+        <Icon name="settings" size={12} />
+      </button>
     </div>
   </div>
 
@@ -227,9 +237,7 @@
           <!-- Column id -->
           <th class="col-header" style="width: 280px;">
             <div class="header-inner">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="#FACC15">
-                <path d="M0 8a4 4 0 017.465-2H14a2 2 0 012 2v1a1 1 0 01-1 1h-1v1a1 1 0 01-1 1h-1v1a1 1 0 01-1 1H9.465A4 4 0 010 8zm4-2a2 2 0 100 4 2 2 0 000-4z"/>
-              </svg>
+              <Icon name="key" size={12} color="#FACC15" />
               <span class="col-name">id</span>
               <span class="header-funnel">▽</span>
               <span class="header-sort">⇅</span>
@@ -239,9 +247,7 @@
           <!-- Column createdDate -->
           <th class="col-header" style="width: 220px;">
             <div class="header-inner">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="#56A8F5">
-                <path d="M3.5 0a.5.5 0 01.5.5V1h8V.5a.5.5 0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5 0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/>
-              </svg>
+              <Icon name="clock" size={12} color="#56A8F5" />
               <span class="col-name">createdDate</span>
               <span class="header-funnel">▽</span>
               <span class="header-sort">⇅</span>
@@ -251,9 +257,7 @@
           <!-- Column lastUpdatedDate -->
           <th class="col-header" style="width: 220px;">
             <div class="header-inner">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="#56A8F5">
-                <path d="M3.5 0a.5.5 0 01.5.5V1h8V.5a.5.5 0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5 0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/>
-              </svg>
+              <Icon name="clock" size={12} color="#56A8F5" />
               <span class="col-name">lastUpdatedDate</span>
               <span class="header-funnel">▽</span>
               <span class="header-sort">⇅</span>
@@ -263,9 +267,7 @@
           <!-- Column createdBy -->
           <th class="col-header">
             <div class="header-inner">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="#7A7E85">
-                <path d="M8 8a3 3 0 100-6 3 3 0 000 6zm2-3a2 2 0 11-4 0 2 2 0 014 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
-              </svg>
+              <Icon name="user" size={12} color="#7A7E85" />
               <span class="col-name">createdBy</span>
               <span class="header-funnel">▽</span>
             </div>

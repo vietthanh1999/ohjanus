@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Modal, Button, Input, Field, Alert, toast, Box, Flex, Stack } from '@ohjanus/ui';
+  import { Icon } from '@ohjanus/icons';
 
   let tokenName = $state('');
   let selectedScopes = $state<string[]>(['read', 'schema']);
@@ -90,7 +91,13 @@
             </Box>
 
             <Button variant="secondary" onclick={copySecret}>
-              {hasCopied ? '✓ Copied to Clipboard!' : '📋 Copy Token to Clipboard'}
+              {#if hasCopied}
+                <Icon name="check" size={14} color="#57D38C" />
+                <span>Copied to Clipboard!</span>
+              {:else}
+                <Icon name="copy" size={14} />
+                <span>Copy Token to Clipboard</span>
+              {/if}
             </Button>
           </Stack>
         {/if}

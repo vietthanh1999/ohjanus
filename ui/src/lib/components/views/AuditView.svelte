@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appState, type AuditRecord } from '../../state/appState.svelte';
   import { Button, Badge, Input, toast, Box, Flex, Stack, Text } from '@ohjanus/ui';
+  import { Icon } from '@ohjanus/icons';
 
   let filterStatus = $state<string>('ALL');
   let searchQuery = $state<string>('');
@@ -54,9 +55,7 @@
   <Flex as="header" class="audit-header" align="center" justify="between">
     <Stack class="header-left" gap="2px">
       <Flex class="header-title" align="center" gap="8px">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="#56A8F5">
-          <path d="M4 1.5H3a2 2 0 00-2 2V14a2 2 0 002 2h10a2 2 0 002-2V3.5a2 2 0 00-2-2h-1v1h1a1 1 0 011 1V14a1 1 0 01-1 1H3a1 1 0 01-1-1V3.5a1 1 0 011-1h1v-1z"/>
-        </svg>
+        <Icon name="audit" size={16} color="#56A8F5" />
         <span>MCP Gateway Audit Log Trail</span>
       </Flex>
       <span class="header-desc">End-to-end provenance records of all incoming queries and tool requests</span>
@@ -81,7 +80,8 @@
 
       <!-- Export Button via UI Kit -->
       <Button variant="secondary" size="sm" onclick={exportCSV}>
-        <span>⤓ Export CSV</span>
+        <Icon name="download" size={14} />
+        <span>Export CSV</span>
       </Button>
     </Flex>
   </Flex>

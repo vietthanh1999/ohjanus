@@ -1,5 +1,6 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
+  import { Icon } from '@ohjanus/icons';
 
   let selectedRowIndex = $state(0);
   let selectedColumn = $state('id');
@@ -20,23 +21,17 @@
         title="Execute Entire Statement (Cmd+Enter)"
         onclick={handleExecute}
       >
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M4 2.5l9 5.5-9 5.5V2.5z"/>
-        </svg>
+        <Icon name="play" size={13} />
       </button>
 
       <!-- Execute Under Caret (▶_) -->
       <button type="button" class="action-btn step-btn" title="Execute Statement Under Caret">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M4 3l6 4-6 4V3zM2 13h12v1.5H2V13z"/>
-        </svg>
+        <Icon name="play" size={13} />
       </button>
 
       <!-- History (🕒) -->
       <button type="button" class="action-btn" title="Query History">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1.5a5.5 5.5 0 110 11 5.5 5.5 0 010-11zM7.25 4v4.25l3.25 1.95.75-1.23-2.5-1.5V4h-1.5z"/>
-        </svg>
+        <Icon name="clock" size={13} />
       </button>
 
       <!-- Parameter (P) -->
@@ -46,17 +41,12 @@
 
       <!-- Settings (⚙️) -->
       <button type="button" class="action-btn" title="Console Settings">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M7.07 1a1 1 0 00-.97.757l-.24 1.026a5.526 5.526 0 00-1.282.74L3.6 3.057a1 1 0 00-1.205.247l-.98 1.135a1 1 0 00-.173 1.218l.617.848a5.534 5.534 0 00-.012 1.48l-.618.847a1 1 0 00.173 1.218l.98 1.136a1 1 0 001.206.246l.978-.466c.394.3.826.55 1.282.74l.24 1.026A1 1 0 007.07 15h1.86a1 1 0 00.97-.757l.24-1.026c.456-.19.888-.44 1.282-.74l.978.466a1 1 0 001.206-.246l.98-1.136a1 1 0 00-.173-1.218l-.617-.847c.105-.486.105-.993 0-1.48l.617-.848a1 1 0 00.173-1.218l-.98-1.135a1 1 0 00-1.206-.247l-.978.466a5.527 5.527 0 00-1.282-.74l-.24-1.026A1 1 0 008.93 1H7.07zm.93 5a2 2 0 110 4 2 2 0 010-4z"/>
-        </svg>
+        <Icon name="settings" size={12} />
       </button>
 
       <!-- Split Layout 🗖 -->
       <button type="button" class="action-btn" title="Toggle Split Orientation">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-          <rect x="2" y="2" width="12" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
+        <Icon name="layout" size={12} />
       </button>
 
       <span class="bar-separator"></span>
@@ -64,25 +54,23 @@
       <!-- Tx Mode -->
       <button type="button" class="selector-dropdown" title="Transaction Isolation Mode">
         <span>Tx: Auto</span>
-        <svg width="8" height="8" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4H4z" /></svg>
+        <Icon name="chevron-down" size={8} />
       </button>
 
       <!-- Playground mode -->
       <label class="playground-chk" title="Sandbox execution without commit">
         <input type="checkbox" />
         <span>Playground</span>
-        <svg width="8" height="8" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4H4z" /></svg>
+        <Icon name="chevron-down" size={8} />
       </label>
     </div>
 
     <!-- Target Schema Selector (Right pinned matching design.png) -->
     <div class="toolbar-right">
       <button type="button" class="schema-btn" title="Target Database Schema Context">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="#7A7E85">
-          <path d="M8 1c3.866 0 7 .895 7 2v10c0 1.105-3.134 2-7 2s-7-.895-7-2V3c0-1.105 3.134-2 7-2z"/>
-        </svg>
+        <Icon name="database" size={12} color="#7A7E85" />
         <span class="schema-name">prd_mh_asset.public</span>
-        <svg width="8" height="8" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4H4z" /></svg>
+        <Icon name="chevron-down" size={8} />
       </button>
     </div>
   </div>
@@ -161,47 +149,73 @@
   <!-- 3. QUERY RESULTS MULTI-TAB & ACTION BAR matching design.png -->
   <div class="results-header-tabs">
     <div class="result-tab">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M0 2a1 1 0 011-1h14a1 1 0 011 1v12a1 1 0 01-1 1H1a1 1 0 01-1-1V2zm1 3v2h6V5H1zm7 0v2h7V5H8zm0 3v2h7V8H8zm-1 0H1v2h6V8zm0 3H1v2h6v-2zm1 0v2h7v-2H8z"/></svg>
+      <Icon name="table" size={12} />
       <span>Result 1</span>
     </div>
     <div class="result-tab">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M0 2a1 1 0 011-1h14a1 1 0 011 1v12a1 1 0 01-1 1H1a1 1 0 01-1-1V2zm1 3v2h6V5H1zm7 0v2h7V5H8zm0 3v2h7V8H8zm-1 0H1v2h6V8zm0 3H1v2h6v-2zm1 0v2h7v-2H8z"/></svg>
+      <Icon name="table" size={12} />
       <span>Result 1-2</span>
     </div>
     <div class="result-tab">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M0 2a1 1 0 011-1h14a1 1 0 011 1v12a1 1 0 01-1 1H1a1 1 0 01-1-1V2zm1 3v2h6V5H1zm7 0v2h7V5H8zm0 3v2h7V8H8zm-1 0H1v2h6V8zm0 3H1v2h6v-2zm1 0v2h7v-2H8z"/></svg>
+      <Icon name="table" size={12} />
       <span>prd_mh_asset.public.transfer_job</span>
     </div>
     <div class="result-tab">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M0 2a1 1 0 011-1h14a1 1 0 011 1v12a1 1 0 01-1 1H1a1 1 0 01-1-1V2zm1 3v2h6V5H1zm7 0v2h7V5H8zm0 3v2h7V8H8zm-1 0H1v2h6V8zm0 3H1v2h6v-2zm1 0v2h7v-2H8z"/></svg>
+      <Icon name="table" size={12} />
       <span>Result 1-4</span>
     </div>
     <!-- Active Result Tab with rounded border pill -->
     <div class="result-tab active">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M0 2a1 1 0 011-1h14a1 1 0 011 1v12a1 1 0 01-1 1H1a1 1 0 01-1-1V2zm1 3v2h6V5H1zm7 0v2h7V5H8zm0 3v2h7V8H8zm-1 0H1v2h6V8zm0 3H1v2h6v-2zm1 0v2h7v-2H8z"/></svg>
+      <Icon name="table" size={12} />
       <span>prd_mh_asset.public.transfer_job 2</span>
-      <span class="close-x">×</span>
+      <span class="close-x">
+        <Icon name="close" size={10} />
+      </span>
     </div>
-    <div class="result-tab-chevron">⌵</div>
+    <div class="result-tab-chevron">
+      <Icon name="chevron-down" size={10} />
+    </div>
   </div>
 
   <!-- Result Toolbar matching design.png -->
   <div class="results-toolbar">
     <div class="toolbar-left">
-      <button type="button" class="jb-icon-btn" title="Grid View">⊞</button>
-      <button type="button" class="jb-icon-btn" title="Text View">🗎</button>
+      <button type="button" class="jb-icon-btn" title="Grid View">
+        <Icon name="table" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Text View">
+        <Icon name="audit" size={12} />
+      </button>
       <span class="bar-separator"></span>
-      <button type="button" class="jb-icon-btn" title="Reload (Cmd+R)" onclick={handleExecute}>⟳</button>
-      <button type="button" class="jb-icon-btn" title="History">🕒</button>
-      <button type="button" class="jb-icon-btn" title="Cancel">⏹</button>
+      <button type="button" class="jb-icon-btn" title="Reload (Cmd+R)" onclick={handleExecute}>
+        <Icon name="refresh" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="History">
+        <Icon name="clock" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Cancel">
+        <Icon name="stop" size={11} />
+      </button>
       <span class="bar-separator"></span>
-      <button type="button" class="jb-icon-btn" title="Add Row">+</button>
-      <button type="button" class="jb-icon-btn" title="Delete Row">—</button>
-      <button type="button" class="jb-icon-btn" title="Revert">↩</button>
-      <button type="button" class="jb-icon-btn" title="Commit">↪</button>
+      <button type="button" class="jb-icon-btn" title="Add Row">
+        <Icon name="plus" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Delete Row">
+        <Icon name="minus" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Revert">
+        <Icon name="undo" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Commit">
+        <Icon name="redo" size={12} />
+      </button>
       <span class="bar-separator"></span>
-      <button type="button" class="jb-icon-btn" title="Sort Up">↑</button>
-      <button type="button" class="jb-icon-btn" title="Sort Down">↓</button>
+      <button type="button" class="jb-icon-btn" title="Sort Up">
+        <Icon name="arrow-up" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Sort Down">
+        <Icon name="arrow-down" size={12} />
+      </button>
       <span class="bar-separator"></span>
       <span style="color: var(--text-secondary); font-size: 11px; padding: 0 4px;">Tx: Auto</span>
       <span class="bar-separator"></span>
@@ -209,19 +223,39 @@
         <span style="font-size: 10px; font-weight: 700; color: #7A7E85;">DDL</span>
       </button>
       <span class="bar-separator"></span>
-      <button type="button" class="jb-icon-btn" title="Pin Tab">📌</button>
-      <button type="button" class="jb-icon-btn" title="Search in Table">🔍</button>
-      <button type="button" class="jb-icon-btn" title="Filter Funnel">Y</button>
-      <button type="button" class="jb-icon-btn" title="Statistics">📊</button>
+      <button type="button" class="jb-icon-btn" title="Pin Tab">
+        <Icon name="pin" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Search in Table">
+        <Icon name="search" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Filter Funnel">
+        <Icon name="filter" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Statistics">
+        <Icon name="chart" size={12} />
+      </button>
     </div>
 
     <div class="toolbar-right">
-      <span class="export-dropdown">CSV ⌵</span>
-      <button type="button" class="jb-icon-btn" title="Export">⤓</button>
-      <button type="button" class="jb-icon-btn" title="Import">⤒</button>
-      <button type="button" class="jb-icon-btn" title="Charts">📈</button>
-      <button type="button" class="jb-icon-btn" title="Options">👁️</button>
-      <button type="button" class="jb-icon-btn" title="Settings">⚙️</button>
+      <span class="export-dropdown">
+        CSV <Icon name="chevron-down" size={8} />
+      </span>
+      <button type="button" class="jb-icon-btn" title="Export">
+        <Icon name="download" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Import">
+        <Icon name="upload" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Charts">
+        <Icon name="chart" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Options">
+        <Icon name="eye" size={12} />
+      </button>
+      <button type="button" class="jb-icon-btn" title="Settings">
+        <Icon name="settings" size={12} />
+      </button>
     </div>
   </div>
 
@@ -233,9 +267,7 @@
           <th class="row-num-header"></th>
           <th class="col-header" style="width: 320px;">
             <div class="header-inner">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="#FACC15">
-                <path d="M0 8a4 4 0 017.465-2H14a2 2 0 012 2v1a1 1 0 01-1 1h-1v1a1 1 0 01-1 1h-1v1a1 1 0 01-1 1H9.465A4 4 0 010 8zm4-2a2 2 0 100 4 2 2 0 000-4z"/>
-              </svg>
+              <Icon name="key" size={12} color="#FACC15" />
               <span>id</span>
               <span class="header-icon">▽</span>
               <span class="header-icon">⇅</span>
@@ -334,7 +366,7 @@
     transition: all 0.1s ease;
   }
 
-  .action-btn svg {
+  :global(.action-btn svg) {
     width: var(--icon-size-sm, 14px);
     height: var(--icon-size-sm, 14px);
   }
