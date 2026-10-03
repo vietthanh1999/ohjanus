@@ -11,6 +11,15 @@
     Flex,
     Stack,
     Text,
+    DataGrid,
+    DataGridHead,
+    DataGridBody,
+    DataGridRow,
+    DataGridHeadCell,
+    DataGridHeaderInner,
+    DataGridRowNumHead,
+    DataGridRowNum,
+    DataGridCell,
   } from "@ohjanus/ui";
   import { Icon } from "@ohjanus/icons";
 
@@ -110,112 +119,118 @@
   <Flex class="content-layout">
     <!-- Grid -->
     <Box class="table-container">
-      <table class="audit-table jb-grid code-text">
-        <thead>
-          <tr>
-            <th class="row-num-header"></th>
-            <th class="col-header" style="width: 150px;">
-              <div class="header-inner">
+      <DataGrid style="height: 100%;">
+        {#snippet overlay()}
+          <!-- Floating row count pill -->
+          <div class="floating-row-badge" title="Filter count">
+            <span>{filteredAuditLogs.length} rows</span>
+            <span style="color: var(--text-muted); opacity: 0.6;">|</span>
+            <Icon name="more" size={12} />
+          </div>
+        {/snippet}
+        <DataGridHead>
+          <DataGridRow>
+            <DataGridRowNumHead />
+            <DataGridHeadCell width="150px">
+              <DataGridHeaderInner>
                 <Icon name="clock" size={12} color="#56A8F5" />
-                <span class="col-name">Timestamp</span>
-                <span class="header-funnel"
+                <span>Timestamp</span>
+                <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="header-sort"><Icon name="sort" size={9} /></span>
-              </div>
-            </th>
-            <th class="col-header" style="width: 110px;">
-              <div class="header-inner">
+                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+              </DataGridHeaderInner>
+            </DataGridHeadCell>
+            <DataGridHeadCell width="110px">
+              <DataGridHeaderInner>
                 <Icon name="shield" size={12} color="#EDA200" />
-                <span class="col-name">Decision</span>
-                <span class="header-funnel"
+                <span>Decision</span>
+                <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="header-sort"><Icon name="sort" size={9} /></span>
-              </div>
-            </th>
-            <th class="col-header" style="width: 170px;">
-              <div class="header-inner">
+                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+              </DataGridHeaderInner>
+            </DataGridHeadCell>
+            <DataGridHeadCell width="170px">
+              <DataGridHeaderInner>
                 <Icon name="user" size={12} color="#7A7E85" />
-                <span class="col-name">Client Agent</span>
-                <span class="header-funnel"
+                <span>Client Agent</span>
+                <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="header-sort"><Icon name="sort" size={9} /></span>
-              </div>
-            </th>
-            <th class="col-header" style="width: 150px;">
-              <div class="header-inner">
+                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+              </DataGridHeaderInner>
+            </DataGridHeadCell>
+            <DataGridHeadCell width="150px">
+              <DataGridHeaderInner>
                 <Icon name="database" size={12} color="#3B82F6" />
-                <span class="col-name">Connection</span>
-                <span class="header-funnel"
+                <span>Connection</span>
+                <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="header-sort"><Icon name="sort" size={9} /></span>
-              </div>
-            </th>
-            <th class="col-header" style="width: 90px;">
-              <div class="header-inner">
+                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+              </DataGridHeaderInner>
+            </DataGridHeadCell>
+            <DataGridHeadCell width="90px">
+              <DataGridHeaderInner>
                 <Icon name="terminal" size={12} color="#9DA0A8" />
-                <span class="col-name">Type</span>
-                <span class="header-funnel"
+                <span>Type</span>
+                <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="header-sort"><Icon name="sort" size={9} /></span>
-              </div>
-            </th>
-            <th class="col-header" style="min-width: 140px;">
-              <div class="header-inner">
+                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+              </DataGridHeaderInner>
+            </DataGridHeadCell>
+            <DataGridHeadCell width="140px">
+              <DataGridHeaderInner>
                 <Icon name="table" size={12} color="#3B82F6" />
-                <span class="col-name">Tables</span>
-                <span class="header-funnel"
+                <span>Tables</span>
+                <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="header-sort"><Icon name="sort" size={9} /></span>
-              </div>
-            </th>
-            <th class="col-header" style="width: 70px;">
-              <div class="header-inner">
+                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+              </DataGridHeaderInner>
+            </DataGridHeadCell>
+            <DataGridHeadCell width="70px">
+              <DataGridHeaderInner>
                 <Icon name="chart" size={12} color="#7A7E85" />
-                <span class="col-name">Rows</span>
-                <span class="header-funnel"
+                <span>Rows</span>
+                <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="header-sort"><Icon name="sort" size={9} /></span>
-              </div>
-            </th>
-            <th class="col-header" style="width: 90px;">
-              <div class="header-inner">
+                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+              </DataGridHeaderInner>
+            </DataGridHeadCell>
+            <DataGridHeadCell width="90px">
+              <DataGridHeaderInner>
                 <Icon name="lightning" size={12} color="#FACC15" />
-                <span class="col-name">Duration</span>
-                <span class="header-funnel"
+                <span>Duration</span>
+                <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="header-sort"><Icon name="sort" size={9} /></span>
-              </div>
-            </th>
-            <th class="col-header">
-              <div class="header-inner">
-                <span class="col-name">Normalized SQL</span>
-                <span class="header-funnel"
+                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+              </DataGridHeaderInner>
+            </DataGridHeadCell>
+            <DataGridHeadCell>
+              <DataGridHeaderInner>
+                <span>Normalized SQL</span>
+                <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="header-sort"><Icon name="sort" size={9} /></span>
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
+                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+              </DataGridHeaderInner>
+            </DataGridHeadCell>
+          </DataGridRow>
+        </DataGridHead>
+        <DataGridBody>
           {#each filteredAuditLogs as item, idx (item.id)}
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
-            <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <tr
-              class:selected={selectedAudit?.id === item.id}
+            <DataGridRow
+              selected={selectedAudit?.id === item.id}
               onclick={() => (selectedAudit = item)}
             >
-              <td class="row-num-cell">{idx + 1}</td>
-              <td class="cell-ts">{item.ts}</td>
-              <td class="cell-decision">
+              <DataGridRowNum index={idx} />
+              <DataGridCell class="cell-ts">{item.ts}</DataGridCell>
+              <DataGridCell class="cell-decision">
                 {#if item.policy_decision === "ALLOW"}
                   <Badge variant="success" size="sm">ALLOW</Badge>
                 {:else if item.policy_decision === "REQUIRE_APPROVAL"}
@@ -223,14 +238,14 @@
                 {:else}
                   <Badge variant="danger" size="sm">DENY</Badge>
                 {/if}
-              </td>
-              <td class="cell-client truncate" title={item.client}>
+              </DataGridCell>
+              <DataGridCell class="cell-client truncate" title={item.client}>
                 <Icon name="user" size={12} />
                 {item.client}
-              </td>
-              <td class="cell-conn">{item.connection}</td>
-              <td class="cell-type">{item.statement_type}</td>
-              <td
+              </DataGridCell>
+              <DataGridCell class="cell-conn">{item.connection}</DataGridCell>
+              <DataGridCell class="cell-type">{item.statement_type}</DataGridCell>
+              <DataGridCell
                 class="cell-tables truncate"
                 title={(item.tables ?? []).join(", ")}
               >
@@ -246,23 +261,16 @@
                 {:else}
                   <span class="no-tbl">—</span>
                 {/if}
-              </td>
-              <td class="cell-num">{item.row_count}</td>
-              <td class="cell-num">{item.duration_ms} ms</td>
-              <td class="cell-sql truncate" title={item.sql_normalized}>
+              </DataGridCell>
+              <DataGridCell tone="number" align="right">{item.row_count}</DataGridCell>
+              <DataGridCell tone="number" align="right">{item.duration_ms} ms</DataGridCell>
+              <DataGridCell tone="secondary" truncate title={item.sql_normalized}>
                 {item.sql_normalized}
-              </td>
-            </tr>
+              </DataGridCell>
+            </DataGridRow>
           {/each}
-        </tbody>
-      </table>
-
-      <!-- Floating row count pill -->
-      <div class="floating-row-badge" title="Filter count">
-        <span>{filteredAuditLogs.length} rows</span>
-        <span style="color: var(--text-muted); opacity: 0.6;">|</span>
-        <Icon name="more" size={12} />
-      </div>
+        </DataGridBody>
+      </DataGrid>
     </Box>
 
     <!-- Right Drawer Detail -->
@@ -396,88 +404,9 @@
     position: relative;
   }
 
-  /* Data grid — same language as the DB table grid (jb-table) */
-  :global(.audit-view .audit-table) {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--font-size-base, 14px);
-  }
-
-  :global(.audit-view .row-num-header) {
-    width: 32px;
-    background-color: var(--bg-canvas);
-    border-bottom: 1px solid var(--border-subtle);
-    border-right: 1px solid var(--border-subtle);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-
-  :global(.audit-view .audit-table .col-header) {
-    height: var(--table-header-height);
-    background-color: var(--bg-canvas);
-    border-bottom: 1px solid var(--border-subtle);
-    border-right: 1px solid var(--border-subtle);
-    color: var(--text-secondary);
-    font-weight: 400;
-    font-size: var(--font-size-xs, 12px);
-    padding: 0 8px;
-    text-align: left;
-    user-select: none;
-    white-space: nowrap;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-
-  :global(.audit-view .audit-table .header-inner) {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  :global(.audit-view .audit-table .col-name) {
-    color: var(--text-primary);
-    font-weight: 500;
-  }
-
-  :global(.audit-view .audit-table .header-funnel),
-  :global(.audit-view .audit-table .header-sort) {
-    color: var(--text-muted);
-    font-size: var(--font-size-2xs, 11px);
-    display: inline-flex;
-    align-items: center;
-  }
-
-  :global(.audit-view .row-num-cell) {
-    width: 32px;
-    height: var(--table-row-height);
-    background-color: var(--bg-canvas);
-    border-bottom: 1px solid #25272a;
-    border-right: 1px solid var(--border-subtle);
-    color: #7a7e85;
-    text-align: right;
-    padding-right: 6px;
-    font-size: var(--font-size-xs, 12px);
-    user-select: none;
-  }
-
-  :global(.audit-view .audit-table td) {
-    height: var(--table-row-height);
-    border-bottom: 1px solid #25272a;
-    border-right: 1px solid var(--border-subtle);
-    padding: 0 8px;
-    white-space: nowrap;
-    color: var(--text-primary);
-  }
-
-  :global(.audit-view .audit-table tr:hover) {
-    background-color: var(--bg-hover);
+  /* Data grid structure comes from the DataGrid compound (@ohjanus/ui) */
+  :global(.audit-view .ohjanus-data-grid-row) {
     cursor: pointer;
-  }
-
-  :global(.audit-view .audit-table tr.selected) {
-    background-color: rgba(46, 58, 78, 0.35);
   }
 
   :global(.audit-view .floating-row-badge) {

@@ -12,6 +12,12 @@
     Flex,
     Stack,
     Text,
+    Table,
+    TableHeader,
+    TableBody,
+    TableRow,
+    TableHead,
+    TableCell,
   } from "@ohjanus/ui";
   import { Icon } from "@ohjanus/icons";
 
@@ -124,44 +130,44 @@
 
   <!-- Tokens List Table -->
   <Box class="table-container font-mono">
-    <table class="data-grid">
-      <thead>
-        <tr>
-          <th>TOKEN ID</th>
-          <th>AGENT / CLIENT NAME</th>
-          <th>SCOPES</th>
-          <th>CREATED</th>
-          <th>EXPIRES</th>
-          <th>LAST USED</th>
-          <th>STATE</th>
-          <th style="text-align: right;">ACTIONS</th>
-        </tr>
-      </thead>
-      <tbody>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>TOKEN ID</TableHead>
+          <TableHead>AGENT / CLIENT NAME</TableHead>
+          <TableHead>SCOPES</TableHead>
+          <TableHead>CREATED</TableHead>
+          <TableHead>EXPIRES</TableHead>
+          <TableHead>LAST USED</TableHead>
+          <TableHead>STATE</TableHead>
+          <TableHead style="text-align: right;">ACTIONS</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
         {#each appState.tokens as tok}
-          <tr>
-            <td class="id-cell">{tok.id}</td>
-            <td class="name-cell font-sans">
+          <TableRow>
+            <TableCell class="id-cell">{tok.id}</TableCell>
+            <TableCell class="name-cell font-sans">
               <strong>{tok.name}</strong>
-            </td>
-            <td class="scopes-cell">
+            </TableCell>
+            <TableCell class="scopes-cell">
               {#each tok.scopes as sc}
                 <Badge variant="default" size="sm" class="scope-pill">
                   {sc}
                 </Badge>
               {/each}
-            </td>
-            <td>{tok.created_at}</td>
-            <td>{tok.expires_at}</td>
-            <td>{tok.last_used_at}</td>
-            <td>
+            </TableCell>
+            <TableCell>{tok.created_at}</TableCell>
+            <TableCell>{tok.expires_at}</TableCell>
+            <TableCell>{tok.last_used_at}</TableCell>
+            <TableCell>
               {#if tok.state === "active"}
                 <Badge variant="success" size="sm">ACTIVE</Badge>
               {:else}
                 <Badge variant="danger" size="sm">REVOKED</Badge>
               {/if}
-            </td>
-            <td style="text-align: right;">
+            </TableCell>
+            <TableCell style="text-align: right;">
               {#if tok.state === "active"}
                 <Button
                   variant="danger"
@@ -176,11 +182,11 @@
                   >Revoked</span
                 >
               {/if}
-            </td>
-          </tr>
+            </TableCell>
+          </TableRow>
         {/each}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   </Box>
 </Box>
 
@@ -347,32 +353,6 @@
   :global(.tokens-view .table-container) {
     flex: 1;
     overflow: auto;
-  }
-
-  :global(.tokens-view .data-grid) {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--font-size-base, 14px);
-  }
-
-  :global(.tokens-view .data-grid th) {
-    background-color: var(--bg-table-header);
-    border-bottom: 1px solid var(--border-default);
-    padding: 8px 12px;
-    text-align: left;
-    color: var(--text-muted);
-    font-weight: 600;
-    font-size: var(--font-size-xs, 12px);
-  }
-
-  :global(.tokens-view .data-grid td) {
-    border-bottom: 1px solid var(--border-subtle);
-    padding: 9px 12px;
-    color: var(--text-primary);
-  }
-
-  :global(.tokens-view .data-grid tr:hover) {
-    background-color: var(--bg-hover);
   }
 
   :global(.tokens-view .id-cell) {
