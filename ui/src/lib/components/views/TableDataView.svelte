@@ -360,10 +360,11 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 11px;
+    height: var(--control-height-xs, 24px);
+    font-size: var(--font-size-xs, 11px);
     color: var(--text-secondary);
-    padding: 1px 4px;
-    border-radius: 2px;
+    padding: 0 6px;
+    border-radius: var(--radius-sm, 4px);
   }
 
   .tx-selector:hover, .export-dropdown:hover {
@@ -412,12 +413,12 @@
 
   .filter-input {
     flex: 1;
-    height: 20px;
+    height: var(--control-height-xs, 24px);
     background-color: #1E1F22;
     border: 1px solid var(--border-subtle);
-    border-radius: 2px;
-    padding: 0 6px;
-    font-size: 12px;
+    border-radius: var(--radius-sm, 4px);
+    padding: 0 8px;
+    font-size: var(--font-size-sm, 12px);
     color: var(--text-primary);
   }
 

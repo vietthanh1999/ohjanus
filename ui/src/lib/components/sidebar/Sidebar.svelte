@@ -412,7 +412,7 @@
 
   /* Header Top */
   .explorer-header-top {
-    height: 28px;
+    height: var(--toolbar-height, 32px);
     padding: 0 8px 0 12px;
     display: flex;
     align-items: center;
@@ -421,7 +421,7 @@
   }
 
   .explorer-title {
-    font-size: 12px;
+    font-size: var(--font-size-sm, 12px);
     font-weight: 600;
     color: var(--text-primary);
   }
@@ -434,7 +434,7 @@
 
   /* Explorer Subtoolbar */
   .explorer-subtoolbar {
-    height: 26px;
+    height: var(--toolbar-height, 32px);
     padding: 0 8px;
     display: flex;
     align-items: center;
@@ -463,14 +463,14 @@
   }
 
   .tree-node, .service-item {
-    height: 22px;
+    height: var(--tree-row-height, 28px);
     display: flex;
     align-items: center;
     padding-right: 8px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: var(--font-size-base, 13px);
     color: var(--text-primary);
-    border-radius: 4px;
+    border-radius: var(--radius-sm, 4px);
     margin: 1px 4px;
     transition: background-color 0.1s ease;
     text-align: left;
@@ -487,20 +487,21 @@
     color: #FFFFFF;
   }
 
-  .depth-0 { padding-left: 4px; }
-  .depth-1 { padding-left: 18px; }
-  .depth-2 { padding-left: 32px; }
-  .depth-3 { padding-left: 46px; }
+  .depth-0 { padding-left: 6px; }
+  .depth-1 { padding-left: 20px; }
+  .depth-2 { padding-left: 34px; }
+  .depth-3 { padding-left: 48px; }
 
   .chevron {
-    width: 14px;
-    font-size: 12px;
+    width: 16px;
+    font-size: 13px;
     color: var(--text-muted);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: transform 0.1s ease;
     transform: rotate(0deg);
+    flex-shrink: 0;
   }
 
   .chevron.expanded {
@@ -508,7 +509,9 @@
   }
 
   .node-icon {
-    margin-right: 5px;
+    margin-right: 6px;
+    width: 15px;
+    height: 15px;
     flex-shrink: 0;
   }
 
@@ -517,7 +520,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 12px;
+    font-size: var(--font-size-base, 13px);
   }
 
   /* Horizontal Splitter */
@@ -545,7 +548,7 @@
   }
 
   .services-header {
-    height: 28px;
+    height: var(--toolbar-height, 32px);
     padding: 0 8px 0 12px;
     display: flex;
     align-items: center;

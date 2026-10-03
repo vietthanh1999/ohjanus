@@ -4,12 +4,14 @@
   --font-code: 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
 
   /* Font sizes */
+  --font-size-2xs: 10px;
   --font-size-xs: 11px;
   --font-size-sm: 12px;
-  --font-size-base: 14px;
-  --font-size-md: 16px;
-  --font-size-lg: 18px;
-  --font-size-xl: 20px;
+  --font-size-base: 13px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 20px;
 
   /* Spacing */
   --spacing-0: 0px;
@@ -23,6 +25,36 @@
   --spacing-5: 20px;
   --spacing-6: 24px;
   --spacing-8: 32px;
+
+  /* Control Heights (Standardized for Button, Input, Select, etc.) */
+  --control-height-xs: 24px;
+  --control-height-sm: 28px;
+  --control-height-md: 32px;
+  --control-height-lg: 38px;
+
+  /* Icon Button Sizes (Square interactive targets) */
+  --icon-btn-size-xs: 22px;
+  --icon-btn-size-sm: 26px;
+  --icon-btn-size-md: 28px;
+  --icon-btn-size-lg: 32px;
+
+  /* Standard Icon Sizes (SVG dimensions) */
+  --icon-size-xs: 12px;
+  --icon-size-sm: 14px;
+  --icon-size-md: 16px;
+  --icon-size-lg: 20px;
+  --icon-size-xl: 24px;
+
+  /* IDE Layout Geometry Tokens */
+  --layout-titlebar-height: 38px;
+  --layout-tabbar-height: 34px;
+  --layout-toolbar-height: 32px;
+  --layout-filterbar-height: 34px;
+  --layout-table-row-height: 26px;
+  --layout-table-header-height: 26px;
+  --layout-statusbar-height: 26px;
+  --layout-tree-row-height: 28px;
+  --tree-row-height: 28px;
 
   /* Radii */
   --radius-xs: 2px;

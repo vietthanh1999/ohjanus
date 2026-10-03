@@ -61,10 +61,35 @@ export const zIndex = {
   tooltip: 70
 };
 
-export const breakpoints = {
-  sm: '640px',
-  md: '768px',
-  lg: '1024px',
-  xl: '1280px',
-  '2xl': '1536px'
+export const controlHeights = {
+  xs: '24px',
+  sm: '28px',
+  md: '32px',
+  lg: '38px'
+};
+
+export const iconButtonSizes = {
+  xs: '22px',
+  sm: '26px',
+  md: '28px',
+  lg: '32px'
+};
+
+export const iconSizes = {
+  xs: '12px',
+  sm: '14px',
+  md: '16px',
+  lg: '20px',
+  xl: '24px'
+};
+
+export const layoutHeights = {
+  titlebar: '38px',
+  tabbar: '34px',
+  toolbar: '32px',
+  filterbar: '34px',
+  tableRow: '26px',
+  tableHeader: '26px',
+  statusbar: '26px',
+  treeRow: '28px'
 };

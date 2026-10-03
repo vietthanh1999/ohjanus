@@ -179,12 +179,12 @@
   }
 
   .quick-btn {
-    width: 26px;
-    height: 26px;
+    width: var(--icon-btn-size-md, 28px);
+    height: var(--icon-btn-size-md, 28px);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: var(--radius-sm, 4px);
     color: var(--text-muted);
     transition: all 0.1s ease;
   }
@@ -195,12 +195,12 @@
   }
 
   .util-btn {
-    width: 26px;
-    height: 26px;
+    width: var(--icon-btn-size-md, 28px);
+    height: var(--icon-btn-size-md, 28px);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: var(--radius-sm, 4px);
     color: var(--text-muted);
     position: relative;
     transition: all 0.1s ease;

@@ -94,7 +94,7 @@
   }
 
   .log-action-strip {
-    width: 24px;
+    width: 32px;
     background-color: var(--bg-canvas, #1E1F22);
     border-left: 1px solid var(--border-subtle, #323438);
     display: flex;
@@ -106,16 +106,23 @@
   }
 
   .strip-btn {
-    width: 20px;
-    height: 20px;
+    width: var(--icon-btn-size-sm, 26px);
+    height: var(--icon-btn-size-sm, 26px);
+    border-radius: var(--radius-sm, 4px);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: var(--font-size-xs, 11px);
     color: var(--text-muted, #7A7E85);
   }
 
+  .strip-btn svg {
+    width: var(--icon-size-sm, 14px);
+    height: var(--icon-size-sm, 14px);
+  }
+
   .strip-btn:hover {
+    background-color: var(--bg-hover, #2B2D30);
     color: var(--text-primary, #DFE1E5);
   }
 </style>

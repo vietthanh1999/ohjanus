@@ -19,10 +19,10 @@
   cursor: not-allowed;
 }
 
-.ohjanus-btn-xs { height: 22px; padding: 0 6px; font-size: 11px; }
-.ohjanus-btn-sm { height: 26px; padding: 0 10px; font-size: 12px; }
-.ohjanus-btn-md { height: 32px; padding: 0 14px; font-size: 13px; }
-.ohjanus-btn-lg { height: 38px; padding: 0 18px; font-size: 14px; }
+.ohjanus-btn-xs { height: var(--control-height-xs, 24px); padding: 0 8px; font-size: var(--font-size-xs, 11px); }
+.ohjanus-btn-sm { height: var(--control-height-sm, 28px); padding: 0 10px; font-size: var(--font-size-sm, 12px); }
+.ohjanus-btn-md { height: var(--control-height-md, 32px); padding: 0 14px; font-size: var(--font-size-base, 13px); }
+.ohjanus-btn-lg { height: var(--control-height-lg, 38px); padding: 0 18px; font-size: var(--font-size-md, 14px); }
 
 .ohjanus-btn-primary {
   background-color: var(--action-primary, #3574F0);
@@ -96,9 +96,9 @@
   cursor: not-allowed;
 }
 
-.ohjanus-input-sm { height: 26px; font-size: 12px; }
-.ohjanus-input-md { height: 32px; font-size: 13px; }
-.ohjanus-input-lg { height: 38px; font-size: 14px; }
+.ohjanus-input-sm { height: var(--control-height-sm, 28px); font-size: var(--font-size-sm, 12px); }
+.ohjanus-input-md { height: var(--control-height-md, 32px); font-size: var(--font-size-base, 13px); }
+.ohjanus-input-lg { height: var(--control-height-lg, 38px); font-size: var(--font-size-md, 14px); }
 
 .ohjanus-input-field {
   width: 100%;

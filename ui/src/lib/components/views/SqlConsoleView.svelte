@@ -324,14 +324,19 @@
   }
 
   .action-btn {
-    width: 22px;
-    height: 22px;
-    border-radius: 3px;
+    width: var(--icon-btn-size-sm, 26px);
+    height: var(--icon-btn-size-sm, 26px);
+    border-radius: var(--radius-sm, 4px);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
     transition: all 0.1s ease;
+  }
+
+  .action-btn svg {
+    width: var(--icon-size-sm, 14px);
+    height: var(--icon-size-sm, 14px);
   }
 
   .action-btn:hover {
@@ -349,7 +354,7 @@
 
   .bar-separator {
     width: 1px;
-    height: 12px;
+    height: 14px;
     background-color: var(--border-default);
     margin: 0 4px;
   }
@@ -358,20 +363,22 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 1px 4px;
-    border-radius: 2px;
+    height: var(--control-height-xs, 24px);
+    padding: 0 6px;
+    border-radius: var(--radius-sm, 4px);
     color: var(--text-secondary);
-    font-size: 11px;
+    font-size: var(--font-size-xs, 11px);
   }
 
   .playground-chk {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 11px;
+    height: var(--control-height-xs, 24px);
+    font-size: var(--font-size-xs, 11px);
     color: var(--text-secondary);
     cursor: pointer;
-    padding: 1px 4px;
+    padding: 0 6px;
   }
 
   .playground-chk input {
@@ -382,10 +389,11 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 1px 6px;
-    border-radius: 2px;
+    height: var(--control-height-xs, 24px);
+    padding: 0 8px;
+    border-radius: var(--radius-sm, 4px);
     color: var(--text-primary);
-    font-size: 11px;
+    font-size: var(--font-size-xs, 11px);
   }
 
   .schema-btn:hover {

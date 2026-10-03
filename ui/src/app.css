@@ -71,14 +71,33 @@
   --font-code: 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
 
   /* Layout geometry */
-  --titlebar-height: 36px;
-  --tabbar-height: 32px;
-  --toolbar-height: 28px;
-  --filterbar-height: 30px;
-  --table-row-height: 23px;
-  --table-header-height: 24px;
-  --statusbar-height: 24px;
-  --tree-row-height: 22px;
+  --titlebar-height: 38px;
+  --tabbar-height: 34px;
+  --toolbar-height: 32px;
+  --filterbar-height: 34px;
+  --table-row-height: 26px;
+  --table-header-height: 26px;
+  --statusbar-height: 26px;
+  --tree-row-height: 28px;
+
+  /* Component scale */
+  --control-height-xs: 24px;
+  --control-height-sm: 28px;
+  --control-height-md: 32px;
+  --control-height-lg: 38px;
+
+  /* Icon Button scale */
+  --icon-btn-size-xs: 22px;
+  --icon-btn-size-sm: 26px;
+  --icon-btn-size-md: 28px;
+  --icon-btn-size-lg: 32px;
+
+  /* Standard Icon size scale */
+  --icon-size-xs: 12px;
+  --icon-size-sm: 14px;
+  --icon-size-md: 16px;
+  --icon-size-lg: 20px;
+  --icon-size-xl: 24px;
 }
 
 *, *::before, *::after {
@@ -170,11 +189,16 @@ input:focus, textarea:focus, select:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 3px;
+  width: var(--icon-btn-size-sm, 26px);
+  height: var(--icon-btn-size-sm, 26px);
+  border-radius: var(--radius-sm, 4px);
   color: var(--text-muted);
   transition: all 0.1s ease;
+}
+
+.jb-icon-btn svg {
+  width: var(--icon-size-sm, 14px);
+  height: var(--icon-size-sm, 14px);
 }
 
 .jb-icon-btn:hover {
@@ -191,14 +215,14 @@ input:focus, textarea:focus, select:focus {
   position: absolute;
   bottom: 12px;
   right: 18px;
-  height: 22px;
-  padding: 0 8px 0 10px;
+  height: var(--control-height-xs, 24px);
+  padding: 0 10px;
   display: flex;
   align-items: center;
   gap: 8px;
   background-color: var(--bg-floating);
   border: 1px solid var(--border-default);
-  border-radius: 11px;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
   font-size: 11px;
   font-weight: 500;
