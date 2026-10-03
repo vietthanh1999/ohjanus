@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
+  import { Text } from '@ohjanus/ui';
 
   let isDraggingSplitter = $state(false);
   let startY = 0;
@@ -65,7 +66,7 @@
 >
   <div class="explorer-pane">
     <div class="explorer-header-top">
-      <span class="explorer-title">Database Explorer</span>
+      <Text size="md" weight="semibold">Database Explorer</Text>
       <div class="header-window-icons">
         <button type="button" class="jb-icon-btn" title="Reload connections" onclick={() => void appState.loadConnections()}>
           <Icon name="refresh" size={12} />
@@ -84,7 +85,7 @@
         bind:value={appState.treeFilterQuery}
       />
       <button type="button" class="jb-icon-btn ddl-btn" title="Generate Table DDL" onclick={() => appState.ddlModalOpen = true}>
-        <span style="font-size: 10px; font-weight: 700; font-family: var(--font-code); color: #7A7E85;">DDL</span>
+        <Text size="xs" weight="bold" color="muted" mono>DDL</Text>
       </button>
     </div>
 
@@ -104,7 +105,7 @@
           <button type="button" class="tree-node depth-0" onclick={() => void toggleConnection(conn.name)}>
             <span class="chevron" class:expanded={appState.treeExpanded[connKey(conn.name)]}><Icon name="chevron-right" size={12} /></span>
             <Icon name="database" size={14} color="#3B82F6" class="node-icon" />
-            <span class="node-label"><strong>{conn.name}</strong>{conn.readonly ? ' [ReadOnly]' : ''}</span>
+            <Text size="lg" truncate style="flex: 1;"><strong>{conn.name}</strong>{conn.readonly ? ' [ReadOnly]' : ''}</Text>
             {#if conn.status !== 'healthy'}
               <span class="conn-warn" title={conn.status}>●</span>
             {/if}
@@ -114,7 +115,7 @@
             <button type="button" class="tree-node depth-1" onclick={() => openConsole(conn.name)}>
               <span class="chevron"><Icon name="chevron-right" size={12} /></span>
               <Icon name="lightning" size={12} color="#3B82F6" class="node-icon" />
-              <span class="node-label">console [{conn.name}]</span>
+              <Text size="lg" truncate style="flex: 1;">console [{conn.name}]</Text>
             </button>
 
             {#if appState.schemaLoading[conn.name]}
@@ -130,7 +131,7 @@
                   <button type="button" class="tree-node depth-1" onclick={() => appState.toggleTree(schemaKey(conn.name, schema.name))}>
                     <span class="chevron" class:expanded={appState.treeExpanded[schemaKey(conn.name, schema.name)]}><Icon name="chevron-right" size={12} /></span>
                     <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
-                    <span class="node-label">{schema.name} <span style="color: var(--text-muted); font-size: 11px;">{schema.tables.length}</span></span>
+                    <Text size="lg" truncate style="flex: 1;">{schema.name} <Text size="sm" color="muted">{schema.tables.length}</Text></Text>
                   </button>
 
                   {#if appState.treeExpanded[schemaKey(conn.name, schema.name)]}
@@ -143,7 +144,7 @@
                       >
                         <span class="chevron"><Icon name="chevron-right" size={12} /></span>
                         <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
-                        <span class="node-label">{table.name}</span>
+                        <Text size="lg" truncate style="flex: 1;">{table.name}</Text>
                       </button>
                     {/each}
                   {/if}
@@ -169,7 +170,7 @@
   <div class="services-pane" style="height: {appState.servicesHeight}px;">
     <div class="services-header">
       <span class="services-title">Services</span>
-      <span class="services-count">{appState.services.length}</span>
+      <Text size="xs" color="muted" style="background-color: var(--bg-hover); border-radius: 8px; padding: 0 6px;">{appState.services.length}</Text>
     </div>
 
     <div class="services-viewport">
@@ -189,9 +190,9 @@
             {:else}
               <Icon name="lightning" size={12} color="#3B82F6" class="node-icon" />
             {/if}
-            <span class="node-label truncate">{session.name}</span>
+            <Text size="lg" truncate style="flex: 1;">{session.name}</Text>
             {#if session.durationMs !== undefined}
-              <span class="latency-text">{session.durationMs} ms</span>
+              <Text size="sm" color="muted" mono style="margin-left: 4px;">{session.durationMs} ms</Text>
             {/if}
           </button>
         {/each}
@@ -228,11 +229,6 @@
     flex-shrink: 0;
   }
 
-  .explorer-title {
-    font-size: var(--font-size-sm, 12px);
-    font-weight: 600;
-    color: var(--text-primary);
-  }
 
   .header-window-icons {
     display: flex;
@@ -287,7 +283,7 @@
     gap: 4px;
     padding-right: 8px;
     cursor: pointer;
-    font-size: var(--font-size-base, 13px);
+    font-size: var(--font-size-base, 14px);
     color: var(--text-primary);
     border-radius: var(--radius-sm, 4px);
     margin: 1px 4px;
@@ -330,14 +326,6 @@
     width: 15px;
     height: 15px;
     flex-shrink: 0;
-  }
-
-  .node-label {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: var(--font-size-base, 13px);
   }
 
   .conn-warn {
@@ -403,18 +391,4 @@
     color: var(--text-primary);
   }
 
-  .services-count {
-    font-size: 10px;
-    color: var(--text-muted);
-    background-color: var(--bg-hover);
-    border-radius: 8px;
-    padding: 0 6px;
-  }
-
-  .latency-text {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-family: var(--font-code);
-    margin-left: 4px;
-  }
 </style>

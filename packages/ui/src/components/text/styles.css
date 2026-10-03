@@ -1,13 +1,15 @@
-/* Text Typography */
+/* Text Typography — sizes track the app type scale (density-aware).
+ * Mapping: xs is fixed (no 10px app token); sm/md/lg/xl bind to
+ * --font-size-2xs/sm/base/lg so Text follows :root[data-density] overrides. */
 .ohjanus-text {
   font-family: var(--font-ui, Inter, sans-serif);
   line-height: 1.4;
 }
 .ohjanus-text-xs { font-size: 10px; }
-.ohjanus-text-sm { font-size: 11px; }
-.ohjanus-text-md { font-size: 13px; }
-.ohjanus-text-lg { font-size: 14px; }
-.ohjanus-text-xl { font-size: 16px; }
+.ohjanus-text-sm { font-size: var(--font-size-2xs, 11px); }
+.ohjanus-text-md { font-size: var(--font-size-sm, 13px); }
+.ohjanus-text-lg { font-size: var(--font-size-base, 14px); }
+.ohjanus-text-xl { font-size: var(--font-size-lg, 16px); }
 
 .ohjanus-weight-normal   { font-weight: 400; }
 .ohjanus-weight-medium   { font-weight: 500; }

@@ -84,7 +84,7 @@
     <Stack class="header-left" gap="2px">
       <Flex class="header-title" align="center" gap="8px">
         <Icon name="audit" size={16} color="#56A8F5" />
-        <span>MCP Gateway Audit Log Trail</span>
+        <Text class="header-title" size="xl" weight="semibold">MCP Gateway Audit Log Trail</Text>
       </Flex>
     </Stack>
 
@@ -111,7 +111,7 @@
       <!-- Export Button via UI Kit -->
       <Button variant="secondary" size="sm" onclick={exportCSV}>
         <Icon name="download" size={14} />
-        <span>Export CSV</span>
+        <Text size="md">Export CSV</Text>
       </Button>
     </Flex>
   </Flex>
@@ -277,7 +277,7 @@
                     >
                   {/each}
                   {#if item.tables.length > 3}
-                    <span class="more-tbl">+{item.tables.length - 3}</span>
+                    <Text class="more-tbl" size="sm" color="muted">+{item.tables.length - 3}</Text>
                   {/if}
                 {:else}
                   <span class="no-tbl">—</span>

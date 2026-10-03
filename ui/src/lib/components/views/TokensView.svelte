@@ -118,10 +118,10 @@
       <span class="header-icon"
         ><Icon name="key" size={16} color="#EDA200" /></span
       >
-      <span class="view-title">MCP Client Tokens Management</span>
-      <span class="view-desc"
+      <Text class="view-title" size="xl" weight="semibold">MCP Client Tokens Management</Text>
+      <Text class="view-desc" color="muted"
         >Issue and manage secure opaque tokens for AI agents (Cursor, Claude
-        Desktop, custom bots)</span
+        Desktop, custom bots)</Text
       >
     </Flex>
     <Button variant="primary" onclick={() => (showCreateModal = true)}>
@@ -179,9 +179,10 @@
                   Revoke
                 </Button>
               {:else}
-                <span
+                <Text
+                  color="muted"
                   style="color: var(--text-muted); font-size: var(--font-size-xs, 12px);"
-                  >Revoked</span
+                  >Revoked</Text
                 >
               {/if}
             </TableCell>
@@ -219,8 +220,8 @@
                 ariaLabel="read scope"
                 onclick={(e: MouseEvent) => e.stopPropagation()}
               />
-              <span
-                ><code>read</code> (db_list_connections, db_schema, db_read, db_explain)</span
+              <Text size="md"
+                ><code>read</code> (db_list_connections, db_schema, db_read, db_explain)</Text
               >
             </div>
             <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -234,8 +235,8 @@
                 ariaLabel="write_preview scope"
                 onclick={(e: MouseEvent) => e.stopPropagation()}
               />
-              <span
-                ><code>write_preview</code> (db_write_preview — dry-run simulation)</span
+              <Text size="md"
+                ><code>write_preview</code> (db_write_preview — dry-run simulation)</Text
               >
             </div>
             <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -249,8 +250,8 @@
                 ariaLabel="write_execute scope"
                 onclick={(e: MouseEvent) => e.stopPropagation()}
               />
-              <span
-                ><code>write_execute</code> (db_write_execute — requires human approval)</span
+              <Text size="md"
+                ><code>write_execute</code> (db_write_execute — requires human approval)</Text
               >
             </div>
             <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -261,8 +262,8 @@
                 ariaLabel="admin scope"
                 onclick={(e: MouseEvent) => e.stopPropagation()}
               />
-              <span
-                ><code>admin</code> (manage tokens &amp; connection configurations)</span
+              <Text size="md"
+                ><code>admin</code> (manage tokens &amp; connection configurations)</Text
               >
             </div>
           </Stack>

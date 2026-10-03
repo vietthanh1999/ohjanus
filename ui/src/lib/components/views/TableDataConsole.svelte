@@ -1,31 +1,40 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
+  import { Text } from '@ohjanus/ui';
 </script>
 
 <div class="log-console-container">
   <div class="log-content code-text">
     {#if appState.consoleLogs.length === 0}
       <div class="log-line">
-        <span class="log-ts">--</span>
-        <span class="log-text">No output yet. Run a query or open a table to see live execution logs.</span>
+        <Text size="lg" color="muted" mono>--</Text>
+        <Text size="lg" mono>No output yet. Run a query or open a table to see live execution logs.</Text>
       </div>
     {:else}
       {#each appState.consoleLogs as log (log.id)}
-        <div class="log-line" class:error-line={log.type === 'error'}>
-          <span class="log-ts">[{log.timestamp}]</span>
+        <div class="log-line">
+          <Text size="lg" color="muted" mono>[{log.timestamp}]</Text>
           {#if log.connection}
-            <span class="log-schema">{log.connection}&gt;</span>
+            <Text size="lg" weight="medium" mono>{log.connection}&gt;</Text>
           {/if}
           {#if log.querySnippet}
-            <span class="ident-sql">{log.querySnippet}</span>
+            <Text size="lg" mono>{log.querySnippet}</Text>
           {:else}
-            <span class="log-text">{log.summary}</span>
+            <Text
+              size="lg"
+              mono
+              color={log.type === 'error' ? 'danger' : 'default'}
+            >{log.summary}</Text>
           {/if}
         </div>
         {#if log.querySnippet}
           <div class="log-line indent-sql">
-            <span class="log-text">{log.summary}</span>
+            <Text
+              size="lg"
+              mono
+              color={log.type === 'error' ? 'danger' : 'default'}
+            >{log.summary}</Text>
           </div>
         {/if}
       {/each}
@@ -69,27 +78,6 @@
     padding-left: 24px;
   }
 
-  .log-line.error-line .log-text {
-    color: var(--action-danger, #E55353);
-  }
-
-  .log-ts {
-    color: var(--text-muted, #7A7E85);
-  }
-
-  .log-text {
-    color: var(--text-primary, #DFE1E5);
-  }
-
-  .log-schema {
-    color: var(--text-primary, #DFE1E5);
-    font-weight: 500;
-  }
-
-  .ident-sql {
-    color: var(--text-primary, #DFE1E5);
-  }
-
   .log-action-strip {
     width: 32px;
     background-color: var(--bg-canvas, #1E1F22);
@@ -109,7 +97,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--font-size-xs, 11px);
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-muted, #7A7E85);
   }
 

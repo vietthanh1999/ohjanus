@@ -309,6 +309,10 @@ input[type="checkbox"]:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
+.font-mono {
+  font-family: var(--font-code);
+}
+
 .truncate {
   white-space: nowrap;
   overflow: hidden;

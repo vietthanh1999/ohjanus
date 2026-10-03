@@ -1,6 +1,6 @@
 <script lang="ts">
   import { appState, parseTableTabId, parseConsoleTabId } from '../../state/appState.svelte';
-  import { Flex, Badge } from '@ohjanus/ui';
+  import { Flex, Badge, Text } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 
   let activeTab = $derived(appState.activeTab);
@@ -27,29 +27,29 @@
   <Flex class="breadcrumb-strip" align="center" gap="4px">
     {#if tableCoords}
       <span class="crumb-item">Database</span>
-      <span class="crumb-sep">&gt;</span>
+      <Text size="xs" color="muted">&gt;</Text>
       <span class="crumb-item">{tableCoords.connection}</span>
-      <span class="crumb-sep">&gt;</span>
+      <Text size="xs" color="muted">&gt;</Text>
       <span class="crumb-item">{tableCoords.schema}</span>
-      <span class="crumb-sep">&gt;</span>
+      <Text size="xs" color="muted">&gt;</Text>
       <span class="crumb-item">tables</span>
-      <span class="crumb-sep">&gt;</span>
+      <Text size="xs" color="muted">&gt;</Text>
       <span class="crumb-item active-crumb">
         <Icon name="table" size={11} color="#4A88C7" style="margin-right: 4px;" />
         {tableCoords.table}
       </span>
     {:else if consoleCoords}
       <span class="crumb-item">Database Consoles</span>
-      <span class="crumb-sep">&gt;</span>
+      <Text size="xs" color="muted">&gt;</Text>
       <span class="crumb-item">{consoleCoords.connection}</span>
-      <span class="crumb-sep">&gt;</span>
+      <Text size="xs" color="muted">&gt;</Text>
       <span class="crumb-item active-crumb">
         <Icon name="lightning" size={11} color="#57D38C" style="margin-right: 4px;" />
         console [{consoleCoords.connection}]
       </span>
     {:else}
       <span class="crumb-item">MCP Gateway Security</span>
-      <span class="crumb-sep">&gt;</span>
+      <Text size="xs" color="muted">&gt;</Text>
       <span class="crumb-item active-crumb">{appState.activeTabId.toUpperCase()}</span>
     {/if}
   </Flex>
@@ -131,11 +131,6 @@
 
   .crumb-item.active-crumb {
     color: var(--text-primary);
-  }
-
-  .crumb-sep {
-    color: var(--text-muted);
-    font-size: 10px;
   }
 
   .status-item {

@@ -10,6 +10,7 @@
     truncate?: boolean;
     class?: string;
     style?: string;
+    title?: string;
     children?: Snippet;
   }
 
@@ -22,6 +23,7 @@
     truncate = false,
     class: className = '',
     style = '',
+    title,
     children
   }: Props = $props();
 
@@ -36,6 +38,7 @@
   this={as}
   class="ohjanus-text {sizeClass} {weightClass} {colorClass} {monoClass} {truncateClass} {className}"
   {style}
+  {title}
 >
   {@render children?.()}
 </svelte:element>

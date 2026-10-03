@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
+  import { Text } from '@ohjanus/ui';
 
   let isDropdownOpen = $state(false);
 </script>
@@ -38,7 +39,7 @@
         </span>
 
         <!-- Tab Title -->
-        <span class="tab-label truncate">{tab.title}</span>
+        <Text size="md" truncate style="flex: 1;">{tab.title}</Text>
 
         <!-- Close Button (x) -->
         {#if tab.closable}
@@ -98,7 +99,7 @@
                 {:else}
                   <Icon name="lightning" size={14} color="#3B82F6" />
                 {/if}
-                <span>{tab.title}</span>
+                <Text size="md">{tab.title}</Text>
               </span>
             </button>
           {/each}
@@ -108,7 +109,7 @@
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'approvals', title: 'Approvals Queue', type: 'approvals', closable: false, icon: 'shield' })}>
           <span class="dropdown-item-content">
             <Icon name="shield" size={14} color="#EDA200" />
-            <span>Approvals Queue</span>
+            <Text size="md">Approvals Queue</Text>
           </span>
           {#if appState.notificationCount > 0}
             <span class="count-tag">{appState.notificationCount}</span>
@@ -117,25 +118,25 @@
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'audit', title: 'Audit Logs', type: 'audit', closable: false, icon: 'audit' })}>
           <span class="dropdown-item-content">
             <Icon name="audit" size={14} color="#56A8F5" />
-            <span>Audit Log Trail</span>
+            <Text size="md">Audit Log Trail</Text>
           </span>
         </button>
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'tokens', title: 'MCP Tokens', type: 'tokens', closable: false, icon: 'key' })}>
           <span class="dropdown-item-content">
             <Icon name="key" size={14} color="#3B82F6" />
-            <span>MCP Agent Tokens</span>
+            <Text size="md">MCP Agent Tokens</Text>
           </span>
         </button>
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'connections', title: 'Connection Pools', type: 'connections', closable: false, icon: 'database' })}>
           <span class="dropdown-item-content">
             <Icon name="database" size={14} color="#3B82F6" />
-            <span>Connection Pools</span>
+            <Text size="md">Connection Pools</Text>
           </span>
         </button>
         <button type="button" class="dropdown-item" onclick={() => appState.openTab({ id: 'dashboard', title: 'Gateway Dashboard', type: 'dashboard', closable: false, icon: 'chart' })}>
           <span class="dropdown-item-content">
             <Icon name="chart" size={14} color="#57D38C" />
-            <span>Telemetry Dashboard</span>
+            <Text size="md">Telemetry Dashboard</Text>
           </span>
         </button>
       </div>
@@ -183,7 +184,7 @@
     background-color: transparent;
     border: 1px solid transparent;
     color: var(--text-secondary);
-    font-size: var(--font-size-sm, 12px);
+    font-size: var(--font-size-sm, 13px);
     cursor: pointer;
     user-select: none;
     transition: background-color 0.1s ease;
@@ -206,11 +207,6 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-  }
-
-  .tab-label {
-    flex: 1;
-    font-size: var(--font-size-sm, 13px);
   }
 
   .tab-close-icon {

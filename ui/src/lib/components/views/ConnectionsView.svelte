@@ -60,7 +60,7 @@
       <span class="header-icon"
         ><Icon name="database" size={16} color="#3B82F6" /></span
       >
-      <span class="view-title">Database Connections &amp; Connection Pools</span
+      <Text class="view-title" size="xl" weight="semibold">Database Connections &amp; Connection Pools</Text
       >
     </Flex>
   </Flex>
@@ -79,16 +79,16 @@
               <span class="db-icon"
                 ><Icon name="database" size={15} color="#3B82F6" /></span
               >
-              <span class="conn-title">{conn.name}</span>
+              <Text class="conn-title" weight="semibold">{conn.name}</Text>
               {#if conn.readonly}
                 <Badge variant="warning" size="sm">
                   <Icon name="lock" size={11} />
-                  <span>READ-ONLY</span>
+                  <Text size="xs" color="warning">READ-ONLY</Text>
                 </Badge>
               {:else}
                 <Badge variant="info" size="sm">
                   <Icon name="lightning" size={11} />
-                  <span>READ-WRITE</span>
+                  <Text size="xs" style="color: #56A8F5;">READ-WRITE</Text>
                 </Badge>
               {/if}
             </Flex>
@@ -108,15 +108,15 @@
 
         <Stack class="conn-details" gap="6px">
           <Flex class="detail-row" justify="between">
-            <span class="label">Driver:</span>
-            <span class="value font-mono">{conn.driver}</span>
+            <Text class="label" size="md" color="muted">Driver:</Text>
+            <Text class="value" size="md" mono>{conn.driver}</Text>
           </Flex>
           <Flex class="detail-row" justify="between">
-            <span class="label">Last Health Ping:</span>
-            <span class="value"
+            <Text class="label" size="md" color="muted">Last Health Ping:</Text>
+            <Text class="value" size="md"
               >{conn.last_ping_at}{conn.latency_ms !== undefined
                 ? ` (${conn.latency_ms} ms)`
-                : ""}</span
+                : ""}</Text
             >
           </Flex>
         </Stack>
@@ -155,7 +155,7 @@
               Pinging...
             {:else}
               <Icon name="refresh" size={12} />
-              <span>Test Connection</span>
+              <Text size="md">Test Connection</Text>
             {/if}
           </Button>
         {/snippet}

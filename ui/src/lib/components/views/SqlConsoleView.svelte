@@ -1,7 +1,7 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
-  import { Alert, Select } from '@ohjanus/ui';
+  import { Alert, Select, Text } from '@ohjanus/ui';
   import {
     DataGrid,
     DataGridHead,
@@ -49,7 +49,7 @@
         <Icon name="play" size={13} />
       </button>
       <button type="button" class="action-btn" title="EXPLAIN (never executes)" onclick={handleExplain}>
-        <span style="font-size: 11px; font-weight: 600;">EX</span>
+        <Text size="sm" weight="semibold" color="secondary">EX</Text>
       </button>
       <button
         type="button"
@@ -60,7 +60,7 @@
         <Icon name="refresh" size={12} />
       </button>
       <span class="bar-separator"></span>
-      <span style="color: var(--text-secondary); font-size: 11px; padding: 0 4px;">
+      <Text size="sm" color="secondary" style="padding: 0 4px;">
         {#if appState.console.isExecuting}
           Executing…
         {:else if appState.console.durationMs > 0}
@@ -68,10 +68,10 @@
         {:else}
           Tx: Auto
         {/if}
-      </span>
+      </Text>
       <span class="bar-separator"></span>
       <button type="button" class="jb-icon-btn" title="View DDL" onclick={() => appState.ddlModalOpen = true}>
-        <span style="font-size: 10px; font-weight: 700; color: #7A7E85;">DDL</span>
+        <Text size="xs" weight="bold" color="muted">DDL</Text>
       </button>
     </div>
 
@@ -128,13 +128,13 @@
   <div class="results-header-tabs">
     <div class="result-tab active">
       <Icon name="table" size={12} />
-      <span>
+      <Text size="sm" color="secondary">
         {#if appState.console.rowCount > 0}
           Result · {appState.console.rowCount} row(s){appState.console.truncated ? ' (truncated)' : ''}
         {:else}
           Result
         {/if}
-      </span>
+      </Text>
     </div>
   </div>
 
@@ -142,7 +142,7 @@
     {#snippet overlay()}
       {#if appState.console.rowCount > 0}
         <div class="floating-row-badge" title="Retrieved count">
-          <span>{appState.console.rowCount} row(s)</span>
+          <Text size="sm">{appState.console.rowCount} row(s)</Text>
         </div>
       {/if}
     {/snippet}
@@ -248,7 +248,7 @@
   }
 
   .schema-name {
-    font-size: var(--font-size-xs, 11px);
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-muted);
   }
 

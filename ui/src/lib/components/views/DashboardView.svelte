@@ -18,7 +18,7 @@
   <Flex as="header" class="view-header" align="center">
     <Flex align="center" gap="8px">
       <Icon name="chart" size={16} color="#3574F0" />
-      <span class="view-title">OhJanus MCP Gateway Observability &amp; Metrics</span>
+      <Text class="view-title" size="xl" weight="semibold">OhJanus MCP Gateway Observability &amp; Metrics</Text>
     </Flex>
   </Flex>
 
@@ -26,39 +26,39 @@
     <!-- Top KPI Cards via @ohjanus/ui -->
     <Grid class="kpi-grid" columns="repeat(auto-fill, minmax(180px, 1fr))" gap="12px">
       <Card class="kpi-card-box">
-        <span class="kpi-label">TOTAL REQUESTS (AUDIT)</span>
-        <span class="kpi-val font-mono">{appState.summary ? appState.summary.requests_total.toLocaleString() : '…'}</span>
-        <span class="kpi-trend pos">live from Admin API</span>
+        <Text class="kpi-label" size="sm" weight="semibold" color="muted">TOTAL REQUESTS (AUDIT)</Text>
+        <Text class="kpi-val font-mono" weight="bold">{appState.summary ? appState.summary.requests_total.toLocaleString() : '…'}</Text>
+        <Text class="kpi-trend pos" color="success">live from Admin API</Text>
       </Card>
 
       <Card class="kpi-card-box">
-        <span class="kpi-label">TOTAL POLICY DENIALS</span>
-        <span class="kpi-val font-mono warn">{appState.summary ? appState.summary.denials_total.toLocaleString() : '…'}</span>
-        <span class="kpi-sub">Banned functions &amp; DDL blocked</span>
+        <Text class="kpi-label" size="sm" weight="semibold" color="muted">TOTAL POLICY DENIALS</Text>
+        <Text class="kpi-val font-mono warn" weight="bold" color="danger">{appState.summary ? appState.summary.denials_total.toLocaleString() : '…'}</Text>
+        <Text class="kpi-sub" color="muted">Banned functions &amp; DDL blocked</Text>
       </Card>
 
       <Card class="kpi-card-box">
-        <span class="kpi-label">PENDING APPROVALS</span>
-        <span class="kpi-val font-mono pending">{appState.notificationCount}</span>
-        <span class="kpi-sub">Human review required</span>
+        <Text class="kpi-label" size="sm" weight="semibold" color="muted">PENDING APPROVALS</Text>
+        <Text class="kpi-val font-mono pending" weight="bold" color="warning">{appState.notificationCount}</Text>
+        <Text class="kpi-sub" color="muted">Human review required</Text>
       </Card>
 
       <Card class="kpi-card-box">
-        <span class="kpi-label">P95 QUERY LATENCY</span>
-        <span class="kpi-val font-mono">48 ms</span>
-        <span class="kpi-sub">Gateway overhead &lt; 2 ms</span>
+        <Text class="kpi-label" size="sm" weight="semibold" color="muted">P95 QUERY LATENCY</Text>
+        <Text class="kpi-val font-mono" weight="bold">48 ms</Text>
+        <Text class="kpi-sub" color="muted">Gateway overhead &lt; 2 ms</Text>
       </Card>
 
       <Card class="kpi-card-box">
-        <span class="kpi-label">ACTIVE MCP TOKENS</span>
-        <span class="kpi-val font-mono">{appState.tokens.filter(t => t.state === 'active').length}</span>
-        <span class="kpi-sub">Cursor &amp; Claude Desktop</span>
+        <Text class="kpi-label" size="sm" weight="semibold" color="muted">ACTIVE MCP TOKENS</Text>
+        <Text class="kpi-val font-mono" weight="bold">{appState.tokens.filter(t => t.state === 'active').length}</Text>
+        <Text class="kpi-sub" color="muted">Cursor &amp; Claude Desktop</Text>
       </Card>
 
       <Card class="kpi-card-box">
-        <span class="kpi-label">HEALTHY POOLS</span>
-        <span class="kpi-val font-mono pos">3 / 3</span>
-        <span class="kpi-sub">All connections healthy</span>
+        <Text class="kpi-label" size="sm" weight="semibold" color="muted">HEALTHY POOLS</Text>
+        <Text class="kpi-val font-mono pos" weight="bold" color="success">3 / 3</Text>
+        <Text class="kpi-sub" color="muted">All connections healthy</Text>
       </Card>
     </Grid>
 
@@ -75,7 +75,7 @@
           {#each [18, 25, 42, 38, 55, 62, 45, 80, 72, 95, 88, 64, 52, 47, 63, 78, 92, 105, 84, 76] as h, i}
             <Flex class="bar-col" direction="column" align="center" justify="end">
               <Box class="bar-fill" style="height: {h}%;"></Box>
-              <span class="bar-label">{i * 3}m</span>
+              <Text class="bar-label" size="sm" color="muted">{i * 3}m</Text>
             </Flex>
           {/each}
         </Flex>
@@ -91,7 +91,7 @@
           <Box class="denial-item">
             <Flex class="denial-top" justify="between" align="center">
               <Badge variant="danger" size="sm">banned-function</Badge>
-              <span class="denial-time">10:45:12</span>
+              <Text class="denial-time" size="sm" color="muted">10:45:12</Text>
             </Flex>
             <Box class="denial-sql">SELECT pg_read_file('/etc/passwd')</Box>
             <Box class="denial-agent">Agent: Claude Desktop v1.2</Box>
@@ -100,7 +100,7 @@
           <Box class="denial-item">
             <Flex class="denial-top" justify="between" align="center">
               <Badge variant="danger" size="sm">deny-ddl</Badge>
-              <span class="denial-time">09:12:33</span>
+              <Text class="denial-time" size="sm" color="muted">09:12:33</Text>
             </Flex>
             <Box class="denial-sql">DROP TABLE user_entitlements CASCADE;</Box>
             <Box class="denial-agent">Agent: Cursor AI Agent</Box>
@@ -109,7 +109,7 @@
           <Box class="denial-item">
             <Flex class="denial-top" justify="between" align="center">
               <Badge variant="danger" size="sm">denied-table</Badge>
-              <span class="denial-time">08:04:19</span>
+              <Text class="denial-time" size="sm" color="muted">08:04:19</Text>
             </Flex>
             <Box class="denial-sql">SELECT * FROM admin_credentials LIMIT 10;</Box>
             <Box class="denial-agent">Agent: Cursor AI Agent</Box>
@@ -142,7 +142,7 @@
     padding: 16px;
   }
 
-  :global(.kpi-card-box .ohjanus-card-body) {
+  :global(.kpi-card-box) {
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -150,7 +150,7 @@
   }
 
   :global(.dashboard-view .kpi-label) { font-size: var(--font-size-2xs, 11px); font-weight: 600; color: var(--text-muted); letter-spacing: 0.5px; }
-  :global(.dashboard-view .kpi-val) { font-size: var(--font-size-2xl, 26px); font-weight: 700; color: var(--text-primary); }
+  :global(.dashboard-view .kpi-val) { font-size: var(--font-size-2xl, 26px); font-weight: 700; color: var(--text-primary); white-space: nowrap; }
   :global(.dashboard-view .kpi-val.pos) { color: var(--action-success); }
   :global(.dashboard-view .kpi-val.warn) { color: var(--action-danger); }
   :global(.dashboard-view .kpi-val.pending) { color: var(--action-warning); }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
-  import { toast, Select } from '@ohjanus/ui';
+  import { toast, Select, Text } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 
   // State
@@ -233,7 +233,7 @@
               onclick={() => activeCategory = 'plugins'}
             >
               <span class="tree-label">Plugins</span>
-              <span class="plugin-pill">2</span>
+              <Text size="xs" weight="semibold" style="background-color: #393B40; padding: 0 6px; border-radius: 10px; line-height: 16px;">2</Text>
             </button>
 
             <!-- Version Control -->
@@ -277,9 +277,9 @@
           <!-- Breadcrumb Row -->
           <div class="content-header">
             <div class="breadcrumb">
-              <span class="crumb-parent">Appearance &amp; Behavior</span>
-              <span class="crumb-separator">&rsaquo;</span>
-              <span class="crumb-current">
+              <Text size="md" weight="semibold">Appearance &amp; Behavior</Text>
+              <Text size="lg" color="muted">&rsaquo;</Text>
+              <Text size="md" weight="semibold">
                 {#if activeCategory === 'appearance'}
                   Appearance
                 {:else if activeCategory === 'database'}
@@ -289,7 +289,7 @@
                 {:else}
                   {activeCategory.toUpperCase()}
                 {/if}
-              </span>
+              </Text>
             </div>
 
             <!-- Navigation Arrows -->
@@ -572,9 +572,9 @@
               </section>
             {:else}
               <div class="empty-category-pane">
-                <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">
+                <Text size="lg" weight="medium" color="muted">
                   Settings category for {activeCategory} is available in enterprise profile.
-                </span>
+                </Text>
               </div>
             {/if}
           </div>
@@ -621,7 +621,7 @@
     overflow: hidden;
     color: var(--text-primary, #DFE1E5);
     font-family: var(--font-ui);
-    font-size: var(--font-size-base, 13px);
+    font-size: var(--font-size-base, 14px);
   }
 
   /* Titlebar */
@@ -780,15 +780,7 @@
     margin-left: 4px;
   }
 
-  .plugin-pill {
-    background-color: #393B40;
-    color: #DFE1E5;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 0 6px;
-    border-radius: 10px;
-    line-height: 16px;
-  }
+
 
   .chevron {
     width: 14px;
@@ -823,19 +815,6 @@
     gap: 8px;
     font-size: 13px;
     font-weight: 600;
-  }
-
-  .crumb-parent {
-    color: var(--text-primary);
-  }
-
-  .crumb-separator {
-    color: #7A7E85;
-    font-size: 14px;
-  }
-
-  .crumb-current {
-    color: var(--text-primary);
   }
 
   .header-nav-arrows {

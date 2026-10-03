@@ -1,7 +1,7 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
-  import { Alert } from '@ohjanus/ui';
+  import { Alert, Text } from '@ohjanus/ui';
   import {
     DataGrid,
     DataGridHead,
@@ -64,12 +64,12 @@
       </span>
       <span class="bar-separator"></span>
       <button type="button" class="jb-icon-btn ddl-btn" title="Generate Table DDL" onclick={() => appState.ddlModalOpen = true}>
-        <span style="font-size: 10px; font-weight: 700; font-family: var(--font-code); color: #7A7E85;">DDL</span>
+        <Text size="xs" weight="bold" color="muted" mono>DDL</Text>
       </button>
       {#if viewer.loading}
-        <span class="loading-text">Loading…</span>
+        <Text size="sm" color="muted" mono style="padding: 0 6px;">Loading…</Text>
       {:else if viewer.durationMs > 0}
-        <span class="loading-text">{viewer.rowCount} row(s){viewer.truncated ? ' (truncated)' : ''} · {viewer.durationMs} ms</span>
+        <Text size="sm" color="muted" mono style="padding: 0 6px;">{viewer.rowCount} row(s){viewer.truncated ? ' (truncated)' : ''} · {viewer.durationMs} ms</Text>
       {/if}
     </div>
 
@@ -91,7 +91,7 @@
   <div class="filter-bar">
     <div class="filter-group where-group">
       <span class="filter-icon"><Icon name="filter" size={11} /></span>
-      <span class="filter-label">WHERE</span>
+      <Text size="sm" weight="semibold" color="secondary" style="user-select: none;">WHERE</Text>
       <input
         type="text"
         class="filter-input code-text"
@@ -103,7 +103,7 @@
 
     <div class="filter-group orderby-group">
       <span class="filter-icon"><Icon name="sort" size={11} /></span>
-      <span class="filter-label">ORDER BY</span>
+      <Text size="sm" weight="semibold" color="secondary" style="user-select: none;">ORDER BY</Text>
       <input
         type="text"
         class="filter-input code-text"
@@ -126,7 +126,7 @@
     {#snippet overlay()}
       {#if viewer.rowCount > 0}
         <div class="floating-row-badge" title="Row count">
-          <span>{viewer.rowCount} rows{viewer.truncated ? '+' : ''}</span>
+          <Text size="sm">{viewer.rowCount} rows{viewer.truncated ? '+' : ''}</Text>
         </div>
       {/if}
     {/snippet}
@@ -224,17 +224,10 @@
   }
 
   .tx-selector {
-    font-size: var(--font-size-xs, 11px);
+    font-size: var(--font-size-xs, 12px);
     color: var(--text-primary);
     padding: 0 6px;
     font-family: var(--font-code);
-  }
-
-  .loading-text {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-family: var(--font-code);
-    padding: 0 6px;
   }
 
   .limit-label {
@@ -288,13 +281,6 @@
     user-select: none;
   }
 
-  .filter-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    user-select: none;
-  }
-
   .filter-input {
     flex: 1;
     height: var(--control-height-xs, 24px);
@@ -302,7 +288,7 @@
     border: none;
     outline: none;
     padding: 0 8px;
-    font-size: var(--font-size-sm, 12px);
+    font-size: var(--font-size-sm, 13px);
     color: var(--text-primary);
   }
 

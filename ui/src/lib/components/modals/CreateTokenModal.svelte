@@ -1,6 +1,6 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
-  import { Modal, Button, Input, Field, Alert, toast, Box, Flex, Stack } from '@ohjanus/ui';
+  import { Modal, Button, Input, Field, Alert, toast, Box, Flex, Stack, Text } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 
   let tokenName = $state('');
@@ -80,7 +80,7 @@
                   />
                   <Stack class="scope-text" gap="2px">
                     <span class="sc-name code-text">{sc.label}</span>
-                    <span class="sc-desc">{sc.desc}</span>
+                    <Text size="sm" color="muted">{sc.desc}</Text>
                   </Stack>
                 </Flex>
               {/each}
@@ -158,11 +158,6 @@
     font-size: 11.5px;
     color: var(--text-primary, #DFE1E5);
     font-weight: 500;
-  }
-
-  .sc-desc {
-    font-size: 11px;
-    color: var(--text-muted, #7A7E85);
   }
 
   :global(.secret-box) {

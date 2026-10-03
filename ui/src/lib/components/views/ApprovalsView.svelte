@@ -72,7 +72,7 @@
     <Stack class="header-left" gap="2px">
       <Flex class="header-title" align="center" gap="8px">
         <Icon name="shield" size={16} color="#EDA200" />
-        <span>MCP Gateway Approval Queue</span>
+        <Text class="header-title" size="xl" weight="semibold">MCP Gateway Approval Queue</Text>
       </Flex>
     </Stack>
 
@@ -84,9 +84,9 @@
         onclick={() => (selectedFilter = "pending")}
       >
         Pending
-        <span class="count-pill"
+        <Text class="count-pill" size="sm" weight="bold"
           >{appState.approvals.filter((a) => a.state === "pending")
-            .length}</span
+            .length}</Text
         >
       </button>
       <button
@@ -138,7 +138,7 @@
                 >
                   {item.statement_type}
                 </Badge>
-                <span class="conn-pill">{item.connection}</span>
+                <Text class="conn-pill" size="sm" color="secondary">{item.connection}</Text>
                 {#if item.state === "pending"}
                   <Badge variant="warning" size="sm">Pending Review</Badge>
                 {:else if item.state === "approved"}
@@ -163,8 +163,8 @@
               <span class="token-tag code-text"
                 >{item.requested_by.token_id}</span
               >
-              <span class="rows-affected"
-                >Est. ~{item.affected_estimate.toLocaleString()} rows</span
+              <Text class="rows-affected" weight="medium"
+                >Est. ~{item.affected_estimate.toLocaleString()} rows</Text
               >
             </Flex>
 

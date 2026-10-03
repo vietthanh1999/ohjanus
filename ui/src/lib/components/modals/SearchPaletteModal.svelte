@@ -1,6 +1,6 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
-  import { DialogPrimitive, Badge, Kbd, Box, Flex } from '@ohjanus/ui';
+  import { DialogPrimitive, Badge, Kbd, Box, Flex, Text } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 
   let query = $state('');
@@ -88,7 +88,7 @@
             <Badge variant="outline" size="sm">{item.category}</Badge>
             <span class="row-title">{item.title}</span>
           </Flex>
-          <span class="row-desc">{item.desc}</span>
+          <Text class="row-desc" size="sm" color="muted">{item.desc}</Text>
         </Flex>
       {/each}
       {#if filtered.length === 0}
@@ -146,11 +146,6 @@
     font-size: 12px;
     font-weight: 500;
     color: var(--text-primary, #DFE1E5);
-  }
-
-  .row-desc {
-    font-size: 11px;
-    color: var(--text-muted, #767980);
   }
 
   .palette-empty {
