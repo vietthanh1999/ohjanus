@@ -85,9 +85,6 @@
         <Icon name="audit" size={16} color="#56A8F5" />
         <span>MCP Gateway Audit Log Trail</span>
       </Flex>
-      <span class="header-desc"
-        >End-to-end provenance records of all incoming queries and tool requests</span
-      >
     </Stack>
 
     <Flex class="header-right" align="center" gap="8px">
@@ -138,7 +135,9 @@
                 <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+                <span class="ohjanus-data-grid-header-action"
+                  ><Icon name="sort" size={9} /></span
+                >
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell width="110px">
@@ -148,7 +147,9 @@
                 <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+                <span class="ohjanus-data-grid-header-action"
+                  ><Icon name="sort" size={9} /></span
+                >
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell width="170px">
@@ -158,7 +159,9 @@
                 <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+                <span class="ohjanus-data-grid-header-action"
+                  ><Icon name="sort" size={9} /></span
+                >
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell width="150px">
@@ -168,7 +171,9 @@
                 <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+                <span class="ohjanus-data-grid-header-action"
+                  ><Icon name="sort" size={9} /></span
+                >
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell width="90px">
@@ -178,7 +183,9 @@
                 <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+                <span class="ohjanus-data-grid-header-action"
+                  ><Icon name="sort" size={9} /></span
+                >
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell width="140px">
@@ -188,7 +195,9 @@
                 <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+                <span class="ohjanus-data-grid-header-action"
+                  ><Icon name="sort" size={9} /></span
+                >
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell width="70px">
@@ -198,7 +207,9 @@
                 <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+                <span class="ohjanus-data-grid-header-action"
+                  ><Icon name="sort" size={9} /></span
+                >
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell width="90px">
@@ -208,7 +219,9 @@
                 <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+                <span class="ohjanus-data-grid-header-action"
+                  ><Icon name="sort" size={9} /></span
+                >
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell>
@@ -217,7 +230,9 @@
                 <span class="ohjanus-data-grid-header-action"
                   ><Icon name="filter" size={9} /></span
                 >
-                <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+                <span class="ohjanus-data-grid-header-action"
+                  ><Icon name="sort" size={9} /></span
+                >
               </DataGridHeaderInner>
             </DataGridHeadCell>
           </DataGridRow>
@@ -244,7 +259,9 @@
                 {item.client}
               </DataGridCell>
               <DataGridCell class="cell-conn">{item.connection}</DataGridCell>
-              <DataGridCell class="cell-type">{item.statement_type}</DataGridCell>
+              <DataGridCell class="cell-type"
+                >{item.statement_type}</DataGridCell
+              >
               <DataGridCell
                 class="cell-tables truncate"
                 title={(item.tables ?? []).join(", ")}
@@ -262,9 +279,17 @@
                   <span class="no-tbl">—</span>
                 {/if}
               </DataGridCell>
-              <DataGridCell tone="number" align="right">{item.row_count}</DataGridCell>
-              <DataGridCell tone="number" align="right">{item.duration_ms} ms</DataGridCell>
-              <DataGridCell tone="secondary" truncate title={item.sql_normalized}>
+              <DataGridCell tone="number" align="right"
+                >{item.row_count}</DataGridCell
+              >
+              <DataGridCell tone="number" align="right"
+                >{item.duration_ms} ms</DataGridCell
+              >
+              <DataGridCell
+                tone="secondary"
+                truncate
+                title={item.sql_normalized}
+              >
                 {item.sql_normalized}
               </DataGridCell>
             </DataGridRow>

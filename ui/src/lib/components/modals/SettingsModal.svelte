@@ -627,7 +627,7 @@
   /* Titlebar */
   .settings-titlebar {
     height: 38px;
-    background-color: #26282B;
+    background-color: #191A1C;
     border-bottom: 1px solid #323438;
     display: flex;
     align-items: center;
@@ -1093,7 +1093,7 @@
   /* Footer */
   .settings-footer {
     height: 48px;
-    background-color: #26282B;
+    background-color: #191A1C;
     border-top: 1px solid #323438;
     display: flex;
     align-items: center;

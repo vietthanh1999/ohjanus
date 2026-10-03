@@ -101,7 +101,7 @@
 <style>
   :global(.palette-modal) {
     width: 560px;
-    background-color: var(--bg-sidebar, #2B2D30);
+    background-color: #191A1C;
     border: 1px solid var(--border-strong, #43454A);
     border-radius: 6px;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75);
@@ -114,7 +114,7 @@
   :global(.palette-input-wrap) {
     padding: 10px 14px;
     border-bottom: 1px solid var(--border-default, #393B40);
-    background-color: var(--bg-canvas, #1E1F22);
+    background-color: #191A1C;
   }
 
   .palette-input {

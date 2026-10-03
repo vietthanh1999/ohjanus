@@ -1,6 +1,6 @@
 /* AlertDialog */
 .ohjanus-alert-dialog-content {
-  background-color: #2B2D30;
+  background-color: #191A1C;
   border: 1px solid var(--border-strong, #4E5157);
   border-radius: var(--radius-lg, 8px);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);

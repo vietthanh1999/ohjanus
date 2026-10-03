@@ -40,3 +40,12 @@
   font-size: inherit;
   outline: none;
 }
+
+/* Guard against leaking global `input:focus` styles (border + ring would
+ * render a second frame inside the wrapper's own :focus-within border). */
+.ohjanus-input-wrapper .ohjanus-input-field:focus {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  outline: none;
+}

@@ -224,7 +224,7 @@ button {
   padding: 0;
 }
 
-input, textarea, select {
+input:not(.ohjanus-input-field), textarea, select {
   font: inherit;
   color: inherit;
   background-color: var(--bg-hover, #26282B);
@@ -234,11 +234,11 @@ input, textarea, select {
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-input:hover, textarea:hover, select:hover {
+input:not(.ohjanus-input-field):hover, textarea:hover, select:hover {
   border-color: #6C707E;
 }
 
-input:focus, textarea:focus, select:focus {
+input:not(.ohjanus-input-field):focus, textarea:focus, select:focus {
   border-color: var(--action-primary, #3574F0);
   box-shadow: 0 0 0 1px var(--action-primary, #3574F0);
 }
@@ -379,7 +379,7 @@ input[type="checkbox"]:focus-visible {
 }
 
 .jb-modal {
-  background-color: #2B2D30;
+  background-color: #191A1C;
   border: 1px solid var(--border-strong);
   border-radius: 6px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
@@ -393,7 +393,7 @@ input[type="checkbox"]:focus-visible {
 .jb-modal-header {
   height: 36px;
   padding: 0 12px;
-  background-color: #25272A;
+  background-color: #191A1C;
   border-bottom: 1px solid var(--border-default);
   display: flex;
   align-items: center;
@@ -410,7 +410,7 @@ input[type="checkbox"]:focus-visible {
 
 .jb-modal-footer {
   padding: 10px 14px;
-  background-color: #25272A;
+  background-color: #191A1C;
   border-top: 1px solid var(--border-default);
   display: flex;
   align-items: center;
