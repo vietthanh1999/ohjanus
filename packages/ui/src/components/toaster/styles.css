@@ -1,0 +1,39 @@
+/* Toaster */
+.ohjanus-toaster-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 360px;
+}
+.ohjanus-toast-item {
+  background-color: #2B2D30;
+  border: 1px solid var(--border-strong, #4E5157);
+  border-radius: var(--radius-md, 6px);
+  padding: 10px 14px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ohjanus-toast-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary, #DFE1E5);
+}
+.ohjanus-toast-description {
+  font-size: 11px;
+  color: var(--text-secondary, #9DA0A8);
+  margin-top: 2px;
+}
+.ohjanus-toast-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #7A7E85);
+  cursor: pointer;
+  font-size: 14px;
+}

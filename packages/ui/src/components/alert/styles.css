@@ -1,0 +1,49 @@
+/* Alert */
+.ohjanus-alert {
+  padding: 10px 14px;
+  border-radius: var(--radius-md, 6px);
+  border: 1px solid transparent;
+  font-size: 12px;
+}
+.ohjanus-alert-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.ohjanus-alert-info {
+  background-color: rgba(86, 168, 245, 0.1);
+  border-color: rgba(86, 168, 245, 0.3);
+  color: #56A8F5;
+}
+.ohjanus-alert-success {
+  background-color: rgba(87, 211, 140, 0.1);
+  border-color: rgba(87, 211, 140, 0.3);
+  color: #57D38C;
+}
+.ohjanus-alert-warning {
+  background-color: rgba(237, 162, 0, 0.1);
+  border-color: rgba(237, 162, 0, 0.3);
+  color: #EDA200;
+}
+.ohjanus-alert-danger {
+  background-color: rgba(229, 83, 83, 0.1);
+  border-color: rgba(229, 83, 83, 0.3);
+  color: #E55353;
+}
+
+/* Alert Compound */
+.ohjanus-alert-description {
+  font-size: 11.5px;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.ohjanus-alert-action {
+  margin-top: 8px;
+}
+
+/* Alert compound extras */
+.ohjanus-alert-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+}

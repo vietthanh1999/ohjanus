@@ -1,0 +1,47 @@
+/* Popover */
+.ohjanus-popover {
+  position: relative;
+  display: inline-block;
+}
+.ohjanus-popover-trigger {
+  display: inline-flex;
+}
+.ohjanus-popover-content {
+  position: absolute;
+  z-index: 1300;
+  min-width: 180px;
+  margin-top: 6px;
+  background-color: var(--bg-sidebar, #2B2D30);
+  border: 1px solid var(--border-strong, #4E5157);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  padding: 8px;
+}
+.ohjanus-popover-align-start { left: 0; }
+.ohjanus-popover-align-center { left: 50%; transform: translateX(-50%); }
+.ohjanus-popover-align-end { right: 0; } {
+  padding: 12px;
+  max-width: 300px;
+}
+
+/* Popover header parts */
+.ohjanus-popover-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 4px 8px 4px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle, #2B2D30);
+}
+.ohjanus-popover-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary, #DFE1E5);
+  margin: 0;
+}
+.ohjanus-popover-description {
+  font-size: 11px;
+  color: var(--text-muted, #7A7E85);
+  margin: 0;
+  line-height: 1.5;
+}

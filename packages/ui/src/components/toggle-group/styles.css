@@ -1,0 +1,11 @@
+/* ToggleGroup */
+.ohjanus-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background-color: var(--bg-canvas, #1E1F22);
+  border: 1px solid var(--border-default, #393B40);
+  border-radius: var(--radius-md, 6px);
+  width: fit-content;
+}

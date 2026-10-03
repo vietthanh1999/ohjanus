@@ -1,0 +1,13 @@
+/* Heading Typography */
+.ohjanus-heading {
+  font-family: var(--font-ui, Inter, sans-serif);
+  color: var(--text-primary, #DFE1E5);
+  margin: 0;
+  line-height: 1.25;
+}
+.ohjanus-heading-xs { font-size: 12px; }
+.ohjanus-heading-sm { font-size: 13px; }
+.ohjanus-heading-md { font-size: 14px; }
+.ohjanus-heading-lg { font-size: 16px; }
+.ohjanus-heading-xl { font-size: 20px; }
+.ohjanus-heading-2xl { font-size: 24px; }

@@ -1,0 +1,29 @@
+/* Progress */
+.ohjanus-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 120px;
+}
+.ohjanus-progress-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary, #9DA0A8);
+}
+.ohjanus-progress-value {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted, #7A7E85);
+}
+.ohjanus-progress-track {
+  height: 6px;
+  border-radius: 999px;
+  background-color: var(--bg-hover, #313438);
+  overflow: hidden;
+}
+.ohjanus-progress-indicator {
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--action-primary, #3574F0);
+  transition: width 200ms ease;
+}

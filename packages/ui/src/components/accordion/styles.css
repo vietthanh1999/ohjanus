@@ -1,0 +1,42 @@
+/* Accordion */
+.ohjanus-accordion {
+  border: 1px solid var(--border-default, #393B40);
+  border-radius: var(--radius-md, 6px);
+  overflow: hidden;
+}
+.ohjanus-accordion-item + .ohjanus-accordion-item {
+  border-top: 1px solid var(--border-subtle, #2B2D30);
+}
+.ohjanus-accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: var(--text-primary, #DFE1E5);
+  cursor: pointer;
+  text-align: left;
+}
+.ohjanus-accordion-trigger:hover {
+  background-color: var(--bg-hover, #313438);
+}
+.ohjanus-accordion-chevron {
+  font-size: 10px;
+  color: var(--text-muted, #7A7E85);
+  transition: transform 150ms;
+  display: inline-flex;
+  align-items: center;
+}
+.ohjanus-accordion-chevron[data-open="true"] {
+  transform: rotate(180deg);
+}
+.ohjanus-accordion-content {
+  padding: 4px 14px 12px 14px;
+  font-size: 12px;
+  color: var(--text-secondary, #9DA0A8);
+}

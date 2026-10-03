@@ -1,0 +1,33 @@
+/* Text Typography */
+.ohjanus-text {
+  font-family: var(--font-ui, Inter, sans-serif);
+  line-height: 1.4;
+}
+.ohjanus-text-xs { font-size: 10px; }
+.ohjanus-text-sm { font-size: 11px; }
+.ohjanus-text-md { font-size: 13px; }
+.ohjanus-text-lg { font-size: 14px; }
+.ohjanus-text-xl { font-size: 16px; }
+
+.ohjanus-weight-normal   { font-weight: 400; }
+.ohjanus-weight-medium   { font-weight: 500; }
+.ohjanus-weight-semibold { font-weight: 600; }
+.ohjanus-weight-bold     { font-weight: 700; }
+
+.ohjanus-color-default   { color: var(--text-primary, #DFE1E5); }
+.ohjanus-color-muted     { color: var(--text-muted, #7A7E85); }
+.ohjanus-color-secondary { color: var(--text-secondary, #9DA0A8); }
+.ohjanus-color-accent    { color: var(--action-primary, #3574F0); }
+.ohjanus-color-success   { color: var(--action-success, #57D38C); }
+.ohjanus-color-warning   { color: var(--action-warning, #EDA200); }
+.ohjanus-color-danger    { color: var(--action-danger, #E55353); }
+
+.ohjanus-mono {
+  font-family: var(--font-code, 'JetBrains Mono', monospace);
+}
+
+.ohjanus-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

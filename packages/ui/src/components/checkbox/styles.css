@@ -1,0 +1,36 @@
+/* Checkbox */
+.ohjanus-checkbox-primitive {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.ohjanus-checkbox {
+  width: 15px;
+  height: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-default, #393B40);
+  border-radius: 3px;
+  background-color: var(--bg-canvas, #1E1F22);
+  color: #fff;
+  font-size: 10px;
+  transition: all var(--transition-fast, 100ms);
+}
+.ohjanus-checkbox.checked,
+.ohjanus-checkbox.indeterminate {
+  background-color: var(--action-primary, #3574F0);
+  border-color: var(--action-primary, #3574F0);
+}
+.ohjanus-checkbox.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ohjanus-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

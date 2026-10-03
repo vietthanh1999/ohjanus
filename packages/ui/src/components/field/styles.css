@@ -1,0 +1,47 @@
+/* Field */
+.ohjanus-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ohjanus-field-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary, #DFE1E5);
+}
+.ohjanus-field-required {
+  color: var(--action-danger, #E55353);
+}
+.ohjanus-field-description {
+  font-size: 11px;
+  color: var(--text-muted, #7A7E85);
+}
+.ohjanus-field-error {
+  font-size: 11px;
+  color: var(--action-danger, #E55353);
+}
+
+/* Field Compound */
+.ohjanus-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ohjanus-field-separator {
+  border: none;
+  height: 1px;
+  background-color: var(--border-default, #393B40);
+  margin: 8px 0;
+}
+.ohjanus-fieldset {
+  border: 1px solid var(--border-default, #393B40);
+  border-radius: var(--radius-md, 6px);
+  padding: 12px 16px;
+  margin: 0;
+}
+.ohjanus-field-legend {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary, #DFE1E5);
+  padding: 0 6px;
+}

@@ -1,0 +1,45 @@
+/* AlertDialog */
+.ohjanus-alert-dialog-content {
+  background-color: #2B2D30;
+  border: 1px solid var(--border-strong, #4E5157);
+  border-radius: var(--radius-lg, 8px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  max-width: calc(100vw - 32px);
+}
+.ohjanus-alert-dialog-header {
+  padding: 14px 16px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ohjanus-alert-dialog-media {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(229, 83, 83, 0.12);
+  color: var(--action-danger, #E55353);
+  margin-bottom: 6px;
+}
+.ohjanus-alert-dialog-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #DFE1E5);
+  margin: 0;
+}
+.ohjanus-alert-dialog-description {
+  font-size: 12px;
+  color: var(--text-secondary, #9DA0A8);
+  margin: 0;
+  padding: 6px 16px 0 16px;
+  line-height: 1.5;
+}
+.ohjanus-alert-dialog-footer {
+  padding: 14px 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

@@ -1,0 +1,34 @@
+/* Table Compound */
+.ohjanus-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+.ohjanus-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  text-align: left;
+}
+.ohjanus-table-head {
+  background-color: var(--bg-table-header, #25272A);
+  color: var(--text-secondary, #9DA0A8);
+  font-weight: 600;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-default, #393B40);
+  white-space: nowrap;
+}
+.ohjanus-table-row {
+  border-bottom: 1px solid var(--border-subtle, #2B2D30);
+  transition: background-color var(--transition-fast, 100ms);
+}
+.ohjanus-table-row:hover {
+  background-color: var(--bg-hover, #2E3136);
+}
+.ohjanus-table-row.selected {
+  background-color: var(--bg-selected, rgba(53, 116, 240, 0.15));
+}
+.ohjanus-table-cell {
+  padding: 6px 10px;
+  color: var(--text-primary, #DFE1E5);
+}
