@@ -12,6 +12,206 @@
       "svelte": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./accordion": {
+      "types": "./src/components/accordion/index.ts",
+      "svelte": "./src/components/accordion/index.ts",
+      "default": "./src/components/accordion/index.ts"
+    },
+    "./alert": {
+      "types": "./src/components/alert/index.ts",
+      "svelte": "./src/components/alert/index.ts",
+      "default": "./src/components/alert/index.ts"
+    },
+    "./alert-dialog": {
+      "types": "./src/components/alert-dialog/index.ts",
+      "svelte": "./src/components/alert-dialog/index.ts",
+      "default": "./src/components/alert-dialog/index.ts"
+    },
+    "./aspect-ratio": {
+      "types": "./src/components/aspect-ratio/index.ts",
+      "svelte": "./src/components/aspect-ratio/index.ts",
+      "default": "./src/components/aspect-ratio/index.ts"
+    },
+    "./attachment": {
+      "types": "./src/components/attachment/index.ts",
+      "svelte": "./src/components/attachment/index.ts",
+      "default": "./src/components/attachment/index.ts"
+    },
+    "./avatar": {
+      "types": "./src/components/avatar/index.ts",
+      "svelte": "./src/components/avatar/index.ts",
+      "default": "./src/components/avatar/index.ts"
+    },
+    "./badge": {
+      "types": "./src/components/badge/index.ts",
+      "svelte": "./src/components/badge/index.ts",
+      "default": "./src/components/badge/index.ts"
+    },
+    "./box": {
+      "types": "./src/components/box/index.ts",
+      "svelte": "./src/components/box/index.ts",
+      "default": "./src/components/box/index.ts"
+    },
+    "./breadcrumb": {
+      "types": "./src/components/breadcrumb/index.ts",
+      "svelte": "./src/components/breadcrumb/index.ts",
+      "default": "./src/components/breadcrumb/index.ts"
+    },
+    "./button": {
+      "types": "./src/components/button/index.ts",
+      "svelte": "./src/components/button/index.ts",
+      "default": "./src/components/button/index.ts"
+    },
+    "./calendar": {
+      "types": "./src/components/calendar/index.ts",
+      "svelte": "./src/components/calendar/index.ts",
+      "default": "./src/components/calendar/index.ts"
+    },
+    "./card": {
+      "types": "./src/components/card/index.ts",
+      "svelte": "./src/components/card/index.ts",
+      "default": "./src/components/card/index.ts"
+    },
+    "./center": {
+      "types": "./src/components/center/index.ts",
+      "svelte": "./src/components/center/index.ts",
+      "default": "./src/components/center/index.ts"
+    },
+    "./checkbox": {
+      "types": "./src/components/checkbox/index.ts",
+      "svelte": "./src/components/checkbox/index.ts",
+      "default": "./src/components/checkbox/index.ts"
+    },
+    "./collapsible": {
+      "types": "./src/components/collapsible/index.ts",
+      "svelte": "./src/components/collapsible/index.ts",
+      "default": "./src/components/collapsible/index.ts"
+    },
+    "./combobox": {
+      "types": "./src/components/combobox/index.ts",
+      "svelte": "./src/components/combobox/index.ts",
+      "default": "./src/components/combobox/index.ts"
+    },
+    "./command": {
+      "types": "./src/components/command/index.ts",
+      "svelte": "./src/components/command/index.ts",
+      "default": "./src/components/command/index.ts"
+    },
+    "./container": {
+      "types": "./src/components/container/index.ts",
+      "svelte": "./src/components/container/index.ts",
+      "default": "./src/components/container/index.ts"
+    },
+    "./dialog": {
+      "types": "./src/components/dialog/index.ts",
+      "svelte": "./src/components/dialog/index.ts",
+      "default": "./src/components/dialog/index.ts"
+    },
+    "./divider": {
+      "types": "./src/components/divider/index.ts",
+      "svelte": "./src/components/divider/index.ts",
+      "default": "./src/components/divider/index.ts"
+    },
+    "./drawer": {
+      "types": "./src/components/drawer/index.ts",
+      "svelte": "./src/components/drawer/index.ts",
+      "default": "./src/components/drawer/index.ts"
+    },
+    "./dropdown-menu": {
+      "types": "./src/components/dropdown-menu/index.ts",
+      "svelte": "./src/components/dropdown-menu/index.ts",
+      "default": "./src/components/dropdown-menu/index.ts"
+    },
+    "./empty-state": {
+      "types": "./src/components/empty-state/index.ts",
+      "svelte": "./src/components/empty-state/index.ts",
+      "default": "./src/components/empty-state/index.ts"
+    },
+    "./field": {
+      "types": "./src/components/field/index.ts",
+      "svelte": "./src/components/field/index.ts",
+      "default": "./src/components/field/index.ts"
+    },
+    "./flex": {
+      "types": "./src/components/flex/index.ts",
+      "svelte": "./src/components/flex/index.ts",
+      "default": "./src/components/flex/index.ts"
+    },
+    "./grid": {
+      "types": "./src/components/grid/index.ts",
+      "svelte": "./src/components/grid/index.ts",
+      "default": "./src/components/grid/index.ts"
+    },
+    "./heading": {
+      "types": "./src/components/heading/index.ts",
+      "svelte": "./src/components/heading/index.ts",
+      "default": "./src/components/heading/index.ts"
+    },
+    "./hover-card": {
+      "types": "./src/components/hover-card/index.ts",
+      "svelte": "./src/components/hover-card/index.ts",
+      "default": "./src/components/hover-card/index.ts"
+    },
+    "./input": {
+      "types": "./src/components/input/index.ts",
+      "svelte": "./src/components/input/index.ts",
+      "default": "./src/components/input/index.ts"
+    },
+    "./kbd": {
+      "types": "./src/components/kbd/index.ts",
+      "svelte": "./src/components/kbd/index.ts",
+      "default": "./src/components/kbd/index.ts"
+    },
+    "./modal": {
+      "types": "./src/components/modal/index.ts",
+      "svelte": "./src/components/modal/index.ts",
+      "default": "./src/components/modal/index.ts"
+    },
+    "./popover": {
+      "types": "./src/components/popover/index.ts",
+      "svelte": "./src/components/popover/index.ts",
+      "default": "./src/components/popover/index.ts"
+    },
+    "./select": {
+      "types": "./src/components/select/index.ts",
+      "svelte": "./src/components/select/index.ts",
+      "default": "./src/components/select/index.ts"
+    },
+    "./spinner": {
+      "types": "./src/components/spinner/index.ts",
+      "svelte": "./src/components/spinner/index.ts",
+      "default": "./src/components/spinner/index.ts"
+    },
+    "./stack": {
+      "types": "./src/components/stack/index.ts",
+      "svelte": "./src/components/stack/index.ts",
+      "default": "./src/components/stack/index.ts"
+    },
+    "./switch": {
+      "types": "./src/components/switch/index.ts",
+      "svelte": "./src/components/switch/index.ts",
+      "default": "./src/components/switch/index.ts"
+    },
+    "./table": {
+      "types": "./src/components/table/index.ts",
+      "svelte": "./src/components/table/index.ts",
+      "default": "./src/components/table/index.ts"
+    },
+    "./text": {
+      "types": "./src/components/text/index.ts",
+      "svelte": "./src/components/text/index.ts",
+      "default": "./src/components/text/index.ts"
+    },
+    "./textarea": {
+      "types": "./src/components/textarea/index.ts",
+      "svelte": "./src/components/textarea/index.ts",
+      "default": "./src/components/textarea/index.ts"
+    },
+    "./toaster": {
+      "types": "./src/components/toaster/index.ts",
+      "svelte": "./src/components/toaster/index.ts",
+      "default": "./src/components/toaster/index.ts"
+    },
     "./styles.css": "./src/styles.css",
     "./*": "./src/*"
   },

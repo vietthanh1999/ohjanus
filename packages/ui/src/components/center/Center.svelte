@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import Flex from './Flex.svelte';
+  import Flex from '../flex/Flex.svelte';
 
   interface Props {
     as?: 'div' | 'section' | 'article' | 'aside' | 'main' | 'span';
