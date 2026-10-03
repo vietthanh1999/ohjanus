@@ -157,25 +157,75 @@
       "svelte": "./src/components/input/index.ts",
       "default": "./src/components/input/index.ts"
     },
+    "./item": {
+      "types": "./src/components/item/index.ts",
+      "svelte": "./src/components/item/index.ts",
+      "default": "./src/components/item/index.ts"
+    },
     "./kbd": {
       "types": "./src/components/kbd/index.ts",
       "svelte": "./src/components/kbd/index.ts",
       "default": "./src/components/kbd/index.ts"
+    },
+    "./label": {
+      "types": "./src/components/label/index.ts",
+      "svelte": "./src/components/label/index.ts",
+      "default": "./src/components/label/index.ts"
     },
     "./modal": {
       "types": "./src/components/modal/index.ts",
       "svelte": "./src/components/modal/index.ts",
       "default": "./src/components/modal/index.ts"
     },
+    "./pagination": {
+      "types": "./src/components/pagination/index.ts",
+      "svelte": "./src/components/pagination/index.ts",
+      "default": "./src/components/pagination/index.ts"
+    },
     "./popover": {
       "types": "./src/components/popover/index.ts",
       "svelte": "./src/components/popover/index.ts",
       "default": "./src/components/popover/index.ts"
     },
+    "./progress": {
+      "types": "./src/components/progress/index.ts",
+      "svelte": "./src/components/progress/index.ts",
+      "default": "./src/components/progress/index.ts"
+    },
+    "./questionnaire": {
+      "types": "./src/components/questionnaire/index.ts",
+      "svelte": "./src/components/questionnaire/index.ts",
+      "default": "./src/components/questionnaire/index.ts"
+    },
+    "./radio-group": {
+      "types": "./src/components/radio-group/index.ts",
+      "svelte": "./src/components/radio-group/index.ts",
+      "default": "./src/components/radio-group/index.ts"
+    },
+    "./resizable": {
+      "types": "./src/components/resizable/index.ts",
+      "svelte": "./src/components/resizable/index.ts",
+      "default": "./src/components/resizable/index.ts"
+    },
+    "./scroll-area": {
+      "types": "./src/components/scroll-area/index.ts",
+      "svelte": "./src/components/scroll-area/index.ts",
+      "default": "./src/components/scroll-area/index.ts"
+    },
     "./select": {
       "types": "./src/components/select/index.ts",
       "svelte": "./src/components/select/index.ts",
       "default": "./src/components/select/index.ts"
+    },
+    "./sheet": {
+      "types": "./src/components/sheet/index.ts",
+      "svelte": "./src/components/sheet/index.ts",
+      "default": "./src/components/sheet/index.ts"
+    },
+    "./skeleton": {
+      "types": "./src/components/skeleton/index.ts",
+      "svelte": "./src/components/skeleton/index.ts",
+      "default": "./src/components/skeleton/index.ts"
     },
     "./spinner": {
       "types": "./src/components/spinner/index.ts",
@@ -197,6 +247,11 @@
       "svelte": "./src/components/table/index.ts",
       "default": "./src/components/table/index.ts"
     },
+    "./tabs": {
+      "types": "./src/components/tabs/index.ts",
+      "svelte": "./src/components/tabs/index.ts",
+      "default": "./src/components/tabs/index.ts"
+    },
     "./text": {
       "types": "./src/components/text/index.ts",
       "svelte": "./src/components/text/index.ts",
@@ -211,6 +266,26 @@
       "types": "./src/components/toaster/index.ts",
       "svelte": "./src/components/toaster/index.ts",
       "default": "./src/components/toaster/index.ts"
+    },
+    "./toggle": {
+      "types": "./src/components/toggle/index.ts",
+      "svelte": "./src/components/toggle/index.ts",
+      "default": "./src/components/toggle/index.ts"
+    },
+    "./toggle-group": {
+      "types": "./src/components/toggle-group/index.ts",
+      "svelte": "./src/components/toggle-group/index.ts",
+      "default": "./src/components/toggle-group/index.ts"
+    },
+    "./tooltip": {
+      "types": "./src/components/tooltip/index.ts",
+      "svelte": "./src/components/tooltip/index.ts",
+      "default": "./src/components/tooltip/index.ts"
+    },
+    "./typeset": {
+      "types": "./src/components/typeset/index.ts",
+      "svelte": "./src/components/typeset/index.ts",
+      "default": "./src/components/typeset/index.ts"
     },
     "./styles.css": "./src/styles.css",
     "./*": "./src/*"

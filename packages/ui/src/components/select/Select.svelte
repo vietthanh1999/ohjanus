@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { setContext } from 'svelte';
 
   interface Option {
     value: string;
@@ -75,6 +76,13 @@
     onchange?.(value);
   }
 
+  // Labels registered by compound <SelectItem /> parts.
+  const labels = $state<Record<string, string>>({});
+
+  function registerLabel(itemValue: string, label: string) {
+    labels[itemValue] = label;
+  }
+
   const displayLabel = $derived(() => {
     if (multiple) {
       const arr = Array.isArray(value) ? value : [];
@@ -84,7 +92,23 @@
         .map((o) => o.label)
         .join(', ');
     }
-    return options.find((o) => o.value === value)?.label ?? '';
+    return options.find((o) => o.value === value)?.label ?? labels[value as string] ?? '';
+  });
+
+  function setOpen(v: boolean) {
+    open = v;
+  }
+
+  setContext('ohjanus-select', {
+    get value() { return value; },
+    get open() { return open; },
+    get multiple() { return multiple; },
+    get disabled() { return disabled; },
+    get labels() { return labels; },
+    select,
+    setOpen,
+    isSelected,
+    registerLabel
   });
 </script>
 

@@ -1,0 +1,49 @@
+<script lang="ts">
+  import type { Snippet } from 'svelte';
+  import { getContext, onMount } from 'svelte';
+
+  interface Props {
+    value: string;
+    label?: string;
+    disabled?: boolean;
+    class?: string;
+    style?: string;
+    children?: Snippet;
+  }
+
+  let { value: itemValue, label, disabled = false, class: className = '', style = '', children }: Props = $props();
+  const ctx = getContext<{
+    multiple: boolean;
+    disabled: boolean;
+    select: (v: string) => void;
+    isSelected: (v: string) => boolean;
+    registerLabel: (v: string, label: string) => void;
+  }>('ohjanus-select');
+
+  onMount(() => {
+    ctx?.registerLabel(itemValue, label ?? itemValue);
+  });
+
+  const selected = $derived(ctx?.isSelected(itemValue) ?? false);
+  const isDisabled = $derived(disabled || ctx?.disabled);
+</script>
+
+<button
+  type="button"
+  role="option"
+  aria-selected={selected}
+  disabled={isDisabled}
+  class="ohjanus-select-option {className}"
+  class:selected
+  {style}
+  onclick={() => ctx?.select(itemValue)}
+>
+  {#if ctx?.multiple}
+    <span aria-hidden="true">{selected ? '☑' : '☐'}</span>
+  {/if}
+  {#if children}
+    {@render children()}
+  {:else}
+    {label ?? itemValue}
+  {/if}
+</button>

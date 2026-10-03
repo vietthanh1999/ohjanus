@@ -24,8 +24,12 @@ class ToastManager {
     return id;
   }
 
-  success(title: string, description?: string) {
-    return this.show({ type: 'success', title, description });
+  /** Alias matching the spec usage: `toast.add({ title, description })`. */
+  add(item: Omit<ToastItem, 'id'>) {
+    return this.show(item);
+  }
+
+  success(title: string, description?: string) {    return this.show({ type: 'success', title, description });
   }
 
   error(title: string, description?: string) {
