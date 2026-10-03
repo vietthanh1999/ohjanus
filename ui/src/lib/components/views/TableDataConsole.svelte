@@ -4,44 +4,39 @@
 </script>
 
 <div class="log-console-container">
-  <!-- Log Output content -->
   <div class="log-content code-text">
-    <div class="log-line">
-      <span class="log-ts">[2026-10-03 10:50:34]</span>
-      <span class="log-text">Connected to dev_mh_asset</span>
-    </div>
-    <div class="log-line">
-      <span class="log-ts">[2026-10-03 10:50:34]</span>
-      <span class="log-schema">dev_mh_asset.public&gt;</span>
-      <span class="kw-sql">SELECT</span> <span class="ident-sql">t.*</span>
-    </div>
-    <div class="log-line indent-sql">
-      <span class="kw-sql">FROM</span> <span class="ident-sql">public.connection_credential t</span>
-    </div>
-    <div class="log-line indent-sql">
-      <span class="kw-sql">LIMIT</span> <span class="num-sql">501</span>
-    </div>
-    <div class="log-line">
-      <span class="log-ts">[2026-10-03 10:50:34]</span>
-      <span class="log-text">58 rows retrieved starting from 1 in 586 ms (execution: 86 ms, fetching: 500 ms)</span>
-    </div>
+    {#if appState.consoleLogs.length === 0}
+      <div class="log-line">
+        <span class="log-ts">--</span>
+        <span class="log-text">No output yet. Run a query or open a table to see live execution logs.</span>
+      </div>
+    {:else}
+      {#each appState.consoleLogs as log (log.id)}
+        <div class="log-line" class:error-line={log.type === 'error'}>
+          <span class="log-ts">[{log.timestamp}]</span>
+          {#if log.connection}
+            <span class="log-schema">{log.connection}&gt;</span>
+          {/if}
+          {#if log.querySnippet}
+            <span class="ident-sql">{log.querySnippet}</span>
+          {:else}
+            <span class="log-text">{log.summary}</span>
+          {/if}
+        </div>
+        {#if log.querySnippet}
+          <div class="log-line indent-sql">
+            <span class="log-text">{log.summary}</span>
+          </div>
+        {/if}
+      {/each}
+    {/if}
   </div>
 
-  <!-- Right Action Strip matching design2.png -->
   <div class="log-action-strip">
-    <button type="button" class="strip-btn" title="Toggle Output Window">
-      <Icon name="audit" size={13} />
+    <button type="button" class="strip-btn" title="Reload table data" onclick={() => void appState.loadTableData()}>
+      <Icon name="refresh" size={13} />
     </button>
-    <button type="button" class="strip-btn" title="Collapse">
-      <Icon name="minus" size={11} />
-    </button>
-    <button type="button" class="strip-btn" title="Undo">
-      <Icon name="undo" size={12} />
-    </button>
-    <button type="button" class="strip-btn" title="Print Log">
-      <Icon name="printer" size={13} />
-    </button>
-    <button type="button" class="strip-btn" title="Clear Console" onclick={() => appState.consoleLogs = []}>
+    <button type="button" class="strip-btn" title="Clear Console" onclick={() => appState.clearLogs()}>
       <Icon name="trash" size={13} />
     </button>
   </div>
@@ -71,7 +66,11 @@
   }
 
   .log-line.indent-sql {
-    padding-left: 285px;
+    padding-left: 24px;
+  }
+
+  .log-line.error-line .log-text {
+    color: var(--action-danger, #E55353);
   }
 
   .log-ts {
@@ -87,17 +86,8 @@
     font-weight: 500;
   }
 
-  .kw-sql {
-    color: #CF8E6D;
-    font-weight: 500;
-  }
-
   .ident-sql {
     color: var(--text-primary, #DFE1E5);
-  }
-
-  .num-sql {
-    color: #6897BB;
   }
 
   .log-action-strip {

@@ -102,10 +102,12 @@
       return;
     }
 
-    // Cmd+Enter or Ctrl+Enter -> Execute Query
+    // Cmd+Enter or Ctrl+Enter -> Execute Query on the active data tab
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       e.preventDefault();
-      appState.executeQuery();
+      const tab = appState.activeTab;
+      if (tab?.type === 'console') void appState.executeConsoleQuery();
+      else if (tab?.type === 'table') void appState.loadTableData();
       return;
     }
 
@@ -156,9 +158,9 @@
         <TabBar />
 
         <Box class="view-content">
-          {#if appState.activeTabId === 'console_2'}
+          {#if appState.activeTab?.type === 'console'}
             <SqlConsoleView />
-          {:else if appState.activeTabId === 'connection_credential'}
+          {:else if appState.activeTab?.type === 'table'}
             <TableDataView />
           {:else if appState.activeTabId === 'approvals'}
             <ApprovalsView />
@@ -170,11 +172,13 @@
             <ConnectionsView />
           {:else if appState.activeTabId === 'dashboard'}
             <DashboardView />
+          {:else}
+            <ApprovalsView />
           {/if}
         </Box>
       </div>
 
-      {#if ['connection_credential', 'commands', 'events'].includes(appState.activeTabId)}
+      {#if appState.activeTab?.type === 'table'}
         <!-- Horizontal Splitter / 6px gap between Editor and Console -->
         <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
         <div
@@ -203,7 +207,7 @@
   <DdlModal />
   <SearchPaletteModal />
   <SettingsModal />
-  <Toaster position="bottom-right" />
+  <Toaster />
 </Box>
 
 <style>

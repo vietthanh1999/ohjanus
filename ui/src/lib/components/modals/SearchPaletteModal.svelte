@@ -5,19 +5,42 @@
 
   let query = $state('');
 
-  const items = [
-    { title: 'connection_credential', category: 'Table', desc: 'dev_mh_asset.public', action: () => appState.activeTabId = 'connection_credential' },
-    { title: 'console_2', category: 'Console', desc: 'prd_mh_asset.public query editor', action: () => appState.activeTabId = 'console_2' },
-    { title: 'Approvals Queue', category: 'Gateway', desc: 'Review AI Agent write requests', action: () => appState.activeTabId = 'approvals' },
-    { title: 'Audit Log Trail', category: 'Gateway', desc: 'Audit records and query logs', action: () => appState.activeTabId = 'audit' },
-    { title: 'MCP Access Tokens', category: 'Gateway', desc: 'Manage agent tokens & scopes', action: () => appState.activeTabId = 'tokens' },
-    { title: 'Connection Pools', category: 'Gateway', desc: 'Monitor database connections', action: () => appState.activeTabId = 'connections' },
-    { title: 'Gateway Dashboard', category: 'Gateway', desc: 'Throughput and telemetry metrics', action: () => appState.activeTabId = 'dashboard' },
-    { title: 'transfer_job', category: 'Table', desc: 'prd_mh_asset.public', action: () => appState.activeTabId = 'console_2' },
-    { title: 'category', category: 'Table', desc: 'dev_mh_asset.public', action: () => appState.activeTabId = 'connection_credential' },
-    { title: 'content', category: 'Table', desc: 'dev_mh_asset.public', action: () => appState.activeTabId = 'connection_credential' },
-    { title: 'Generate DDL', category: 'Action', desc: 'Inspect current schema definition', action: () => appState.ddlModalOpen = true }
-  ];
+  interface PaletteItem {
+    title: string;
+    category: string;
+    desc: string;
+    action: () => void;
+  }
+
+  let items = $derived.by((): PaletteItem[] => {
+    const list: PaletteItem[] = [
+      { title: 'Approvals Queue', category: 'Gateway', desc: 'Review write requests', action: () => appState.openTab({ id: 'approvals', title: 'Approvals Queue', type: 'approvals', closable: false, icon: 'shield' }) },
+      { title: 'Audit Log Trail', category: 'Gateway', desc: 'Audit records and query logs', action: () => appState.openTab({ id: 'audit', title: 'Audit Logs', type: 'audit', closable: false, icon: 'audit' }) },
+      { title: 'MCP Access Tokens', category: 'Gateway', desc: 'Manage agent tokens & scopes', action: () => appState.openTab({ id: 'tokens', title: 'MCP Tokens', type: 'tokens', closable: false, icon: 'key' }) },
+      { title: 'Connection Pools', category: 'Gateway', desc: 'Monitor database connections', action: () => appState.openTab({ id: 'connections', title: 'Connections', type: 'connections', closable: false, icon: 'database' }) },
+      { title: 'Gateway Dashboard', category: 'Gateway', desc: 'Throughput and telemetry metrics', action: () => appState.openTab({ id: 'dashboard', title: 'Dashboard', type: 'dashboard', closable: false, icon: 'chart' }) },
+      { title: 'Generate DDL', category: 'Action', desc: 'Inspect current schema definition', action: () => appState.ddlModalOpen = true }
+    ];
+    for (const conn of appState.connections) {
+      list.push({
+        title: `console [${conn.name}]`,
+        category: 'Console',
+        desc: `${conn.name} query editor`,
+        action: () => appState.openConsoleTab(conn.name)
+      });
+      for (const schema of appState.schemasOf(conn.name)) {
+        for (const table of schema.tables) {
+          list.push({
+            title: table.name,
+            category: 'Table',
+            desc: `${conn.name}.${schema.name}`,
+            action: () => void appState.selectTable(conn.name, schema.name, table.name)
+          });
+        }
+      }
+    }
+    return list;
+  });
 
   let filtered = $derived.by(() => {
     if (!query.trim()) return items;
@@ -68,6 +91,9 @@
           <span class="row-desc">{item.desc}</span>
         </Flex>
       {/each}
+      {#if filtered.length === 0}
+        <div class="palette-empty">No matches. Tables appear here after the explorer loads their schema.</div>
+      {/if}
     </Box>
   </Box>
 </DialogPrimitive>
@@ -125,5 +151,12 @@
   .row-desc {
     font-size: 11px;
     color: var(--text-muted, #767980);
+  }
+
+  .palette-empty {
+    padding: 16px;
+    font-size: 12px;
+    color: var(--text-muted, #767980);
+    text-align: center;
   }
 </style>

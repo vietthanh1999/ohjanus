@@ -31,8 +31,10 @@
   let enableMnemonicsControls = $state(true);
   let enableMnemonicsMenu = $state(false);
 
-  // Database / Gateway API
-  let apiBase = $state('http://localhost:8788/api/v1');
+  // Database / Gateway API (live: persisted to localStorage, applied on save)
+  import { apiBaseUrl, setApiBaseUrl, adminToken, setAdminToken } from '../../api/client';
+  let apiBase = $state(apiBaseUrl());
+  let adminTokenValue = $state(adminToken());
   let queryTimeout = $state('30');
   let autoCommit = $state(false);
 
@@ -66,12 +68,18 @@
   }
 
   function handleApply() {
-    toast.success('Settings applied');
+    setApiBaseUrl(apiBase.trim());
+    setAdminToken(adminTokenValue.trim());
+    toast.success('Gateway connection applied (reloads data)');
+    void appState.loadAll();
   }
 
   function handleSave() {
+    setApiBaseUrl(apiBase.trim());
+    setAdminToken(adminTokenValue.trim());
     close();
     toast.success('Settings saved successfully');
+    void appState.loadAll();
   }
 </script>
 
@@ -523,9 +531,22 @@
                     type="text"
                     class="jb-input code-text"
                     bind:value={apiBase}
-                    placeholder="http://localhost:8788/api/v1"
+                    placeholder="(empty = same origin via Vite proxy)"
                   />
-                  <p class="field-subtext">Port 8788 is the dedicated Janus Admin REST API port separated from MCP clients.</p>
+                  <p class="field-subtext">Empty uses the same-origin Vite proxy to :8788. Set explicit URL only for remote gateways.</p>
+                </div>
+
+                <div class="form-row vertical">
+                  <label for="admin-token" class="form-label font-medium">Admin Bearer Token:</label>
+                  <input
+                    id="admin-token"
+                    type="password"
+                    class="jb-input code-text"
+                    bind:value={adminTokenValue}
+                    placeholder="jn_... (admin scope required for approve/tokens)"
+                    autocomplete="off"
+                  />
+                  <p class="field-subtext">Stored only in this browser (localStorage). Never committed.</p>
                 </div>
 
                 <div class="form-row vertical">

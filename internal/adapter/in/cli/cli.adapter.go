@@ -195,7 +195,7 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 			})
 
 			if cfg.Admin.Enabled {
-				if err := startAdmin(ctx, cfg, logger, tokenStore, tokenResolver, authStore, auditBuffer, combinedAudit, pools, metas, clock, metricsHandler); err != nil {
+				if err := startAdmin(ctx, cfg, logger, tokenStore, tokenResolver, authStore, auditBuffer, combinedAudit, pools, metas, clock, metricsHandler, readSvc, schemaSvc); err != nil {
 					return err
 				}
 			}
@@ -331,12 +331,13 @@ func serveMCPHTTP(ctx context.Context, cfg *config.Config, logger *slog.Logger, 
 
 // startAdmin pre-binds the Admin port (fail fast) then serves it in the
 // background next to the MCP transport.
-func startAdmin(ctx context.Context, cfg *config.Config, logger *slog.Logger, tokenStore out.TokenStore, tokenResolver out.TokenResolver, authStore out.AuthTokenStore, auditReader out.AuditReader, auditSink out.AuditSink, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta, clock out.Clock, metricsHandler http.Handler) error {
+func startAdmin(ctx context.Context, cfg *config.Config, logger *slog.Logger, tokenStore out.TokenStore, tokenResolver out.TokenResolver, authStore out.AuthTokenStore, auditReader out.AuditReader, auditSink out.AuditSink, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta, clock out.Clock, metricsHandler http.Handler, readSvc *service.ReadService, schemaSvc *service.SchemaService) error {
 	ln, err := net.Listen("tcp", cfg.Admin.Listen)
 	if err != nil {
 		return fmt.Errorf("admin listen %s: %w", cfg.Admin.Listen, err)
 	}
 	admin := adminapi.New(cfg.Admin.Listen, cfg.Auth.Mode, tokenStore, tokenResolver, authStore, auditReader, auditSink, pools, metas, clock)
+	admin.SetQueryBackend(readSvc, schemaSvc)
 	admin.SetMetricsHandler(metricsHandler)
 	go func() {
 		if err := admin.ServeListener(ctx, ln); err != nil {

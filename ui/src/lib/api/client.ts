@@ -14,15 +14,49 @@ export class ApiError extends Error {
   }
 }
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://127.0.0.1:8788';
-const ADMIN_TOKEN = (import.meta.env.VITE_ADMIN_TOKEN as string | undefined) ?? '';
+const ENV_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
+const ENV_ADMIN_TOKEN = (import.meta.env.VITE_ADMIN_TOKEN as string | undefined) ?? '';
+
+const LS_BASE_URL_KEY = 'ohjanus_api_base_url';
+const LS_TOKEN_KEY = 'ohjanus_admin_token';
 
 export function apiBaseUrl(): string {
-  return BASE_URL.replace(/\/$/, '');
+  try {
+    const ls = localStorage.getItem(LS_BASE_URL_KEY);
+    if (ls) return ls.replace(/\/$/, '');
+  } catch { /* ignore */ }
+  if (ENV_BASE_URL) return ENV_BASE_URL.replace(/\/$/, '');
+  // Same-origin by default so Vite proxy (/api -> :8788) works without CORS.
+  return '';
+}
+
+export function setApiBaseUrl(url: string): void {
+  try {
+    if (url) localStorage.setItem(LS_BASE_URL_KEY, url);
+    else localStorage.removeItem(LS_BASE_URL_KEY);
+  } catch { /* ignore */ }
 }
 
 export function adminToken(): string {
-  return ADMIN_TOKEN;
+  try {
+    const ls = localStorage.getItem(LS_TOKEN_KEY);
+    if (ls) return ls;
+  } catch { /* ignore */ }
+  return ENV_ADMIN_TOKEN;
+}
+
+export function setAdminToken(token: string): void {
+  try {
+    if (token) localStorage.setItem(LS_TOKEN_KEY, token);
+    else localStorage.removeItem(LS_TOKEN_KEY);
+  } catch { /* ignore */ }
+}
+
+function authHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const token = adminToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
 }
 
 interface FetchOptions {
@@ -32,19 +66,19 @@ interface FetchOptions {
 }
 
 export async function apiFetch<T>(path: string, opts: FetchOptions = {}): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (ADMIN_TOKEN) headers['Authorization'] = `Bearer ${ADMIN_TOKEN}`;
+  const headers = authHeaders();
+  const base = apiBaseUrl();
 
   let resp: Response;
   try {
-    resp = await fetch(`${apiBaseUrl()}${path}`, {
+    resp = await fetch(`${base}${path}`, {
       method: opts.method ?? 'GET',
       headers,
       body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
       signal: opts.signal
     });
   } catch (e) {
-    throw new ApiError(0, 'NETWORK_ERROR', `Cannot reach Admin API at ${apiBaseUrl()}. Is janus serve running?`, '');
+    throw new ApiError(0, 'NETWORK_ERROR', `Cannot reach Admin API at ${base || 'same origin'}. Is janus serve running?`, '');
   }
 
   if (resp.status === 204) return undefined as T;
@@ -58,9 +92,16 @@ export async function apiFetch<T>(path: string, opts: FetchOptions = {}): Promis
 
   if (!resp.ok) {
     const body = data as ApiErrorBody | undefined;
+    const code = body?.error?.code;
+    // Vite proxy (or any gateway) answers 502/503/504 with an HTML body when
+    // janus serve is down. Surface that as NETWORK_ERROR with the actionable
+    // hint instead of a cryptic "Request failed with status 502".
+    if (!code && (resp.status === 502 || resp.status === 503 || resp.status === 504)) {
+      throw new ApiError(resp.status, 'NETWORK_ERROR', `Cannot reach Admin API at ${base || 'same origin'}. Is janus serve running?`, '');
+    }
     throw new ApiError(
       resp.status,
-      body?.error?.code ?? 'UNKNOWN',
+      code ?? 'UNKNOWN',
       body?.error?.message ?? `Request failed with status ${resp.status}`,
       body?.error?.request_id ?? ''
     );
@@ -71,7 +112,8 @@ export async function apiFetch<T>(path: string, opts: FetchOptions = {}): Promis
 /** GET that downloads a blob (used for audit export, where <a href> cannot send headers). */
 export async function apiDownload(path: string, filename: string): Promise<void> {
   const headers: Record<string, string> = {};
-  if (ADMIN_TOKEN) headers['Authorization'] = `Bearer ${ADMIN_TOKEN}`;
+  const token = adminToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
   let resp: Response;
   try {
     resp = await fetch(`${apiBaseUrl()}${path}`, { headers });

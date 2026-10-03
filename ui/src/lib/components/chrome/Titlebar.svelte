@@ -17,13 +17,13 @@
 
     <Flex class="context-group" align="center" gap="6px">
       <!-- Profile Avatar -->
-      <Flex class="avatar" align="center" justify="center" title="Viet Thanh">
-        VT
+      <Flex class="avatar" align="center" justify="center">
+        OJ
       </Flex>
 
       <!-- Project Selector -->
       <button class="selector-btn" title="Current Workspace Project">
-        <span class="project-name">VThanh</span>
+        <span class="project-name">OhJanus</span>
         <Icon name="chevron-down" size={10} />
       </button>
 
@@ -51,8 +51,12 @@
       <!-- Run circle -->
       <button
         class="quick-btn run-circle-btn"
-        title="Run configurations"
-        onclick={() => appState.executeQuery()}
+        title="Run query (Cmd+Enter)"
+        onclick={() => {
+          const tab = appState.activeTab;
+          if (tab?.type === 'console') void appState.executeConsoleQuery();
+          else if (tab?.type === 'table') void appState.loadTableData();
+        }}
       >
         <Icon name="play" size={14} />
       </button>

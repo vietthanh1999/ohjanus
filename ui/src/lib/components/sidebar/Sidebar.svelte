@@ -28,31 +28,33 @@
     window.addEventListener('mouseup', onMouseUp);
   }
 
-  function toggleTree(id: string) {
-    appState.treeExpanded[id] = !appState.treeExpanded[id];
+  function connKey(name: string) {
+    return `conn:${name}`;
   }
 
-  function selectTable(tableName: string) {
-    appState.selectedTreeNode = tableName;
-    if (tableName === 'connection_credential') {
-      appState.openTab({
-        id: 'connection_credential',
-        title: 'connectio...credential [[Dev][ReadOnly] 10.220.6.4]',
-        type: 'table',
-        closable: true,
-        icon: 'table',
-        env: 'Dev'
-      });
-    } else if (tableName === 'transfer_job' || tableName === 'console_2') {
-      appState.openTab({
-        id: 'console_2',
-        title: 'console_2 [[PRD] 10.250.6.23]',
-        type: 'console',
-        closable: true,
-        icon: 'lightning',
-        env: 'PRD'
-      });
+  function schemaKey(conn: string, schema: string) {
+    return `conn:${conn}:schema:${schema}`;
+  }
+
+  async function toggleConnection(name: string) {
+    appState.toggleTree(connKey(name));
+    if (appState.treeExpanded[connKey(name)]) {
+      await appState.loadSchema(name);
     }
+  }
+
+  function openConsole(name: string) {
+    appState.selectedTreeNode = `console:${name}`;
+    appState.openConsoleTab(name);
+  }
+
+  async function openTable(conn: string, schema: string, table: string) {
+    await appState.selectTable(conn, schema, table);
+  }
+
+  function matchesFilter(text: string): boolean {
+    const q = appState.treeFilterQuery.trim().toLowerCase();
+    return q === '' || text.toLowerCase().includes(q);
   }
 </script>
 
@@ -61,187 +63,99 @@
   class:collapsed={appState.isSidebarCollapsed}
   style="width: {appState.isSidebarCollapsed ? '0px' : appState.sidebarWidth + 'px'};"
 >
-  <!-- TOP PANE: Database Explorer -->
   <div class="explorer-pane">
-    <!-- Top Window-like Explorer Header -->
     <div class="explorer-header-top">
       <span class="explorer-title">Database Explorer</span>
       <div class="header-window-icons">
-        <button type="button" class="jb-icon-btn" title="Locate in Tree"><Icon name="crosshairs" size={12} /></button>
-        <button type="button" class="jb-icon-btn" title="Expand / Collapse"><Icon name="expand-y" size={12} /></button>
-        <button type="button" class="jb-icon-btn" title="Minimize"><Icon name="minus" size={12} /></button>
-        <button type="button" class="jb-icon-btn" title="More Options">
-          <Icon name="more" size={12} />
+        <button type="button" class="jb-icon-btn" title="Reload connections" onclick={() => void appState.loadConnections()}>
+          <Icon name="refresh" size={12} />
+        </button>
+        <button type="button" class="jb-icon-btn" title="New console on first connection" onclick={() => appState.connections[0] && openConsole(appState.connections[0].name)}>
+          <Icon name="plus" size={12} />
         </button>
       </div>
     </div>
 
-    <!-- Explorer Sub-toolbar Row -->
     <div class="explorer-subtoolbar">
-      <!-- + New -->
-      <button type="button" class="jb-icon-btn" title="New Data Source (+)">
-        <Icon name="plus" size={12} />
-      </button>
-
-      <!-- DB Gear Properties -->
-      <button type="button" class="jb-icon-btn" title="Data Source Properties">
-        <Icon name="database" size={12} />
-      </button>
-
-      <!-- Refresh (⟳) -->
-      <button type="button" class="jb-icon-btn" title="Refresh (Cmd+F5)">
-        <Icon name="refresh" size={12} />
-      </button>
-
-      <!-- Properties [] -->
-      <button type="button" class="jb-icon-btn" title="Options">
-        <Icon name="settings" size={11} />
-      </button>
-
-      <!-- DDL -->
-      <button type="button" class="jb-icon-btn ddl-btn" title="Generate Schema DDL" onclick={() => appState.ddlModalOpen = true}>
+      <input
+        type="text"
+        class="tree-filter-input"
+        placeholder="Filter connections / tables…"
+        bind:value={appState.treeFilterQuery}
+      />
+      <button type="button" class="jb-icon-btn ddl-btn" title="Generate Table DDL" onclick={() => appState.ddlModalOpen = true}>
         <span style="font-size: 10px; font-weight: 700; font-family: var(--font-code); color: #7A7E85;">DDL</span>
-      </button>
-
-      <!-- Back -->
-      <button type="button" class="jb-icon-btn" title="Navigate Backward">
-        <Icon name="chevron-left" size={11} />
-      </button>
-
-      <!-- Eye -->
-      <button type="button" class="jb-icon-btn" title="Show / Hide Schemas">
-        <Icon name="eye" size={12} />
       </button>
     </div>
 
-    <!-- Tree View -->
     <div class="tree-viewport">
-      <!-- Node: Dev Server [Dev][ReadOnly] 10.220.6.4 -->
-      <button type="button" class="tree-node depth-0" onclick={() => toggleTree('dev_srv')}>
-        <span class="chevron" class:expanded={appState.treeExpanded['dev_srv']}><Icon name="chevron-right" size={12} /></span>
-        <!-- Elephant/DB Icon in cyan/blue -->
-        <Icon name="database" size={14} color="#3B82F6" class="node-icon" />
-        <span class="node-label"><strong>[Dev][ReadOnly]</strong> 10.220.6.4</span>
-      </button>
-
-      {#if appState.treeExpanded['dev_srv']}
-        <!-- Schema: es -->
-        <button type="button" class="tree-node depth-1" onclick={() => toggleTree('dev_schema_es')}>
-          <span class="chevron" class:expanded={appState.treeExpanded['dev_schema_es']}><Icon name="chevron-right" size={12} /></span>
-          <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
-          <span class="node-label">es</span>
-        </button>
-
-        <!-- Schema: information_schema -->
-        <button type="button" class="tree-node depth-1">
-          <span class="chevron"><Icon name="chevron-right" size={12} /></span>
-          <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
-          <span class="node-label">information_schema</span>
-        </button>
-
-        <!-- Schema: marts -->
-        <button type="button" class="tree-node depth-1">
-          <span class="chevron"><Icon name="chevron-right" size={12} /></span>
-          <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
-          <span class="node-label">marts</span>
-        </button>
-
-        <!-- Schema: pg_catalog -->
-        <button type="button" class="tree-node depth-1">
-          <span class="chevron"><Icon name="chevron-right" size={12} /></span>
-          <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
-          <span class="node-label">pg_catalog</span>
-        </button>
-
-        <!-- Schema: pm -->
-        <button type="button" class="tree-node depth-1">
-          <span class="chevron"><Icon name="chevron-right" size={12} /></span>
-          <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
-          <span class="node-label">pm</span>
-        </button>
-
-        <!-- Schema: public (Expanded) -->
-        <button type="button" class="tree-node depth-1" onclick={() => toggleTree('dev_schema_public')}>
-          <span class="chevron" class:expanded={appState.treeExpanded['dev_schema_public']}><Icon name="chevron-right" size={12} /></span>
-          <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
-          <span class="node-label">public</span>
-        </button>
-
-        {#if appState.treeExpanded['dev_schema_public']}
-          <!-- tables 33 -->
-          <button type="button" class="tree-node depth-2" onclick={() => toggleTree('dev_tables')}>
-            <span class="chevron" class:expanded={appState.treeExpanded['dev_tables']}><Icon name="chevron-right" size={12} /></span>
-            <Icon name="table" size={13} color="#3B82F6" class="node-icon" />
-            <span class="node-label">tables <span style="color: var(--text-muted); font-size: 11px;">33</span></span>
+      {#if appState.dataLoading}
+        <div class="tree-empty">Loading connections from Admin API…</div>
+      {:else if appState.dataError && appState.connections.length === 0}
+        <div class="tree-empty">
+          <div>Admin API unreachable.</div>
+          <div class="tree-error">{appState.dataError}</div>
+          <button type="button" class="retry-btn" onclick={() => void appState.loadAll()}>Retry</button>
+        </div>
+      {:else if appState.connections.length === 0}
+        <div class="tree-empty">No connections configured. Add one in janus.yaml and restart serve.</div>
+      {:else}
+        {#each appState.explorerConnections as conn (conn.name)}
+          <button type="button" class="tree-node depth-0" onclick={() => void toggleConnection(conn.name)}>
+            <span class="chevron" class:expanded={appState.treeExpanded[connKey(conn.name)]}><Icon name="chevron-right" size={12} /></span>
+            <Icon name="database" size={14} color="#3B82F6" class="node-icon" />
+            <span class="node-label"><strong>{conn.name}</strong>{conn.readonly ? ' [ReadOnly]' : ''}</span>
+            {#if conn.status !== 'healthy'}
+              <span class="conn-warn" title={conn.status}>●</span>
+            {/if}
           </button>
 
-          {#if appState.treeExpanded['dev_tables']}
-            <!-- Table: category -->
-            <button
-              type="button"
-              class="tree-node depth-3"
-              class:selected={appState.selectedTreeNode === 'category'}
-              onclick={() => selectTable('category')}
-            >
+          {#if appState.treeExpanded[connKey(conn.name)]}
+            <button type="button" class="tree-node depth-1" onclick={() => openConsole(conn.name)}>
               <span class="chevron"><Icon name="chevron-right" size={12} /></span>
-              <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
-              <span class="node-label">category</span>
+              <Icon name="lightning" size={12} color="#3B82F6" class="node-icon" />
+              <span class="node-label">console [{conn.name}]</span>
             </button>
 
-            <!-- Table: connection_credential -->
-            <button
-              type="button"
-              class="tree-node depth-3 selected"
-              class:selected={appState.selectedTreeNode === 'connection_credential'}
-              onclick={() => selectTable('connection_credential')}
-            >
-              <span class="chevron"><Icon name="chevron-right" size={12} /></span>
-              <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
-              <span class="node-label">connection_credential</span>
-            </button>
+            {#if appState.schemaLoading[conn.name]}
+              <div class="tree-empty">Loading schema…</div>
+            {:else if appState.schemaError[conn.name]}
+              <div class="tree-empty">
+                <div class="tree-error">{appState.schemaError[conn.name]}</div>
+                <button type="button" class="retry-btn" onclick={() => void appState.loadSchema(conn.name, true)}>Retry</button>
+              </div>
+            {:else}
+              {#each appState.schemasOf(conn.name) as schema (schema.name)}
+                {#if matchesFilter(schema.name) || schema.tables.some((t) => matchesFilter(t.name))}
+                  <button type="button" class="tree-node depth-1" onclick={() => appState.toggleTree(schemaKey(conn.name, schema.name))}>
+                    <span class="chevron" class:expanded={appState.treeExpanded[schemaKey(conn.name, schema.name)]}><Icon name="chevron-right" size={12} /></span>
+                    <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
+                    <span class="node-label">{schema.name} <span style="color: var(--text-muted); font-size: 11px;">{schema.tables.length}</span></span>
+                  </button>
 
-            <!-- Table: content -->
-            <button
-              type="button"
-              class="tree-node depth-3"
-              class:selected={appState.selectedTreeNode === 'content'}
-              onclick={() => selectTable('content')}
-            >
-              <span class="chevron"><Icon name="chevron-right" size={12} /></span>
-              <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
-              <span class="node-label">content</span>
-            </button>
-
-            <!-- Table: content_distribution -->
-            <button
-              type="button"
-              class="tree-node depth-3"
-              class:selected={appState.selectedTreeNode === 'content_distribution'}
-              onclick={() => selectTable('content_distribution')}
-            >
-              <span class="chevron"><Icon name="chevron-right" size={12} /></span>
-              <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
-              <span class="node-label">content_distribution</span>
-            </button>
-
-            <!-- Table: content_provider_configuration -->
-            <button
-              type="button"
-              class="tree-node depth-3"
-              class:selected={appState.selectedTreeNode === 'content_provider_configuration'}
-              onclick={() => selectTable('content_provider_configuration')}
-            >
-              <span class="chevron"><Icon name="chevron-right" size={12} /></span>
-              <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
-              <span class="node-label">content_provider_configuration</span>
-            </button>
+                  {#if appState.treeExpanded[schemaKey(conn.name, schema.name)]}
+                    {#each schema.tables.filter((t) => matchesFilter(t.name)) as table (table.name)}
+                      <button
+                        type="button"
+                        class="tree-node depth-2"
+                        class:selected={appState.selectedTreeNode === `table:${conn.name}.${schema.name}.${table.name}`}
+                        onclick={() => void openTable(conn.name, schema.name, table.name)}
+                      >
+                        <span class="chevron"><Icon name="chevron-right" size={12} /></span>
+                        <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
+                        <span class="node-label">{table.name}</span>
+                      </button>
+                    {/each}
+                  {/if}
+                {/if}
+              {/each}
+            {/if}
           {/if}
-        {/if}
+        {/each}
       {/if}
     </div>
   </div>
 
-  <!-- HORIZONTAL SPLITTER -->
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <div
     class="horizontal-splitter"
@@ -252,96 +166,36 @@
     title="Drag to resize Database Explorer / Services"
   ></div>
 
-  <!-- BOTTOM PANE: Services Panel (Execution & Session Monitor) -->
   <div class="services-pane" style="height: {appState.servicesHeight}px;">
-    <!-- Services Header -->
     <div class="services-header">
       <span class="services-title">Services</span>
-      <div class="services-actions">
-        <button type="button" class="jb-icon-btn" title="Transaction Mode: Auto">
-          <span style="font-size: 11px; font-weight: 500; color: #7A7E85;">Tx,</span>
-        </button>
-        <button type="button" class="jb-icon-btn" title="New Session">
-          <Icon name="plus" size={12} />
-        </button>
-        <button type="button" class="jb-icon-btn" title="View Options">
-          <Icon name="eye" size={12} />
-        </button>
-        <button type="button" class="jb-icon-btn" title="Pin / Duplicate">
-          <Icon name="pin" size={12} />
-        </button>
-        <button type="button" class="jb-icon-btn" title="Expand / Collapse"><Icon name="expand-y" size={12} /></button>
-        <button type="button" class="jb-icon-btn" title="Close">
-          <Icon name="close" size={11} />
-        </button>
-      </div>
+      <span class="services-count">{appState.services.length}</span>
     </div>
 
-    <!-- Services Tree matching design2.png -->
     <div class="services-viewport">
-      <!-- Database parent group -->
-      <div class="service-item parent-item">
-        <input type="checkbox" checked class="service-chk" />
-        <span class="chevron expanded"><Icon name="chevron-right" size={12} /></span>
-        <Icon name="folder" size={13} color="#C29D38" class="node-icon" />
-        <span class="node-label">Database</span>
-      </div>
-
-      <!-- Dev Server Group -->
-      <div class="service-item depth-1">
-        <span class="chevron expanded"><Icon name="chevron-right" size={12} /></span>
-        <Icon name="database" size={13} color="#3B82F6" class="node-icon" />
-        <span class="node-label"><strong>[Dev][ReadOnly]</strong> 10.220.6.4</span>
-      </div>
-
-      <!-- Session 1: connection_credential (Selected highlight) -->
-      <button
-        type="button"
-        class="service-item depth-2 selected"
-        onclick={() => selectTable('connection_credential')}
-      >
-        <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
-        <span class="node-label truncate">connection_credential</span>
-        <span class="latency-text">1 s 159 ms</span>
-      </button>
-
-      <!-- Session 2: events -->
-      <div class="service-item depth-2">
-        <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
-        <span class="node-label truncate">events</span>
-        <span class="latency-text">986 ms</span>
-      </div>
-
-      <!-- Session 3: commands -->
-      <div class="service-item depth-2">
-        <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
-        <span class="node-label truncate">commands</span>
-        <span class="latency-text">1 s 449 ms</span>
-      </div>
-
-      <!-- PRD Server Group -->
-      <div class="service-item depth-1">
-        <span class="chevron expanded"><Icon name="chevron-right" size={12} /></span>
-        <Icon name="database" size={13} color="#3B82F6" class="node-icon" />
-        <span class="node-label"><strong>[PRD]</strong> 10.250.6.23</span>
-      </div>
-
-      <!-- Session 4: console -->
-      <div class="service-item depth-2">
-        <Icon name="lightning" size={12} color="#3B82F6" class="node-icon" />
-        <span class="node-label truncate">console</span>
-      </div>
-
-      <!-- Session 5: console_2 -->
-      <button
-        type="button"
-        class="service-item depth-2"
-        onclick={() => selectTable('console_2')}
-      >
-        <Icon name="lightning" size={12} color="#3B82F6" class="node-icon" />
-        <span class="node-label truncate">console_2</span>
-        <span class="latency-text">630 ms</span>
-      </button>
+      {#if appState.services.length === 0}
+        <div class="tree-empty">No open sessions. Open a table or console from the explorer.</div>
+      {:else}
+        {#each appState.services as session (session.id)}
+          <button
+            type="button"
+            class="service-item depth-2"
+            class:selected={appState.activeTabId === session.id}
+            onclick={() => appState.activeTabId = session.id}
+            title={session.connection ? `${session.name} · ${session.connection}` : session.name}
+          >
+            {#if session.type === 'table'}
+              <Icon name="table" size={12} color="#4A88C7" class="node-icon" />
+            {:else}
+              <Icon name="lightning" size={12} color="#3B82F6" class="node-icon" />
+            {/if}
+            <span class="node-label truncate">{session.name}</span>
+            {#if session.durationMs !== undefined}
+              <span class="latency-text">{session.durationMs} ms</span>
+            {/if}
+          </button>
+        {/each}
+      {/if}
     </div>
   </div>
 </aside>
@@ -365,7 +219,6 @@
     width: 0 !important;
   }
 
-  /* Header Top */
   .explorer-header-top {
     height: var(--toolbar-height, 32px);
     padding: 0 8px 0 12px;
@@ -387,7 +240,6 @@
     gap: 2px;
   }
 
-  /* Explorer Subtoolbar */
   .explorer-subtoolbar {
     height: var(--toolbar-height, 32px);
     padding: 0 8px;
@@ -398,7 +250,18 @@
     flex-shrink: 0;
   }
 
-  /* Tree Viewport */
+  .tree-filter-input {
+    flex: 1;
+    height: 24px;
+    background-color: var(--bg-canvas);
+    border: 1px solid var(--border-default);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 12px;
+    padding: 0 8px;
+    outline: none;
+  }
+
   .explorer-pane {
     flex: 1;
     display: flex;
@@ -437,7 +300,6 @@
     background-color: var(--bg-hover);
   }
 
-  /* Exact selection highlight from design2.png */
   .tree-node.selected, .service-item.selected {
     background-color: var(--bg-selected);
     color: #FFFFFF;
@@ -446,7 +308,6 @@
   .depth-0 { padding-left: 6px; }
   .depth-1 { padding-left: 20px; }
   .depth-2 { padding-left: 34px; }
-  .depth-3 { padding-left: 48px; }
 
   .chevron {
     width: 16px;
@@ -479,7 +340,32 @@
     font-size: var(--font-size-base, 13px);
   }
 
-  /* Horizontal Splitter */
+  .conn-warn {
+    color: var(--action-danger, #E55353);
+    font-size: 10px;
+  }
+
+  .tree-empty {
+    padding: 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .tree-error {
+    color: var(--action-danger, #E55353);
+    font-size: 11px;
+    margin: 4px 0;
+    word-break: break-word;
+  }
+
+  .retry-btn {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--action-primary, #3574F0);
+    text-decoration: underline;
+  }
+
   .horizontal-splitter {
     height: 6px;
     background-color: transparent;
@@ -492,7 +378,6 @@
     background-color: var(--border-accent, #3574F0);
   }
 
-  /* Services Panel */
   .services-pane {
     display: flex;
     flex-direction: column;
@@ -508,7 +393,7 @@
     padding: 0 8px 0 12px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     flex-shrink: 0;
   }
 
@@ -518,15 +403,12 @@
     color: var(--text-primary);
   }
 
-  .services-actions {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .service-chk {
-    margin-right: 0;
-    accent-color: var(--action-primary);
+  .services-count {
+    font-size: 10px;
+    color: var(--text-muted);
+    background-color: var(--bg-hover);
+    border-radius: 8px;
+    padding: 0 6px;
   }
 
   .latency-text {

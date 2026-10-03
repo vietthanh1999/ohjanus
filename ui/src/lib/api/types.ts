@@ -98,6 +98,36 @@ export interface ApiSummary {
   denials_total: number;
 }
 
+export interface ApiColumn {
+  name: string;
+  type: string;
+  nullable: boolean;
+}
+
+export interface ApiTable {
+  name: string;
+  columns: ApiColumn[];
+  primary_key?: string[] | null;
+}
+
+export interface ApiSchema {
+  name: string;
+  tables: ApiTable[];
+}
+
+export interface ApiQueryResult {
+  columns: string[];
+  rows: unknown[][];
+  row_count: number;
+  truncated: boolean;
+  duration_ms: number;
+}
+
+export interface ApiExplainResult {
+  plan: string;
+  affected_estimate: number;
+}
+
 export interface ApiErrorBody {
   error: { code: string; message: string; request_id: string };
 }

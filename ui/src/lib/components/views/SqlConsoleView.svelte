@@ -1,6 +1,7 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
+  import { Alert } from '@ohjanus/ui';
   import {
     DataGrid,
     DataGridHead,
@@ -14,328 +15,178 @@
   } from '@ohjanus/ui';
 
   let selectedRowIndex = $state(0);
-  let selectedColumn = $state('id');
+  let selectedColumn = $state(0);
 
   function handleExecute() {
-    appState.executeQuery();
+    void appState.executeConsoleQuery();
+  }
+
+  function handleExplain() {
+    void appState.explainConsoleQuery();
+  }
+
+  function cellText(v: unknown): string {
+    if (v === null || v === undefined) return '<null>';
+    if (typeof v === 'object') return JSON.stringify(v);
+    return String(v);
+  }
+
+  function isNullCell(v: unknown): boolean {
+    return v === null || v === undefined;
   }
 </script>
 
 <div class="sql-console-view">
-  <!-- 1. SQL SUB-TOOLBAR (Action Bar) -->
   <div class="sql-toolbar">
     <div class="toolbar-left">
-      <!-- Execute Entire Statement (▶) -->
       <button
         type="button"
         class="action-btn run-btn"
-        title="Execute Entire Statement (Cmd+Enter)"
+        title="Execute (Cmd+Enter)"
         onclick={handleExecute}
+        disabled={appState.console.isExecuting || !appState.console.connection}
       >
         <Icon name="play" size={13} />
       </button>
-
-      <!-- Execute Under Caret (▶_) -->
-      <button type="button" class="action-btn step-btn" title="Execute Statement Under Caret">
-        <Icon name="play" size={13} />
+      <button type="button" class="action-btn" title="EXPLAIN (never executes)" onclick={handleExplain}>
+        <span style="font-size: 11px; font-weight: 600;">EX</span>
       </button>
-
-      <!-- History (🕒) -->
-      <button type="button" class="action-btn" title="Query History">
-        <Icon name="clock" size={13} />
-      </button>
-
-      <!-- Parameter (P) -->
-      <button type="button" class="action-btn" title="Parameters">
-        <span style="font-size: 11px; font-weight: 600;">(P)</span>
-      </button>
-
-      <!-- Settings (⚙️) -->
-      <button type="button" class="action-btn" title="Console Settings">
-        <Icon name="settings" size={12} />
-      </button>
-
-      <!-- Split Layout 🗖 -->
-      <button type="button" class="action-btn" title="Toggle Split Orientation">
-        <Icon name="layout" size={12} />
-      </button>
-
-      <span class="bar-separator"></span>
-
-      <!-- Tx Mode -->
-      <button type="button" class="selector-dropdown" title="Transaction Isolation Mode">
-        <span>Tx: Auto</span>
-        <Icon name="chevron-down" size={8} />
-      </button>
-
-      <!-- Playground mode -->
-      <label class="playground-chk" title="Sandbox execution without commit">
-        <input type="checkbox" />
-        <span>Playground</span>
-        <Icon name="chevron-down" size={8} />
-      </label>
-    </div>
-
-    <!-- Target Schema Selector (Right pinned matching design.png) -->
-    <div class="toolbar-right">
-      <button type="button" class="schema-btn" title="Target Database Schema Context">
-        <Icon name="database" size={12} color="#7A7E85" />
-        <span class="schema-name">prd_mh_asset.public</span>
-        <Icon name="chevron-down" size={8} />
-      </button>
-    </div>
-  </div>
-
-  <!-- 2. SQL EDITOR CANVAS -->
-  <div class="editor-container">
-    <div class="editor-gutter code-text">
-      <div class="line-num">64</div>
-      <div class="line-num">65</div>
-      <div class="line-num">66</div>
-      <div class="line-num">67</div>
-      <div class="line-num">68</div>
-      <div class="line-num">69</div>
-      <div class="line-num">70</div>
-      <div class="line-num active-gutter">71</div>
-      <div class="line-num">72</div>
-      <div class="line-num">73</div>
-      <div class="line-num success-gutter">
-        <span>74</span>
-        <span class="check-mark" title="Executed statement"><Icon name="check" size={10} /></span>
-      </div>
-    </div>
-
-    <div class="editor-code code-text">
-      <!-- Active Execution Highlight Block (lines 64 to 72) matching design.png -->
-      <div class="execution-block">
-        <!-- Floating Result Badge [✓ 6 ▲ ▼] -->
-        <div class="floating-exec-badge" title="Query completed: 6 rows returned">
-          <span class="badge-check"><Icon name="check" size={11} /></span>
-          <span class="badge-count">6</span>
-          <span class="badge-nav"><Icon name="chevron-up" size={10} /></span>
-          <span class="badge-nav"><Icon name="chevron-down" size={10} /></span>
-        </div>
-
-        <div class="code-line">
-          <span class="kw">join</span> <span class="ident">content</span> <span class="alias">ct</span>
-          <span class="code-lens">&nbsp;&nbsp;1..n&lt;-&gt;1: on ct.id = ma."contentID"</span>
-        </div>
-        <div class="code-line">
-          <span class="kw">LEFT JOIN</span> <span class="ident">transfer_job_queue</span> <span class="alias">q</span> <span class="kw">ON</span> <span class="alias">q</span>.<span class="str">"jobID"</span> = <span class="alias">c</span>.<span class="ident">process_id</span>
-        </div>
-        <div class="code-line">
-          <span class="kw">WHERE</span> <span class="alias">c</span>.<span class="ident">participant</span> = <span class="str">'media-transferer'</span>
-        </div>
-        <div class="code-line">
-          &nbsp;&nbsp;<span class="kw">AND</span> <span class="alias">c</span>.<span class="ident">process_name</span> &nbsp;&nbsp;= <span class="str">'media-ingest'</span>
-        </div>
-        <div class="code-line">
-          &nbsp;&nbsp;<span class="kw">AND</span> <span class="alias">c</span>.<span class="ident">name</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="str">'create-ingest-job'</span>
-        </div>
-        <div class="code-line">
-          &nbsp;&nbsp;<span class="kw">AND</span> <span class="alias">c</span>.<span class="ident">retry_count</span> &nbsp;&nbsp;&nbsp;= <span class="num">0</span>
-        </div>
-        <div class="code-line">
-          &nbsp;&nbsp;<span class="kw">AND</span> <span class="alias">c</span>.<span class="ident">schedule</span> <span class="kw">IS NULL</span>
-        </div>
-        <div class="code-line">
-          &nbsp;&nbsp;<span class="kw">AND</span> <span class="alias">c</span>.<span class="str">"timestamp"</span> &nbsp;&nbsp;&nbsp;&lt; <span class="fn">now()</span> - <span class="fn">interval</span> <span class="str">'5 minutes'</span><span class="cursor-bar">|</span> &nbsp;
-          <span class="comment">-- streamer poll 10s -&gt; &gt;5 phút <span class="spell-warn">chắc chắn không</span> ai đọc</span>
-        </div>
-        <div class="code-line">
-          <span class="kw">ORDER BY</span> <span class="alias">c</span>.<span class="ident">ordinal</span>;
-        </div>
-      </div>
-
-      <!-- Blank line 73 -->
-      <div class="code-line empty">&nbsp;</div>
-
-      <!-- Line 74: Executed select query -->
-      <div class="code-line">
-        <span class="kw">select</span> * <span class="kw">from</span> <span class="ident">transfer_job</span> <span class="kw">where</span> <span class="ident">id</span> = <span class="str">'b8262180-1075-43f8-8338-2412d4734d65'</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3. QUERY RESULTS MULTI-TAB & ACTION BAR matching design.png -->
-  <div class="results-header-tabs">
-    <div class="result-tab">
-      <Icon name="table" size={12} />
-      <span>Result 1</span>
-    </div>
-    <div class="result-tab">
-      <Icon name="table" size={12} />
-      <span>Result 1-2</span>
-    </div>
-    <div class="result-tab">
-      <Icon name="table" size={12} />
-      <span>prd_mh_asset.public.transfer_job</span>
-    </div>
-    <div class="result-tab">
-      <Icon name="table" size={12} />
-      <span>Result 1-4</span>
-    </div>
-    <!-- Active Result Tab with rounded border pill -->
-    <div class="result-tab active">
-      <Icon name="table" size={12} />
-      <span>prd_mh_asset.public.transfer_job 2</span>
-      <span class="close-x">
-        <Icon name="close" size={10} />
-      </span>
-    </div>
-    <div class="result-tab-chevron">
-      <Icon name="chevron-down" size={10} />
-    </div>
-  </div>
-
-  <!-- Result Toolbar matching design.png -->
-  <div class="results-toolbar">
-    <div class="toolbar-left">
-      <button type="button" class="jb-icon-btn" title="Grid View">
-        <Icon name="table" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Text View">
-        <Icon name="audit" size={12} />
-      </button>
-      <span class="bar-separator"></span>
-      <button type="button" class="jb-icon-btn" title="Reload (Cmd+R)" onclick={handleExecute}>
+      <button
+        type="button"
+        class="action-btn"
+        title="Reload last query"
+        onclick={handleExecute}
+      >
         <Icon name="refresh" size={12} />
       </button>
-      <button type="button" class="jb-icon-btn" title="History">
-        <Icon name="clock" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Cancel">
-        <Icon name="stop" size={11} />
-      </button>
       <span class="bar-separator"></span>
-      <button type="button" class="jb-icon-btn" title="Add Row">
-        <Icon name="plus" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Delete Row">
-        <Icon name="minus" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Revert">
-        <Icon name="undo" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Commit">
-        <Icon name="redo" size={12} />
-      </button>
-      <span class="bar-separator"></span>
-      <button type="button" class="jb-icon-btn" title="Sort Up">
-        <Icon name="arrow-up" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Sort Down">
-        <Icon name="arrow-down" size={12} />
-      </button>
-      <span class="bar-separator"></span>
-      <span style="color: var(--text-secondary); font-size: 11px; padding: 0 4px;">Tx: Auto</span>
+      <span style="color: var(--text-secondary); font-size: 11px; padding: 0 4px;">
+        {#if appState.console.isExecuting}
+          Executing…
+        {:else if appState.console.durationMs > 0}
+          {appState.console.durationMs} ms
+        {:else}
+          Tx: Auto
+        {/if}
+      </span>
       <span class="bar-separator"></span>
       <button type="button" class="jb-icon-btn" title="View DDL" onclick={() => appState.ddlModalOpen = true}>
         <span style="font-size: 10px; font-weight: 700; color: #7A7E85;">DDL</span>
       </button>
-      <span class="bar-separator"></span>
-      <button type="button" class="jb-icon-btn" title="Pin Tab">
-        <Icon name="pin" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Search in Table">
-        <Icon name="search" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Filter Funnel">
-        <Icon name="filter" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Statistics">
-        <Icon name="chart" size={12} />
-      </button>
     </div>
 
     <div class="toolbar-right">
-      <span class="export-dropdown">
-        CSV <Icon name="chevron-down" size={8} />
-      </span>
-      <button type="button" class="jb-icon-btn" title="Export">
-        <Icon name="download" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Import">
-        <Icon name="upload" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Charts">
-        <Icon name="chart" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Options">
-        <Icon name="eye" size={12} />
-      </button>
-      <button type="button" class="jb-icon-btn" title="Settings">
-        <Icon name="settings" size={12} />
-      </button>
+      {#if appState.connections.length === 0}
+        <span class="schema-name">No connection</span>
+      {:else}
+        <select
+          class="schema-btn"
+          bind:value={appState.console.connection}
+          title="Target connection"
+        >
+          {#each appState.connections as conn (conn.name)}
+            <option value={conn.name}>{conn.name}{conn.readonly ? ' (readonly)' : ''}</option>
+          {/each}
+        </select>
+      {/if}
     </div>
   </div>
 
-  <!-- 4. HIGH-DENSITY RESULTS DATA GRID matching design.png -->
+  <div class="editor-container">
+    {#if appState.connections.length === 0}
+      <div class="editor-empty">
+        {#if appState.dataLoading}
+          Connecting to Admin API…
+        {:else}
+          No connections available. Check janus.yaml connections and Admin API status.
+        {/if}
+      </div>
+    {:else}
+      <textarea
+        class="editor-textarea code-text"
+        bind:value={appState.console.sql}
+        spellcheck={false}
+        placeholder="-- SELECT * FROM ..."
+      ></textarea>
+    {/if}
+  </div>
+
+  {#if appState.console.error}
+    <div class="console-alert">
+      <Alert variant="danger" title="Query failed">
+        <p class="code-text">{appState.console.error}</p>
+      </Alert>
+    </div>
+  {/if}
+
+  {#if appState.console.plan}
+    <div class="console-alert">
+      <Alert variant="info" title="EXPLAIN plan">
+        <pre class="code-text plan-pre">{appState.console.plan}</pre>
+      </Alert>
+    </div>
+  {/if}
+
+  <div class="results-header-tabs">
+    <div class="result-tab active">
+      <Icon name="table" size={12} />
+      <span>
+        {#if appState.console.rowCount > 0}
+          Result · {appState.console.rowCount} row(s){appState.console.truncated ? ' (truncated)' : ''}
+        {:else}
+          Result
+        {/if}
+      </span>
+    </div>
+  </div>
+
   <DataGrid style="flex: 1; min-height: 0;">
     {#snippet overlay()}
-      <!-- Floating row count pill [ 1 row ⌵ | ⋮ ] -->
-      <div class="floating-row-badge" title="Retrieved count">
-        <span>1 row</span>
-        <span style="color: var(--text-muted); opacity: 0.6;">|</span>
-        <Icon name="chevron-down" size={10} />
-        <span style="color: var(--text-muted); opacity: 0.6;">|</span>
-        <Icon name="more" size={12} />
-      </div>
+      {#if appState.console.rowCount > 0}
+        <div class="floating-row-badge" title="Retrieved count">
+          <span>{appState.console.rowCount} row(s)</span>
+        </div>
+      {/if}
     {/snippet}
     <DataGridHead>
       <DataGridRow>
         <DataGridRowNumHead />
-        <DataGridHeadCell width="320px">
-          <DataGridHeaderInner>
-            <Icon name="key" size={12} color="#FACC15" />
-            <span>id</span>
-            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
-            <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
-          </DataGridHeaderInner>
-        </DataGridHeadCell>
-        <DataGridHeadCell width="130px">
-          <DataGridHeaderInner>
-            <span style="color: var(--type-general); font-weight: bold; font-size: 11px;">#</span>
-            <span>ordinal</span>
-            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
-          </DataGridHeaderInner>
-        </DataGridHeadCell>
-        <DataGridHeadCell width="320px">
-          <DataGridHeaderInner>
-            <span style="color: var(--type-general); font-size: 11px;">" "</span>
-            <span>"connectionCredentialID"</span>
-            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
-            <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
-          </DataGridHeaderInner>
-        </DataGridHeadCell>
-        <DataGridHeadCell>
-          <DataGridHeaderInner>
-            <span style="color: var(--type-general); font-size: 11px;">" "</span>
-            <span>"sourcePath"</span>
-            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
-          </DataGridHeaderInner>
-        </DataGridHeadCell>
+        {#each appState.console.columns as col, i (col + i)}
+          <DataGridHeadCell width="200px">
+            <DataGridHeaderInner>
+              <span>{col}</span>
+            </DataGridHeaderInner>
+          </DataGridHeadCell>
+        {/each}
       </DataGridRow>
     </DataGridHead>
     <DataGridBody>
-      <DataGridRow
-        selected={selectedRowIndex === 0}
-        onclick={() => selectedRowIndex = 0}
-      >
-        <DataGridRowNum index={0} />
-        <DataGridCell focused={selectedColumn === 'id'} onclick={() => selectedColumn = 'id'}>
-          b8262180-1075-43f8-8338-2412d4734d65
-        </DataGridCell>
-        <DataGridCell tone="number" focused={selectedColumn === 'ordinal'} onclick={() => selectedColumn = 'ordinal'}>
-          172098
-        </DataGridCell>
-        <DataGridCell focused={selectedColumn === 'connectionCredentialID'} onclick={() => selectedColumn = 'connectionCredentialID'}>
-          753da7e1-523f-4834-ba74-7824e3d5aa52
-        </DataGridCell>
-        <DataGridCell tone="secondary" truncate focused={selectedColumn === 'sourcePath'} onclick={() => selectedColumn = 'sourcePath'}>
-          /home/vod/VOD/as...
-        </DataGridCell>
-      </DataGridRow>
+      {#if appState.console.isExecuting}
+        <DataGridRow>
+          <DataGridRowNum index={0} />
+          <DataGridCell>Executing…</DataGridCell>
+        </DataGridRow>
+      {:else if appState.console.columns.length === 0}
+        <DataGridRow>
+          <DataGridRowNum index={0} />
+          <DataGridCell tone="secondary">No result yet — run a query above.</DataGridCell>
+        </DataGridRow>
+      {:else}
+        {#each appState.console.rows as row, r (r)}
+          <DataGridRow selected={selectedRowIndex === r} onclick={() => selectedRowIndex = r}>
+            <DataGridRowNum index={r} />
+            {#each row as cell, c (c)}
+              <DataGridCell
+                isNull={isNullCell(cell)}
+                focused={selectedRowIndex === r && selectedColumn === c}
+                onclick={() => { selectedRowIndex = r; selectedColumn = c; }}
+              >
+                {cellText(cell)}
+              </DataGridCell>
+            {/each}
+          </DataGridRow>
+        {/each}
+      {/if}
     </DataGridBody>
   </DataGrid>
 </div>
@@ -349,7 +200,6 @@
     overflow: hidden;
   }
 
-  /* 1. Sub-toolbar */
   .sql-toolbar {
     height: var(--toolbar-height);
     background-color: var(--bg-toolbar);
@@ -378,21 +228,17 @@
     transition: all 0.1s ease;
   }
 
-  :global(.action-btn svg) {
-    width: var(--icon-size-sm, 14px);
-    height: var(--icon-size-sm, 14px);
-  }
-
-  .action-btn:hover {
+  .action-btn:hover:not(:disabled) {
     background-color: var(--bg-hover);
     color: var(--text-primary);
   }
 
-  .action-btn.run-btn {
-    color: var(--action-success);
+  .action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 
-  .action-btn.step-btn {
+  .action-btn.run-btn {
     color: var(--action-success);
   }
 
@@ -403,182 +249,66 @@
     margin: 0 4px;
   }
 
-  .selector-dropdown {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    height: var(--control-height-xs, 24px);
-    padding: 0 6px;
-    border-radius: var(--radius-sm, 4px);
-    color: var(--text-secondary);
-    font-size: var(--font-size-xs, 11px);
-  }
-
-  .playground-chk {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    height: var(--control-height-xs, 24px);
-    font-size: var(--font-size-xs, 11px);
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 0 6px;
-  }
-
-  .playground-chk input {
-    accent-color: var(--action-primary);
-  }
-
   .schema-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
     height: var(--control-height-xs, 24px);
     padding: 0 8px;
     border-radius: var(--radius-sm, 4px);
     color: var(--text-primary);
     font-size: var(--font-size-xs, 11px);
-  }
-
-  .schema-btn:hover {
-    background-color: var(--bg-hover);
+    background-color: var(--bg-canvas);
+    border: 1px solid var(--border-default);
+    outline: none;
   }
 
   .schema-name {
-    font-weight: 400;
+    font-size: var(--font-size-xs, 11px);
+    color: var(--text-muted);
   }
 
-  /* 2. SQL Editor Canvas */
   .editor-container {
     height: 220px;
     min-height: 160px;
     background-color: var(--bg-canvas);
     display: flex;
-    overflow: auto;
+    overflow: hidden;
     position: relative;
     border-bottom: 1px solid var(--border-subtle);
   }
 
-  .editor-gutter {
-    width: 44px;
-    background-color: var(--bg-canvas);
-    border-right: 1px solid var(--border-subtle);
-    padding: 6px 0;
-    text-align: right;
-    user-select: none;
+  .editor-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--text-primary);
+  }
+
+  .editor-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .console-alert {
+    padding: 8px 12px;
     flex-shrink: 0;
   }
 
-  .line-num {
-    height: 20px;
-    padding-right: 10px;
-    color: var(--text-muted);
-    font-size: 12px;
-    line-height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-  }
-
-  .line-num.active-gutter {
-    color: var(--text-primary);
-  }
-
-  .line-num.success-gutter {
-    color: var(--text-primary);
-  }
-
-  .check-mark {
-    color: var(--action-success);
+  .plan-pre {
+    white-space: pre-wrap;
     font-size: 11px;
-    font-weight: bold;
-    display: inline-flex;
-    align-items: center;
+    margin: 4px 0 0;
   }
 
-  .editor-code {
-    flex: 1;
-    padding: 6px 12px;
-    font-size: 13px;
-    line-height: 20px;
-    overflow-x: auto;
-    color: var(--text-primary);
-  }
-
-  .code-line {
-    height: 20px;
-    white-space: pre;
-    display: flex;
-    align-items: center;
-  }
-
-  .code-line.empty {
-    height: 20px;
-  }
-
-  /* Active Execution Block from design.png */
-  .execution-block {
-    position: relative;
-    background-color: var(--bg-execution-block);
-    border: 1px solid var(--border-execution);
-    border-radius: 2px;
-    padding: 1px 4px;
-    margin: -1px -4px;
-  }
-
-  .floating-exec-badge {
-    position: absolute;
-    top: 4px;
-    right: 8px;
-    background-color: #1A3125;
-    border: 1px solid #2B5B3E;
-    border-radius: 3px;
-    padding: 1px 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    z-index: 5;
-  }
-
-  .badge-check {
-    color: var(--action-success);
-    font-weight: bold;
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .badge-count {
-    color: #FFFFFF;
-    font-weight: 500;
-  }
-
-  .badge-nav {
-    color: var(--text-muted);
-    font-size: 8px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-  }
-
-  /* Syntax Highlighting */
-  .kw { color: var(--syntax-keyword); font-weight: 500; }
-  .ident { color: var(--syntax-identifier); }
-  .alias { color: var(--syntax-alias); }
-  .str { color: var(--syntax-string); }
-  .fn { color: var(--syntax-function); }
-  .num { color: var(--syntax-number); }
-  .comment { color: var(--syntax-comment); }
-  .code-lens { color: var(--syntax-code-lens); font-size: 11px; }
-  .spell-warn { text-decoration: underline wavy var(--syntax-spell-warn); }
-  .cursor-bar { color: #FFFFFF; font-weight: bold; animation: blink 1s step-start infinite; }
-
-  @keyframes blink {
-    50% { opacity: 0; }
-  }
-
-  /* 3. Results Tabs */
   .results-header-tabs {
     height: 26px;
     background-color: var(--bg-canvas);
@@ -600,8 +330,6 @@
     font-size: 11px;
     color: var(--text-secondary);
     border-radius: 3px;
-    background-color: transparent;
-    cursor: pointer;
     user-select: none;
     white-space: nowrap;
   }
@@ -612,37 +340,17 @@
     color: #DFE1E5;
   }
 
-  .close-x {
-    color: var(--text-muted);
-    font-size: 13px;
-    margin-left: 2px;
-  }
-
-  .result-tab-chevron {
-    padding: 0 4px;
-    display: flex;
-    align-items: center;
-    color: var(--text-muted);
-    cursor: pointer;
-  }
-
-  /* Result Toolbar */
-  .results-toolbar {
-    height: 26px;
+  .floating-row-badge {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
     background-color: var(--bg-toolbar);
-    border-bottom: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 8px;
-    flex-shrink: 0;
-  }
-
-  .export-dropdown {
+    border: 1px solid var(--border-default);
+    border-radius: 12px;
+    padding: 2px 10px;
     font-size: 11px;
-    color: var(--text-secondary);
-    padding: 1px 4px;
-    cursor: pointer;
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+    z-index: 5;
   }
-
 </style>

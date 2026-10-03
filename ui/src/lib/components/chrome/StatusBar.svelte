@@ -1,39 +1,51 @@
 <script lang="ts">
-  import { appState } from '../../state/appState.svelte';
+  import { appState, parseTableTabId, parseConsoleTabId } from '../../state/appState.svelte';
   import { Flex, Badge } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 
+  let activeTab = $derived(appState.activeTab);
+  let tableCoords = $derived(
+    activeTab?.type === 'table' && activeTab.connection
+      ? { connection: activeTab.connection, schema: activeTab.schema ?? '', table: activeTab.table ?? '' }
+      : parseTableTabId(appState.activeTabId)
+  );
+  let consoleCoords = $derived(
+    activeTab?.type === 'console' ? parseConsoleTabId(activeTab.id) : null
+  );
+  let activeConnection = $derived(
+    tableCoords?.connection ?? consoleCoords?.connection ?? appState.console.connection ?? ''
+  );
+  let connectionItem = $derived(appState.connections.find((c) => c.name === activeConnection));
+  let cursorStats = $derived(appState.consoleCursorStats);
+
   function openApprovals() {
-    appState.activeTabId = 'approvals';
+    appState.openTab({ id: 'approvals', title: 'Approvals Queue', type: 'approvals', closable: false, icon: 'shield' });
   }
 </script>
 
 <footer class="statusbar">
-  <!-- Left: Interactive Navigation Breadcrumb -->
   <Flex class="breadcrumb-strip" align="center" gap="4px">
-    {#if appState.activeTabId === 'connection_credential'}
+    {#if tableCoords}
       <span class="crumb-item">Database</span>
       <span class="crumb-sep">&gt;</span>
-      <span class="crumb-item"><strong>[Dev][ReadOnly]</strong> 10.220.6.4</span>
+      <span class="crumb-item">{tableCoords.connection}</span>
       <span class="crumb-sep">&gt;</span>
-      <span class="crumb-item">dev_mh_asset</span>
-      <span class="crumb-sep">&gt;</span>
-      <span class="crumb-item">public</span>
+      <span class="crumb-item">{tableCoords.schema}</span>
       <span class="crumb-sep">&gt;</span>
       <span class="crumb-item">tables</span>
       <span class="crumb-sep">&gt;</span>
       <span class="crumb-item active-crumb">
         <Icon name="table" size={11} color="#4A88C7" style="margin-right: 4px;" />
-        connection_credential
+        {tableCoords.table}
       </span>
-    {:else if appState.activeTabId === 'console_2'}
+    {:else if consoleCoords}
       <span class="crumb-item">Database Consoles</span>
       <span class="crumb-sep">&gt;</span>
-      <span class="crumb-item"><strong>[PRD]</strong> 10.250.6.23</span>
+      <span class="crumb-item">{consoleCoords.connection}</span>
       <span class="crumb-sep">&gt;</span>
       <span class="crumb-item active-crumb">
         <Icon name="lightning" size={11} color="#57D38C" style="margin-right: 4px;" />
-        console_2 [[PRD] 10.250.6.23]
+        console [{consoleCoords.connection}]
       </span>
     {:else}
       <span class="crumb-item">MCP Gateway Security</span>
@@ -42,30 +54,33 @@
     {/if}
   </Flex>
 
-  <!-- Right: Document, Buffer Stats & System Status -->
   <Flex class="status-right" align="center" gap="12px">
-    {#if appState.activeTabId === 'console_2'}
-      <!-- Cursor Position & Buffer Analytics -->
-      <span class="status-item code-text" title="Cursor line:col (character count, line breaks)">
-        {appState.cursorPos.line}:{appState.cursorPos.col} (2954 chars, 73 line breaks)
+    {#if activeTab?.type === 'console'}
+      <span class="status-item code-text" title="SQL buffer stats">
+        {cursorStats.lines} lines ({cursorStats.chars} chars)
       </span>
-
       <span class="status-item" title="Line Endings">LF</span>
       <span class="status-item" title="File Encoding">UTF-8</span>
-      <span class="status-item" title="Indent Size">4 spaces</span>
-
-      <!-- Read-Only Lock Icon -->
-      <span class="status-item lock-icon" title="Database Connection is in ReadOnly Transaction Mode">
-        <Icon name="lock" size={11} />
+      {#if connectionItem?.readonly}
+        <span class="status-item lock-icon" title="Connection is read-only">
+          <Icon name="lock" size={11} />
+        </span>
+      {/if}
+    {:else if tableCoords}
+      <span class="status-item code-text" title="Last execution">
+        {appState.tableViewer.rowCount} row(s){appState.tableViewer.truncated ? ' (truncated)' : ''} · {appState.tableViewer.durationMs} ms
       </span>
+      {#if connectionItem?.readonly}
+        <span class="status-item lock-icon" title="Connection is read-only">
+          <Icon name="lock" size={11} />
+        </span>
+      {/if}
     {:else}
-      <!-- Copy / Terminal action icon matching design2.png -->
-      <button type="button" class="status-item" title="Open in Terminal">
-        <Icon name="terminal" size={12} />
-      </button>
+      <span class="status-item code-text" title="Connections">
+        {appState.connections.length} connection(s)
+      </span>
     {/if}
 
-    <!-- Notification Bell -->
     <button
       class="status-item bell-btn"
       class:has-notification={appState.notificationCount > 0}
@@ -78,8 +93,7 @@
       {/if}
     </button>
 
-    <!-- License Badge via @ohjanus/ui Badge -->
-    <Badge variant="license" size="sm" class="license-pill" title="Community / Evaluation License">
+    <Badge variant="license" size="sm" class="license-pill">
       Non-commercial use
     </Badge>
   </Flex>

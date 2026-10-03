@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/vietthanh1999/ohjanus/internal/core/domain"
+	"github.com/vietthanh1999/ohjanus/internal/core/port/in"
 	"github.com/vietthanh1999/ohjanus/internal/core/port/out"
 )
 
@@ -33,6 +34,8 @@ type Server struct {
 	pools     map[string]out.Pool
 	metas     map[string]domain.ConnectionMeta
 	clock     out.Clock
+	read      in.ReadUseCase
+	schema    in.SchemaUseCase
 	mux       *http.ServeMux
 	srv       *http.Server
 }
@@ -59,6 +62,9 @@ func New(addr, authMode string, tokens out.TokenStore, resolver out.TokenResolve
 	mux.HandleFunc("/api/v1/tokens", s.withAuth(domain.ScopeAdmin, s.handleTokens))
 	mux.HandleFunc("/api/v1/tokens/", s.withAuthFunc(s.handleTokenOne))
 	mux.HandleFunc("/api/v1/audit/export", s.withAuth(domain.ScopeRead, s.handleAuditExport))
+	mux.HandleFunc("/api/v1/schema", s.withAuth(domain.ScopeRead, s.handleSchema))
+	mux.HandleFunc("/api/v1/query", s.withAuth(domain.ScopeRead, s.handleQuery))
+	mux.HandleFunc("/api/v1/explain", s.withAuth(domain.ScopeRead, s.handleExplain))
 	s.mux = mux
 	s.srv = &http.Server{Addr: addr, Handler: s.Handler(), ReadHeaderTimeout: 5 * time.Second}
 	return s
@@ -115,9 +121,17 @@ const adminTokenKey ctxKey = "admin_token"
 
 // withAuth enforces a scope; /healthz and /readyz stay public.
 func (s *Server) withAuth(scope domain.Scope, next func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
-	return s.withAuthFunc(func(w http.ResponseWriter, r *http.Request, _ context.Context) {
-		next(w, r)
+	return s.withAuthFunc(func(w http.ResponseWriter, r *http.Request, ctx context.Context) {
+		next(w, r.WithContext(ctx))
 	})
+}
+
+// SetQueryBackend wires read/schema use cases for the UI data plane
+// (schema tree, SQL console, table viewer). Nil leaves the endpoints
+// at 503; CLI serve always sets both.
+func (s *Server) SetQueryBackend(read in.ReadUseCase, schema in.SchemaUseCase) {
+	s.read = read
+	s.schema = schema
 }
 
 func (s *Server) withAuthFunc(next func(http.ResponseWriter, *http.Request, context.Context)) http.HandlerFunc {
@@ -153,6 +167,9 @@ func (s *Server) withAuthFunc(next func(http.ResponseWriter, *http.Request, cont
 				writeError(w, r, http.StatusForbidden, domain.CodeForbidden, "missing required scope")
 			}
 			return
+		}
+		if domain.RequestIDFrom(ctx) == "" {
+			ctx = domain.WithRequestID(ctx, domain.NewRequestID())
 		}
 		next(w, r, ctx)
 	}
@@ -440,8 +457,12 @@ func (s *Server) handleAudit(w http.ResponseWriter, r *http.Request) {
 	if page.NextOffset >= 0 {
 		next = strconv.Itoa(page.NextOffset)
 	}
+	events := page.Events
+	if events == nil {
+		events = []*domain.AuditEvent{}
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"items": page.Events, "next_cursor": next, "total": page.Total,
+		"items": events, "next_cursor": next, "total": page.Total,
 	})
 }
 
@@ -705,6 +726,146 @@ func (s *Server) handleAuditExport(w http.ResponseWriter, r *http.Request) {
 		cw.Flush()
 	default:
 		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "format must be jsonl|csv")
+	}
+}
+
+// ---- schema / query data plane (SQL console, table viewer, explorer) ----
+
+func schemaItem(sc domain.Schema) map[string]any {
+	tables := make([]map[string]any, 0, len(sc.Tables))
+	for _, t := range sc.Tables {
+		cols := make([]map[string]any, 0, len(t.Columns))
+		for _, c := range t.Columns {
+			cols = append(cols, map[string]any{"name": c.Name, "type": c.Type, "nullable": c.Nullable})
+		}
+		tables = append(tables, map[string]any{
+			"name": t.Name, "columns": cols, "primary_key": t.PrimaryKey,
+		})
+	}
+	return map[string]any{"name": sc.Name, "tables": tables}
+}
+
+// handleSchema serves GET /api/v1/schema?connection=&schema=&table=.
+func (s *Server) handleSchema(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, r, http.StatusMethodNotAllowed, domain.CodeInternal, "method not allowed")
+		return
+	}
+	if s.schema == nil {
+		writeError(w, r, http.StatusServiceUnavailable, domain.CodeInternal, "schema introspection is not enabled")
+		return
+	}
+	q := r.URL.Query()
+	conn := q.Get("connection")
+	if conn == "" {
+		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "connection is required")
+		return
+	}
+	schemas, err := s.schema.GetSchema(r.Context(), conn, q.Get("schema"), q.Get("table"))
+	if err != nil {
+		writeError(w, r, statusForQueryErr(err), errorCode(err), errMsg(err))
+		return
+	}
+	items := make([]map[string]any, 0, len(schemas))
+	for _, sc := range schemas {
+		items = append(items, schemaItem(sc))
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"schemas": items})
+}
+
+type queryBody struct {
+	Connection string `json:"connection"`
+	SQL        string `json:"sql"`
+	Params     []any  `json:"params"`
+	Limit      int    `json:"limit"`
+}
+
+func decodeQueryBody(r *http.Request) (domain.ReadRequest, error) {
+	var b queryBody
+	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
+		return domain.ReadRequest{}, err
+	}
+	return domain.ReadRequest{
+		Connection: b.Connection, SQL: b.SQL, Params: b.Params, Limit: b.Limit,
+	}, nil
+}
+
+// handleQuery serves POST /api/v1/query (read-only SELECT/WITH/EXPLAIN/SHOW).
+func (s *Server) handleQuery(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeError(w, r, http.StatusMethodNotAllowed, domain.CodeInternal, "method not allowed")
+		return
+	}
+	if s.read == nil {
+		writeError(w, r, http.StatusServiceUnavailable, domain.CodeInternal, "query execution is not enabled")
+		return
+	}
+	req, err := decodeQueryBody(r)
+	if err != nil || req.Connection == "" || req.SQL == "" {
+		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "connection and sql are required")
+		return
+	}
+	res, err := s.read.Read(r.Context(), req)
+	if err != nil {
+		writeError(w, r, statusForQueryErr(err), errorCode(err), errMsg(err))
+		return
+	}
+	columns := res.Columns
+	if columns == nil {
+		columns = []string{}
+	}
+	rows := res.Rows
+	if rows == nil {
+		rows = [][]any{}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"columns": columns, "rows": rows, "row_count": res.RowCount,
+		"truncated": res.Truncated, "duration_ms": res.DurationMs,
+	})
+}
+
+// handleExplain serves POST /api/v1/explain (never executes).
+func (s *Server) handleExplain(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeError(w, r, http.StatusMethodNotAllowed, domain.CodeInternal, "method not allowed")
+		return
+	}
+	if s.read == nil {
+		writeError(w, r, http.StatusServiceUnavailable, domain.CodeInternal, "query execution is not enabled")
+		return
+	}
+	req, err := decodeQueryBody(r)
+	if err != nil || req.Connection == "" || req.SQL == "" {
+		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "connection and sql are required")
+		return
+	}
+	plan, err := s.read.Explain(r.Context(), req)
+	if err != nil {
+		writeError(w, r, statusForQueryErr(err), errorCode(err), errMsg(err))
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"plan": plan.Text, "affected_estimate": plan.AffectedEstimate,
+	})
+}
+
+func statusForQueryErr(err error) int {
+	switch errorCode(err) {
+	case domain.CodeUnauthenticated, domain.CodeTokenInvalid, domain.CodeTokenExpired:
+		return http.StatusUnauthorized
+	case domain.CodeForbidden, domain.CodeQueryDenied, domain.CodeSchemaNotAllowed,
+		domain.CodeTableNotAllowed, domain.CodeApprovalRequired:
+		return http.StatusForbidden
+	case domain.CodeConnectionNotFound:
+		return http.StatusNotFound
+	case domain.CodeQueryTimeout:
+		return http.StatusGatewayTimeout
+	case domain.CodeRateLimited, domain.CodeTooManyConcurrent:
+		return http.StatusTooManyRequests
+	case domain.CodeQueryTooLong, domain.CodeParseError:
+		return http.StatusBadRequest
+	default:
+		return http.StatusBadRequest
 	}
 }
 
