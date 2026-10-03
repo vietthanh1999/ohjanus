@@ -1,6 +1,17 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
+  import {
+    DataGrid,
+    DataGridHead,
+    DataGridBody,
+    DataGridRow,
+    DataGridHeadCell,
+    DataGridHeaderInner,
+    DataGridRowNumHead,
+    DataGridRowNum,
+    DataGridCell
+  } from '@ohjanus/ui';
 
   let selectedRowIndex = $state(0);
   let selectedColumn = $state('id');
@@ -229,101 +240,96 @@
   </div>
 
   <!-- 3. DATA GRID -->
-  <div class="grid-section">
-    <table class="jb-table code-text">
-      <thead>
-        <tr>
-          <th class="row-num-header"></th>
-          <!-- Column id -->
-          <th class="col-header" style="width: 280px;">
-            <div class="header-inner">
-              <Icon name="key" size={12} color="#FACC15" />
-              <span class="col-name">id</span>
-              <span class="header-funnel"><Icon name="filter" size={9} /></span>
-              <span class="header-sort"><Icon name="sort" size={9} /></span>
-            </div>
-          </th>
+  <DataGrid style="flex: 1; min-height: 0;">
+    {#snippet overlay()}
+      <!-- Floating row count pill [ 58 rows ⌵ | ⋮ ] -->
+      <div class="floating-row-badge" title="Filter count">
+        <span>58 rows</span>
+        <span style="color: var(--text-muted); opacity: 0.6;">|</span>
+        <Icon name="chevron-down" size={10} />
+        <span style="color: var(--text-muted); opacity: 0.6;">|</span>
+        <Icon name="more" size={12} />
+      </div>
+    {/snippet}
+    <DataGridHead>
+      <DataGridRow>
+        <DataGridRowNumHead />
+        <!-- Column id -->
+        <DataGridHeadCell width="280px">
+          <DataGridHeaderInner>
+            <Icon name="key" size={12} color="#FACC15" />
+            <span>id</span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+          </DataGridHeaderInner>
+        </DataGridHeadCell>
 
-          <!-- Column createdDate -->
-          <th class="col-header" style="width: 220px;">
-            <div class="header-inner">
-              <Icon name="clock" size={12} color="#56A8F5" />
-              <span class="col-name">createdDate</span>
-              <span class="header-funnel"><Icon name="filter" size={9} /></span>
-              <span class="header-sort"><Icon name="sort" size={9} /></span>
-            </div>
-          </th>
+        <!-- Column createdDate -->
+        <DataGridHeadCell width="220px">
+          <DataGridHeaderInner>
+            <Icon name="clock" size={12} color="#56A8F5" />
+            <span>createdDate</span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+          </DataGridHeaderInner>
+        </DataGridHeadCell>
 
-          <!-- Column lastUpdatedDate -->
-          <th class="col-header" style="width: 220px;">
-            <div class="header-inner">
-              <Icon name="clock" size={12} color="#56A8F5" />
-              <span class="col-name">lastUpdatedDate</span>
-              <span class="header-funnel"><Icon name="filter" size={9} /></span>
-              <span class="header-sort"><Icon name="sort" size={9} /></span>
-            </div>
-          </th>
+        <!-- Column lastUpdatedDate -->
+        <DataGridHeadCell width="220px">
+          <DataGridHeaderInner>
+            <Icon name="clock" size={12} color="#56A8F5" />
+            <span>lastUpdatedDate</span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+          </DataGridHeaderInner>
+        </DataGridHeadCell>
 
-          <!-- Column createdBy -->
-          <th class="col-header">
-            <div class="header-inner">
-              <Icon name="user" size={12} color="#7A7E85" />
-              <span class="col-name">createdBy</span>
-              <span class="header-funnel"><Icon name="filter" size={9} /></span>
-            </div>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each displayRows as row, idx}
-          <tr
-            class:selected-row={selectedRowIndex === idx}
-            onclick={() => selectedRowIndex = idx}
+        <!-- Column createdBy -->
+        <DataGridHeadCell>
+          <DataGridHeaderInner>
+            <Icon name="user" size={12} color="#7A7E85" />
+            <span>createdBy</span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
+          </DataGridHeaderInner>
+        </DataGridHeadCell>
+      </DataGridRow>
+    </DataGridHead>
+    <DataGridBody>
+      {#each displayRows as row, idx}
+        <DataGridRow
+          selected={selectedRowIndex === idx}
+          onclick={() => selectedRowIndex = idx}
+        >
+          <DataGridRowNum index={idx} />
+          <DataGridCell
+            focused={selectedRowIndex === idx && selectedColumn === 'id'}
+            onclick={() => selectedColumn = 'id'}
           >
-            <td class="row-num-cell">{idx + 1}</td>
-            <td
-              class="cell uuid-cell"
-              class:cell-focused={selectedRowIndex === idx && selectedColumn === 'id'}
-              onclick={() => selectedColumn = 'id'}
-            >
-              {row.id}
-            </td>
-            <td
-              class="cell date-cell"
-              class:cell-focused={selectedRowIndex === idx && selectedColumn === 'createdDate'}
-              onclick={() => selectedColumn = 'createdDate'}
-            >
-              {row.createdDate}
-            </td>
-            <td
-              class="cell date-cell"
-              class:null-cell={row.lastUpdatedDate === null}
-              class:cell-focused={selectedRowIndex === idx && selectedColumn === 'lastUpdatedDate'}
-              onclick={() => selectedColumn = 'lastUpdatedDate'}
-            >
-              {row.lastUpdatedDate ?? '<null>'}
-            </td>
-            <td
-              class="cell uuid-cell"
-              class:cell-focused={selectedRowIndex === idx && selectedColumn === 'createdBy'}
-              onclick={() => selectedColumn = 'createdBy'}
-            >
-              {row.createdBy}
-            </td>
-          </tr>
-        {/each}
-      </tbody>
-    </table>
-
-    <!-- Floating row count pill [ 58 rows ⌵ | ⋮ ] -->
-    <div class="floating-row-badge" title="Filter count">
-      <span>58 rows</span>
-      <span style="color: var(--text-muted); opacity: 0.6;">|</span>
-      <Icon name="chevron-down" size={10} />
-      <span style="color: var(--text-muted); opacity: 0.6;">|</span>
-      <Icon name="more" size={12} />
-    </div>
-  </div>
+            {row.id}
+          </DataGridCell>
+          <DataGridCell
+            focused={selectedRowIndex === idx && selectedColumn === 'createdDate'}
+            onclick={() => selectedColumn = 'createdDate'}
+          >
+            {row.createdDate}
+          </DataGridCell>
+          <DataGridCell
+            isNull={row.lastUpdatedDate === null}
+            focused={selectedRowIndex === idx && selectedColumn === 'lastUpdatedDate'}
+            onclick={() => selectedColumn = 'lastUpdatedDate'}
+          >
+            {row.lastUpdatedDate ?? '<null>'}
+          </DataGridCell>
+          <DataGridCell
+            focused={selectedRowIndex === idx && selectedColumn === 'createdBy'}
+            onclick={() => selectedColumn = 'createdBy'}
+          >
+            {row.createdBy}
+          </DataGridCell>
+        </DataGridRow>
+      {/each}
+    </DataGridBody>
+  </DataGrid>
 </div>
 
 <style>
@@ -437,98 +443,4 @@
     box-shadow: none;
   }
 
-  /* 3. Data Grid */
-  .grid-section {
-    flex: 1;
-    overflow: auto;
-    position: relative;
-    background-color: var(--bg-canvas);
-  }
-
-  .jb-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--font-size-base, 14px);
-  }
-
-  .row-num-header {
-    width: 36px;
-    background-color: var(--bg-canvas);
-    border-bottom: 1px solid var(--border-subtle);
-    border-right: 1px solid var(--border-subtle);
-  }
-
-  .col-header {
-    height: var(--table-header-height);
-    background-color: var(--bg-canvas);
-    border-bottom: 1px solid var(--border-subtle);
-    border-right: 1px solid var(--border-subtle);
-    color: var(--text-secondary);
-    font-weight: 500;
-    font-size: var(--font-size-sm, 13px);
-    padding: 0 10px;
-    text-align: left;
-    user-select: none;
-    white-space: nowrap;
-  }
-
-  .header-inner {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .col-name {
-    color: var(--text-primary);
-    font-weight: 500;
-    font-size: var(--font-size-sm, 13px);
-  }
-
-  .header-funnel, .header-sort {
-    color: var(--text-muted);
-    font-size: var(--font-size-2xs, 11px);
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .row-num-cell {
-    width: 36px;
-    height: var(--table-row-height);
-    background-color: var(--bg-canvas);
-    border-bottom: 1px solid #25272A;
-    border-right: 1px solid var(--border-subtle);
-    color: #7A7E85;
-    text-align: right;
-    padding-right: 8px;
-    font-size: var(--font-size-sm, 13px);
-    user-select: none;
-  }
-
-  .cell {
-    height: var(--table-row-height);
-    border-bottom: 1px solid #25272A;
-    border-right: 1px solid var(--border-subtle);
-    padding: 0 10px;
-    color: var(--text-primary);
-    font-size: var(--font-size-base, 14px);
-    white-space: nowrap;
-  }
-
-  .selected-row {
-    background-color: rgba(46, 58, 78, 0.35);
-  }
-
-  .cell-focused {
-    outline: 1px solid var(--action-primary);
-    background-color: var(--bg-selected);
-  }
-
-  .uuid-cell, .date-cell {
-    font-size: var(--font-size-base, 14px);
-  }
-
-  .null-cell {
-    color: var(--text-null);
-    font-style: italic;
-  }
 </style>

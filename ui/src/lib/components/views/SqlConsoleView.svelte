@@ -1,6 +1,17 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
+  import {
+    DataGrid,
+    DataGridHead,
+    DataGridBody,
+    DataGridRow,
+    DataGridHeadCell,
+    DataGridHeaderInner,
+    DataGridRowNumHead,
+    DataGridRowNum,
+    DataGridCell
+  } from '@ohjanus/ui';
 
   let selectedRowIndex = $state(0);
   let selectedColumn = $state('id');
@@ -260,74 +271,73 @@
   </div>
 
   <!-- 4. HIGH-DENSITY RESULTS DATA GRID matching design.png -->
-  <div class="grid-container">
-    <table class="jb-table code-text">
-      <thead>
-        <tr>
-          <th class="row-num-header"></th>
-          <th class="col-header" style="width: 320px;">
-            <div class="header-inner">
-              <Icon name="key" size={12} color="#FACC15" />
-              <span>id</span>
-              <span class="header-icon"><Icon name="filter" size={9} /></span>
-              <span class="header-icon"><Icon name="sort" size={9} /></span>
-            </div>
-          </th>
-          <th class="col-header" style="width: 130px;">
-            <div class="header-inner">
-              <span style="color: var(--type-general); font-weight: bold; font-size: 11px;">#</span>
-              <span>ordinal</span>
-              <span class="header-icon"><Icon name="filter" size={9} /></span>
-            </div>
-          </th>
-          <th class="col-header" style="width: 320px;">
-            <div class="header-inner">
-              <span style="color: var(--type-general); font-size: 11px;">" "</span>
-              <span>"connectionCredentialID"</span>
-              <span class="header-icon"><Icon name="filter" size={9} /></span>
-              <span class="header-icon"><Icon name="sort" size={9} /></span>
-            </div>
-          </th>
-          <th class="col-header">
-            <div class="header-inner">
-              <span style="color: var(--type-general); font-size: 11px;">" "</span>
-              <span>"sourcePath"</span>
-              <span class="header-icon"><Icon name="filter" size={9} /></span>
-            </div>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          class="selected-row"
-          onclick={() => selectedRowIndex = 0}
-        >
-          <td class="row-num-cell">1</td>
-          <td class="cell uuid-cell" class:cell-focused={selectedColumn === 'id'} onclick={() => selectedColumn = 'id'}>
-            b8262180-1075-43f8-8338-2412d4734d65
-          </td>
-          <td class="cell num-cell" class:cell-focused={selectedColumn === 'ordinal'} onclick={() => selectedColumn = 'ordinal'}>
-            172098
-          </td>
-          <td class="cell uuid-cell" class:cell-focused={selectedColumn === 'connectionCredentialID'} onclick={() => selectedColumn = 'connectionCredentialID'}>
-            753da7e1-523f-4834-ba74-7824e3d5aa52
-          </td>
-          <td class="cell path-cell truncate" class:cell-focused={selectedColumn === 'sourcePath'} onclick={() => selectedColumn = 'sourcePath'}>
-            /home/vod/VOD/as...
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Floating row count pill [ 1 row ⌵ | ⋮ ] -->
-    <div class="floating-row-badge" title="Retrieved count">
-      <span>1 row</span>
-      <span style="color: var(--text-muted); opacity: 0.6;">|</span>
-      <Icon name="chevron-down" size={10} />
-      <span style="color: var(--text-muted); opacity: 0.6;">|</span>
-      <Icon name="more" size={12} />
-    </div>
-  </div>
+  <DataGrid style="flex: 1; min-height: 0;">
+    {#snippet overlay()}
+      <!-- Floating row count pill [ 1 row ⌵ | ⋮ ] -->
+      <div class="floating-row-badge" title="Retrieved count">
+        <span>1 row</span>
+        <span style="color: var(--text-muted); opacity: 0.6;">|</span>
+        <Icon name="chevron-down" size={10} />
+        <span style="color: var(--text-muted); opacity: 0.6;">|</span>
+        <Icon name="more" size={12} />
+      </div>
+    {/snippet}
+    <DataGridHead>
+      <DataGridRow>
+        <DataGridRowNumHead />
+        <DataGridHeadCell width="320px">
+          <DataGridHeaderInner>
+            <Icon name="key" size={12} color="#FACC15" />
+            <span>id</span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+          </DataGridHeaderInner>
+        </DataGridHeadCell>
+        <DataGridHeadCell width="130px">
+          <DataGridHeaderInner>
+            <span style="color: var(--type-general); font-weight: bold; font-size: 11px;">#</span>
+            <span>ordinal</span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
+          </DataGridHeaderInner>
+        </DataGridHeadCell>
+        <DataGridHeadCell width="320px">
+          <DataGridHeaderInner>
+            <span style="color: var(--type-general); font-size: 11px;">" "</span>
+            <span>"connectionCredentialID"</span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="sort" size={9} /></span>
+          </DataGridHeaderInner>
+        </DataGridHeadCell>
+        <DataGridHeadCell>
+          <DataGridHeaderInner>
+            <span style="color: var(--type-general); font-size: 11px;">" "</span>
+            <span>"sourcePath"</span>
+            <span class="ohjanus-data-grid-header-action"><Icon name="filter" size={9} /></span>
+          </DataGridHeaderInner>
+        </DataGridHeadCell>
+      </DataGridRow>
+    </DataGridHead>
+    <DataGridBody>
+      <DataGridRow
+        selected={selectedRowIndex === 0}
+        onclick={() => selectedRowIndex = 0}
+      >
+        <DataGridRowNum index={0} />
+        <DataGridCell focused={selectedColumn === 'id'} onclick={() => selectedColumn = 'id'}>
+          b8262180-1075-43f8-8338-2412d4734d65
+        </DataGridCell>
+        <DataGridCell tone="number" focused={selectedColumn === 'ordinal'} onclick={() => selectedColumn = 'ordinal'}>
+          172098
+        </DataGridCell>
+        <DataGridCell focused={selectedColumn === 'connectionCredentialID'} onclick={() => selectedColumn = 'connectionCredentialID'}>
+          753da7e1-523f-4834-ba74-7824e3d5aa52
+        </DataGridCell>
+        <DataGridCell tone="secondary" truncate focused={selectedColumn === 'sourcePath'} onclick={() => selectedColumn = 'sourcePath'}>
+          /home/vod/VOD/as...
+        </DataGridCell>
+      </DataGridRow>
+    </DataGridBody>
+  </DataGrid>
 </div>
 
 <style>
@@ -635,95 +645,4 @@
     cursor: pointer;
   }
 
-  /* 4. Results Data Grid */
-  .grid-container {
-    flex: 1;
-    overflow: auto;
-    position: relative;
-    background-color: var(--bg-canvas);
-  }
-
-  .jb-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--font-size-sm, 13px);
-  }
-
-  .row-num-header {
-    width: 32px;
-    background-color: var(--bg-canvas);
-    border-bottom: 1px solid var(--border-subtle);
-    border-right: 1px solid var(--border-subtle);
-  }
-
-  .col-header {
-    height: var(--table-header-height);
-    background-color: var(--bg-canvas);
-    border-bottom: 1px solid var(--border-subtle);
-    border-right: 1px solid var(--border-subtle);
-    color: var(--text-secondary);
-    font-weight: 400;
-    font-size: var(--font-size-xs, 12px);
-    padding: 0 8px;
-    text-align: left;
-    user-select: none;
-    white-space: nowrap;
-  }
-
-  .header-inner {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .header-icon {
-    color: var(--text-muted);
-    font-size: var(--font-size-2xs, 11px);
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .row-num-cell {
-    width: 32px;
-    height: var(--table-row-height);
-    background-color: var(--bg-canvas);
-    border-bottom: 1px solid #25272A;
-    border-right: 1px solid var(--border-subtle);
-    color: #7A7E85;
-    text-align: right;
-    padding-right: 6px;
-    font-size: var(--font-size-xs, 12px);
-    user-select: none;
-  }
-
-  .cell {
-    height: var(--table-row-height);
-    border-bottom: 1px solid #25272A;
-    border-right: 1px solid var(--border-subtle);
-    padding: 0 8px;
-    color: var(--text-primary);
-    white-space: nowrap;
-  }
-
-  .selected-row {
-    background-color: rgba(46, 58, 78, 0.35);
-  }
-
-  .cell-focused {
-    outline: 1px solid var(--action-primary);
-    background-color: var(--bg-selected);
-  }
-
-  .uuid-cell {
-    color: #DFE1E5;
-    font-size: var(--font-size-base, 14px);
-  }
-
-  .num-cell {
-    color: var(--syntax-number);
-  }
-
-  .path-cell {
-    color: #9DA0A8;
-  }
 </style>
