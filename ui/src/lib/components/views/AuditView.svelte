@@ -5,6 +5,7 @@
     Button,
     Badge,
     Input,
+    Select,
     Alert,
     toast,
     Box,
@@ -97,12 +98,15 @@
       </Box>
 
       <!-- Decision Filter -->
-      <select class="filter-select" bind:value={filterStatus}>
-        <option value="ALL">All Decisions</option>
-        <option value="ALLOW">ALLOWED</option>
-        <option value="REQUIRE_APPROVAL">NEEDS APPROVAL</option>
-        <option value="DENY">DENIED</option>
-      </select>
+      <Select
+        options={[
+          { value: "ALL", label: "All Decisions" },
+          { value: "ALLOW", label: "ALLOWED" },
+          { value: "REQUIRE_APPROVAL", label: "NEEDS APPROVAL" },
+          { value: "DENY", label: "DENIED" },
+        ]}
+        bind:value={filterStatus}
+      />
 
       <!-- Export Button via UI Kit -->
       <Button variant="secondary" size="sm" onclick={exportCSV}>
@@ -404,16 +408,6 @@
   :global(.audit-view .header-desc) {
     font-size: var(--font-size-xs, 12px);
     color: var(--text-muted);
-  }
-
-  :global(.audit-view .filter-select) {
-    height: var(--control-height-sm, 28px);
-    background-color: #1e1f22;
-    border: 1px solid var(--border-default);
-    border-radius: 4px;
-    padding: 0 8px;
-    font-size: var(--font-size-xs, 12px);
-    color: var(--text-primary);
   }
 
   :global(.audit-view .content-layout) {

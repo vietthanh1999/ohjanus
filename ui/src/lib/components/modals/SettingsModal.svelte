@@ -719,6 +719,16 @@
     flex: 1;
     overflow-y: auto;
     padding: 6px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .tree-group,
+  .tree-children {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 
   .tree-row {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
-  import { Alert } from '@ohjanus/ui';
+  import { Alert, Select } from '@ohjanus/ui';
   import {
     DataGrid,
     DataGridHead,
@@ -79,15 +79,13 @@
       {#if appState.connections.length === 0}
         <span class="schema-name">No connection</span>
       {:else}
-        <select
-          class="schema-btn"
+        <Select
+          options={appState.connections.map((conn) => ({
+            value: conn.name,
+            label: conn.readonly ? `${conn.name} (readonly)` : conn.name
+          }))}
           bind:value={appState.console.connection}
-          title="Target connection"
-        >
-          {#each appState.connections as conn (conn.name)}
-            <option value={conn.name}>{conn.name}{conn.readonly ? ' (readonly)' : ''}</option>
-          {/each}
-        </select>
+        />
       {/if}
     </div>
   </div>
@@ -247,17 +245,6 @@
     height: 14px;
     background-color: var(--border-default);
     margin: 0 4px;
-  }
-
-  .schema-btn {
-    height: var(--control-height-xs, 24px);
-    padding: 0 8px;
-    border-radius: var(--radius-sm, 4px);
-    color: var(--text-primary);
-    font-size: var(--font-size-xs, 11px);
-    background-color: var(--bg-canvas);
-    border: 1px solid var(--border-default);
-    outline: none;
   }
 
   .schema-name {

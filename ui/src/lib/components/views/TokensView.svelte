@@ -5,6 +5,8 @@
     Badge,
     Modal,
     Input,
+    Select,
+    Checkbox,
     Field,
     Alert,
     toast,
@@ -209,40 +211,74 @@
 
         <Field label="Allowed Janus Scopes (§1.2):">
           <Stack class="scopes-grid" gap="8px">
-            <label class="chk-label">
-              <input type="checkbox" bind:checked={scopes.read} />
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div class="chk-label" onclick={() => (scopes.read = !scopes.read)}>
+              <Checkbox
+                bind:checked={scopes.read}
+                ariaLabel="read scope"
+                onclick={(e: MouseEvent) => e.stopPropagation()}
+              />
               <span
                 ><code>read</code> (db_list_connections, db_schema, db_read, db_explain)</span
               >
-            </label>
-            <label class="chk-label">
-              <input type="checkbox" bind:checked={scopes.write_preview} />
+            </div>
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div
+              class="chk-label"
+              onclick={() => (scopes.write_preview = !scopes.write_preview)}
+            >
+              <Checkbox
+                bind:checked={scopes.write_preview}
+                ariaLabel="write_preview scope"
+                onclick={(e: MouseEvent) => e.stopPropagation()}
+              />
               <span
                 ><code>write_preview</code> (db_write_preview — dry-run simulation)</span
               >
-            </label>
-            <label class="chk-label">
-              <input type="checkbox" bind:checked={scopes.write_execute} />
+            </div>
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div
+              class="chk-label"
+              onclick={() => (scopes.write_execute = !scopes.write_execute)}
+            >
+              <Checkbox
+                bind:checked={scopes.write_execute}
+                ariaLabel="write_execute scope"
+                onclick={(e: MouseEvent) => e.stopPropagation()}
+              />
               <span
                 ><code>write_execute</code> (db_write_execute — requires human approval)</span
               >
-            </label>
-            <label class="chk-label">
-              <input type="checkbox" bind:checked={scopes.admin} />
+            </div>
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div class="chk-label" onclick={() => (scopes.admin = !scopes.admin)}>
+              <Checkbox
+                bind:checked={scopes.admin}
+                ariaLabel="admin scope"
+                onclick={(e: MouseEvent) => e.stopPropagation()}
+              />
               <span
                 ><code>admin</code> (manage tokens &amp; connection configurations)</span
               >
-            </label>
+            </div>
           </Stack>
         </Field>
 
         <Field label="Token Validity (TTL Days):">
-          <select id="tok-ttl" bind:value={ttlDays} class="ohjanus-select">
-            <option value={7}>7 Days</option>
-            <option value={30}>30 Days (Recommended)</option>
-            <option value={90}>90 Days</option>
-            <option value={365}>1 Year</option>
-          </select>
+          <Select
+            options={[
+              { value: "7", label: "7 Days" },
+              { value: "30", label: "30 Days (Recommended)" },
+              { value: "90", label: "90 Days" },
+              { value: "365", label: "1 Year" },
+            ]}
+            value={String(ttlDays)}
+            onchange={(v) => (ttlDays = Number(v))}
+          />
         </Field>
       </Stack>
     {/snippet}
@@ -382,18 +418,6 @@
     gap: 8px;
     font-size: var(--font-size-sm, 13px);
     cursor: pointer;
-  }
-
-  :global(.ohjanus-select) {
-    width: 100%;
-    height: var(--control-height-md, 34px);
-    background-color: var(--bg-canvas, #1e1f22);
-    border: 1px solid var(--border-default, #393b40);
-    border-radius: 4px;
-    color: var(--text-primary, #dfe1e5);
-    padding: 0 8px;
-    font-size: var(--font-size-base, 14px);
-    outline: none;
   }
 
   :global(.secret-box) {
