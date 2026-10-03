@@ -110,10 +110,11 @@ func (s *Server) authenticate(ctx context.Context, params map[string]any) (conte
 	t, err := s.tokens.LookupByHash(ctx, "sha256:"+hex.EncodeToString(sum[:]))
 	if err != nil {
 		code := domain.CodeTokenInvalid
+		msg := err.Error()
 		if de, ok := err.(*domain.Error); ok {
-			code = de.Code
+			code, msg = de.Code, de.Message
 		}
-		return nil, &ErrorObject{Code: CodeJanusError, Message: string(code) + ": " + err.Error(),
+		return nil, &ErrorObject{Code: CodeJanusError, Message: string(code) + ": " + msg,
 			Data: map[string]any{"code": string(code)}}
 	}
 	return domain.WithAuth(ctx, t.ID, t.Scopes), nil

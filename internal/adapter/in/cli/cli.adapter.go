@@ -23,12 +23,15 @@ import (
 	auditstdout "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/stdout"
 	authconfig "github.com/vietthanh1999/ohjanus/internal/adapter/out/auth/config"
 	systemclock "github.com/vietthanh1999/ohjanus/internal/adapter/out/clock/system"
+	pgconnector "github.com/vietthanh1999/ohjanus/internal/adapter/out/connector/postgres"
 	credchain "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/chain"
 	credenv "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/env"
 	credfile "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/file"
 	policyyaml "github.com/vietthanh1999/ohjanus/internal/adapter/out/policy/yaml"
 	redactregex "github.com/vietthanh1999/ohjanus/internal/adapter/out/redact/regex"
 	denyall "github.com/vietthanh1999/ohjanus/internal/adapter/out/validator/denyall"
+	pgvalidator "github.com/vietthanh1999/ohjanus/internal/adapter/out/validator/postgres"
+	valrouter "github.com/vietthanh1999/ohjanus/internal/adapter/out/validator/router"
 	"github.com/vietthanh1999/ohjanus/internal/config"
 	"github.com/vietthanh1999/ohjanus/internal/core/domain"
 	"github.com/vietthanh1999/ohjanus/internal/core/port/out"
@@ -123,12 +126,19 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 
 			tokenResolver := authconfig.New(cfg.AuthTokens(), clock)
 			policyEng := policyyaml.New(cfg.PolicyRules(), domain.Action(cfg.Policy.DefaultAction))
-			validator := denyall.New()
-			creds := credchain.New(credenv.New(), credfile.New(cfg.FileModeForScheme()))
-			_ = creds // pools open in Phase 1 with connectors; chain is verified by `connection test`
-
 			metas := cfg.ConnectionMetas()
-			pools := map[string]out.Pool{}
+
+			validator := buildValidator(metas)
+
+			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+			defer stop()
+			creds := credchain.New(credenv.New(), credfile.New(cfg.FileModeForScheme()))
+			pools, err := openPools(ctx, cfg, creds)
+			if err != nil {
+				return err
+			}
+			defer closePools(pools)
+
 			gateway := service.NewGateway(clock)
 			readSvc := service.NewReadService(gateway, validator, policyEng, pools, metas, auditSink, clock, redactor,
 				1000, cfg.Limits.MaxQueryLength, cfg.QueryTimeout())
@@ -144,10 +154,66 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 			})
 			logger.Info("janus serving", "transport", "stdio", "connections", len(metas))
 
-			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-			defer stop()
 			return stdio.New(server, os.Stdin, os.Stdout, logger).Serve(ctx)
 		},
+	}
+}
+
+func buildValidator(metas map[string]domain.ConnectionMeta) out.Validator {
+	rules := make(map[string]pgvalidator.ConnRules, len(metas))
+	byConn := map[string]out.Validator{}
+	for name, m := range metas {
+		rules[name] = pgvalidator.ConnRules{
+			AllowedSchemas: m.AllowedSchemas,
+			DeniedTables:   m.DeniedTables,
+			AllowedTables:  m.AllowedTables,
+		}
+	}
+	pgVal := pgvalidator.New(rules, nil)
+	for name, m := range metas {
+		if m.Connection.Driver == "postgres" {
+			byConn[name] = pgVal
+		}
+	}
+	return valrouter.New(byConn, denyall.New())
+}
+
+func openPools(ctx context.Context, cfg *config.Config, creds *credchain.Chain) (map[string]out.Pool, error) {
+	pools := map[string]out.Pool{}
+	for _, conn := range cfg.Connections {
+		resolved, err := creds.Resolve(ctx, conn.DSNRef)
+		if err != nil {
+			closePools(pools)
+			return nil, fmt.Errorf("connection %q: %w", conn.Name, err)
+		}
+		pc := domain.PoolConfig{MaxOpen: conn.Pool.MaxOpen, MaxIdle: conn.Pool.MaxIdle}
+		if conn.Pool.ConnMaxLifetime != "" {
+			d, err := time.ParseDuration(conn.Pool.ConnMaxLifetime)
+			if err != nil {
+				closePools(pools)
+				return nil, fmt.Errorf("connection %q: %w", conn.Name, err)
+			}
+			pc.ConnMaxLifetime = d
+		}
+		var pool out.Pool
+		switch conn.Driver {
+		case "postgres":
+			pool, err = pgconnector.New().Open(ctx, resolved, pc)
+		default:
+			err = fmt.Errorf("driver %q not implemented in v0.1", conn.Driver)
+		}
+		if err != nil {
+			closePools(pools)
+			return nil, fmt.Errorf("connection %q: %w", conn.Name, err)
+		}
+		pools[conn.Name] = pool
+	}
+	return pools, nil
+}
+
+func closePools(pools map[string]out.Pool) {
+	for _, p := range pools {
+		_ = p.Close()
 	}
 }
 
@@ -321,7 +387,7 @@ func newConnectionCmd(cfgPath *string) *cobra.Command {
 	}
 	test := &cobra.Command{
 		Use:   "test <name>",
-		Short: "Resolve credentials and report pool status",
+		Short: "Resolve credentials and ping the database",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := config.Load(*cfgPath)
@@ -338,13 +404,26 @@ func newConnectionCmd(cfgPath *string) *cobra.Command {
 			if found == nil {
 				return fmt.Errorf("unknown connection %q", args[0])
 			}
+			ctx := context.Background()
 			chain := credchain.New(credenv.New(), credfile.New(cfg.FileModeForScheme()))
-			creds, err := chain.Resolve(context.Background(), found.DSNRef)
+			creds, err := chain.Resolve(ctx, found.DSNRef)
 			if err != nil {
 				return fmt.Errorf("resolve %s: %w", found.DSNRef, err)
 			}
-			fmt.Printf("credentials resolve OK (dsn=%s); driver pool (%s) lands with connectors in Phase 1\n",
-				creds.RedactedDSN(), found.Driver)
+			if found.Driver != "postgres" {
+				fmt.Printf("credentials resolve OK (dsn=%s); driver %q pool is not implemented yet\n",
+					creds.RedactedDSN(), found.Driver)
+				return nil
+			}
+			pc := domain.PoolConfig{MaxOpen: 1, MaxIdle: 1}
+			start := time.Now()
+			pool, err := pgconnector.New().Open(ctx, creds, pc)
+			if err != nil {
+				return err
+			}
+			defer pool.Close()
+			fmt.Printf("connection %q healthy (driver=postgres, dsn=%s, latency=%s)\n",
+				found.Name, creds.RedactedDSN(), time.Since(start).Round(time.Millisecond))
 			return nil
 		},
 	}
