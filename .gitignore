@@ -1,0 +1,160 @@
+# ============================================================
+# ohjanus — gitignore chung (Go core + Svelte admin + UI kit)
+# ============================================================
+
+# ---------- OS ----------
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---------- Editors / IDE ----------
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+.vim/
+*.sublime-project
+*.sublime-workspace
+
+# ---------- Git / attrs ----------
+*.orig
+*.rej
+
+# ============================================================
+# Go — Janus core (cmd/janus, internal/...)
+# ============================================================
+# Binary output
+/janus
+janus
+*.exe
+*.out
+*.test
+/bin/
+/dist/
+build/
+
+# Go workspace / cache (không commit)
+/go.work.sum
+
+# Vendor — quyết định sau, mặc định không commit
+# Bỏ comment nếu dùng vendoring:
+# !vendor/
+vendor/
+
+# Test / coverage / profiling
+*.coverprofile
+coverage.out
+coverage.html
+*.prof
+*.pprof
+cpu.out
+mem.out
+
+# golangci / linter cache
+.golangci.yml.bak
+
+# Air (live reload)
+tmp/
+
+# ============================================================
+# Node — ohjanus-ui admin + ohjanus-ui-kit (Svelte 5 + SvelteKit)
+# Dự án FE ở repo riêng, nhưng giữ rules ở đây để dùng chung
+# ============================================================
+node_modules/
+.pnp
+.pnp.*
+
+# SvelteKit
+.svelte-kit/
+package/
+.svelte/
+
+# Build output (Vite / SvelteKit adapter-static)
+build/
+dist/
+out/
+storybook-static/
+
+# Vite / Vitest cache
+.vite/
+.vitest/
+
+# Turbo
+.turbo/
+
+# pnpm (giữ lockfile — phải commit)
+pnpm-debug.log*
+.pnpm-store/
+.pnpm-debug.log*
+
+# npm / yarn / bun logs (giữ lockfile — phải commit)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun.lockb
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+blob-report/
+
+# MSW
+msw-workers/
+
+# Storybook / Histoire / Ladle
+storybook.log
+
+# ============================================================
+# Env / secrets — KHÔNG BAO GIỜ commit
+# (Janus chứa DB credentials, MCP tokens — xem spec §7)
+# ============================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+.secrets/
+*.dsn
+
+# Janus local config (chỉ commit example)
+janus.yaml
+janus.yml
+configs/janus.yaml
+configs/janus.yml
+!configs/janus.example.yaml
+/etc/janus/secrets/
+
+# Audit logs local
+*.jsonl
+/var/log/janus/
+logs/
+
+# Token / session dev
+*.token
+janus_session*
+
+# ============================================================
+# Docker / deploy local
+# ============================================================
+.docker/
+docker-compose.override.yml
+
+# ============================================================
+# Docs build
+# ============================================================
+docs/_site/
+docs/.vitepress/dist/
+site/

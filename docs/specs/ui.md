@@ -1,18 +1,21 @@
-# Đặc tả Kỹ thuật: **Janus UI** — Frontend cho MCP Gateway
+# Đặc tả Kỹ thuật: **ohjanus-ui** — Trang admin cho MCP Gateway
 
-> **Codename**: `janus-ui`
+> **Codename**: `ohjanus-ui`
 > **Repo**: **riêng biệt** với `janus` core
+> **Framework**: Svelte 5 + SvelteKit + `@ohjanus/ui` kit (xem `ui-kit.md`)
 > **Mục tiêu**: Giao diện web tối giản cho approval workflow và audit viewer.
 > **Backend yêu cầu**: Admin API riêng port 8788 (không dùng chung MCP).
 > **Ngày**: 2026-10-03
 
 ## 0. Nguyên tắc thiết kế
 
-1. **FE là client, không phải core**: chỉ gọi REST API. Không business logic trong FE.
-2. **Minimal surface area**: chỉ build màn hình thực sự cần.
+1. **FE là client, không phải core**: chỉ gọi Admin API. Không business logic trong FE.
+2. **Minimal surface area**: chỉ approval + audit + tokens + connections. Không SQL editor, schema browser.
 3. **Read-only mặc định**: destructive action phải có confirmation + audit trail.
-4. **Không lưu secret**: FE không thấy credentials, MCP token gốc, DSN. Chỉ metadata.
-5. **Deploy riêng**: static site (Vercel/Netlify/S3), không nhồi vào Go binary trừ khi muốn.
+4. **Không lưu secret**: không thấy credentials, MCP token gốc, DSN. Chỉ metadata.
+5. **Runes-first**: Svelte 5 runes (`$state`, `$derived`, `$effect`, `$props`), không store cũ.
+6. **Type-safe end-to-end**: TypeScript strict, Zod validation, typed API client.
+7. **Deploy riêng**: static SPA (adapter-static), Vercel/Netlify/S3 hoặc Go embed.
 
 ## 1. Phạm vi (Scope)
 
@@ -36,10 +39,10 @@
 ## 2. Kiến trúc
 
 ```
-Browser (React+TS+Vite+TanStack Query)
+Browser (SvelteKit SPA: Svelte 5 + Query + Tailwind + @ohjanus/ui)
   │ HTTPS, session cookie HttpOnly Secure
   ▼
-Reverse Proxy (Nginx/Caddy): / → static, /api/* → Janus Admin API
+Reverse Proxy (Nginx/Caddy): / → static, /api/* → Admin API :8788, /stream → SSE (buffering off)
   ▼
 Janus Core: MCP Server (agent) | Admin API :8788 (UI) | Approval Engine
 ```
@@ -48,33 +51,105 @@ Janus Core: MCP Server (agent) | Admin API :8788 (UI) | Approval Engine
 - Không endpoint nào trả DSN/password/MCP token gốc.
 - FE static, không SSR.
 
-Cấu trúc `janus-ui/`:
+Cấu trúc `ohjanus-ui/`:
 
 ```
 src/
-  main.tsx, App.tsx
-  api/client.ts, auth.ts, approvals.ts, audit.ts, connections.ts, tokens.ts, types.ts
-  components/ui/ (shadcn), layout/AppShell,Sidebar,TopBar,
-    approval/ApprovalCard,ApprovalDetail,SqlPreview, audit/AuditRow,AuditFilters
-  pages/Login,ApprovalQueue,ApprovalDetail,Audit,Connections,Tokens,Dashboard,NotFound
-  hooks/useAuth,useApprovals,useAudit,useSSE.ts
-  lib/format,sql,validation.ts
-  stores/authStore,uiStore.ts
-  styles/globals.css
-tests/unit,integration,e2e (Playwright)
-vite.config, tailwind.config, playwright.config, Dockerfile, README
+  app.html, app.d.ts (App.Events SSE typing), app.css
+  lib/api/client.ts (fetch credentials:include), auth.ts, approvals.ts, audit.ts, connections.ts, tokens.ts, types.ts
+  lib/schemas/index.ts (Zod)
+  lib/components/layout/AppShell,Sidebar,TopBar.svelte (dùng kit primitives + Tailwind)
+  lib/components/approval/ApprovalCard,ApprovalDetail,SqlPreview,ParamsList,ApprovalActions.svelte (dùng `@ohjanus/ui`)
+  lib/components/audit/AuditTable,AuditFilters,AuditDetail.svelte (dùng `@ohjanus/ui`)
+  lib/components/common/EmptyState,LoadingSkeleton,ErrorState.svelte (wrap kit)
+  lib/hooks/useAuth,useApprovals,useAudit,useTokens,useSSE.svelte.ts
+  lib/utils/format.ts, sql.ts
+  routes/+layout.svelte, +layout.ts (QueryClientProvider), +page.svelte (→/approvals),
+    login/+page.svelte, approvals/+page.svelte, approvals/[id]/+page.svelte,
+    audit/+page.svelte, connections/+page.svelte, tokens/+page.svelte, dashboard/+page.svelte
+tests/unit,integration,e2e — static/, svelte.config.js, vite.config.ts, playwright.config.ts, .env.example
 ```
 
 ## 3. Tech Stack
 
-- Core: React 18, TypeScript 5, Vite 5, React Router v6, TanStack Query v5, Zustand (UI state), React Hook Form + Zod, fetch native.
-- UI: Tailwind 3, shadcn/ui, Lucide, Recharts (dashboard), Shiki (SQL highlight), date-fns, Sonner (toast).
-- Dev/Test: ESLint, Prettier, Vitest, Testing Library, Playwright, MSW.
-- Không Next.js/Remix: không cần SSR/SEO/API routes, Vite SPA build nhanh, deploy static dễ.
+### 3.1. Core
+
+| Thành phần | Lựa chọn | Lý do |
+| :--- | :--- | :--- |
+| Framework | Svelte 5 | Runes fine-grained, bundle nhỏ |
+| Meta-framework | SvelteKit | Routing, adapter-static cho SPA |
+| Ngôn ngữ | TypeScript 5 (strict) | Type safety |
+| Build | Vite 5 | Mặc định SvelteKit |
+
+### 3.2. UI & Styling (dùng kit `ui-kit.md`)
+
+| Thành phần | Lựa chọn | Ghi chú |
+| :--- | :--- | :--- |
+| CSS | Tailwind CSS 4 | Utility-first, tokens từ `@ohjanus/tokens` |
+| Components | `@ohjanus/ui` | Button, Input, Modal, Drawer, Tabs, Table, Badge, Toast... — không tự build lẻ |
+| Icons | `@ohjanus/icons` | Nhất quán kit |
+| Toast | `@ohjanus/ui` Toast/Toaster | Queue `$state` |
+
+### 3.3. Data & State
+
+| Thành phần | Lựa chọn | Ghi chú |
+| :--- | :--- | :--- |
+| Server state | @tanstack/svelte-query v6 | Query/cache/mutation, runes native |
+| Client state | Svelte 5 runes | `$state` UI state |
+| URL state | SvelteKit `$page` | Filter/pagination query string |
+| Form | svelte-form-hook | Zod resolver |
+| Validation | Zod | Schema + type inference |
+
+### 3.4. Domain-specific
+
+| Thành phần | Lựa chọn | Ghi chú |
+| :--- | :--- | :--- |
+| SQL highlight | @agnosticeng/editor | Svelte 5 wrap CodeMirror 6, PG/MySQL dialect |
+| Charts | @faintshadow/flarecharts | Svelte 5 native, runes-first, SVG, a11y |
+| SSE | @sourceregistry/sveltekit-eventsource | Typed end-to-end, custom channels |
+| Date | date-fns | Nhẹ, tree-shakeable |
+
+### 3.5. Dev & Test
+
+ESLint + typescript-eslint, Prettier + prettier-plugin-svelte, Vitest, @testing-library/svelte, Playwright, MSW.
+
+### 3.6. Dependencies
+
+```json
+{
+  "dependencies": {
+    "@ohjanus/ui": "workspace:*",
+    "@ohjanus/tokens": "workspace:*",
+    "@ohjanus/icons": "workspace:*",
+    "@tanstack/svelte-query": "^6.0.0",
+    "svelte-form-hook": "^1.1.8",
+    "zod": "^3.23.0",
+    "@agnosticeng/editor": "^0.0.6",
+    "@faintshadow/flarecharts": "^26.3.1",
+    "@sourceregistry/sveltekit-eventsource": "^1.1.2",
+    "date-fns": "^3.6.0",
+    "tailwindcss": "^4.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/kit": "^2.0.0",
+    "@sveltejs/adapter-static": "^3.0.0",
+    "svelte": "^5.0.0",
+    "vite": "^5.0.0",
+    "vitest": "^2.0.0",
+    "@testing-library/svelte": "^5.0.0",
+    "@playwright/test": "^1.45.0",
+    "msw": "^2.0.0",
+    "typescript": "^5.5.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.0",
+    "prettier-plugin-svelte": "^3.2.0"
+  }
+}
+```
 
 ## 4. API Contract (Admin API — yêu cầu Janus Core)
 
-- Base `/api/v1`, JSON, auth cookie `janus_session` (HttpOnly, Secure, SameSite=Lax).
+- Base `/api/v1`, JSON, auth cookie `janus_session` (HttpOnly, Secure, SameSite=Lax). CSRF header `X-Requested-With` cho mutating.
 
 ### Auth
 
@@ -126,15 +201,15 @@ vite.config, tailwind.config, playwright.config, Dockerfile, README
 
 ### 5.1. Login `/login`
 
-Form email+password, SSO button, validation, submit → login, success → `/approvals`, fail không lộ email tồn tại. Rate limit 5/phút/IP.
+Form email+password (Zod + svelte-form-hook), SSO button, submit → login, success → `/approvals`, fail không lộ email tồn tại. Rate limit 5/phút/IP.
 
 ### 5.2. Approval Queue `/approvals`
 
-Tabs Pending/Approved/Rejected/Expired/All, card hiển thị statement type màu (SELECT xanh dương, INSERT xanh lá, UPDATE vàng, DELETE cam, DROP đỏ), SQL preview 3 dòng, affected estimate, requester, countdown. Click → detail. SSE toast + badge. Empty: "Không có yêu cầu nào 🎉".
+Tabs Pending/Approved/Rejected/Expired/All, card hiển thị statement type màu (SELECT xanh dương, INSERT xanh lá, UPDATE vàng, DELETE cam, DROP đỏ), SQL preview 3 dòng readonly (@agnosticeng/editor), affected estimate, requester, countdown. Click → detail. SSE toast + badge. Empty: "Không có yêu cầu nào 🎉".
 
-### 5.3. Approval Detail `/approvals/{id}`
+### 5.3. Approval Detail `/approvals/[id]`
 
-Thông tin chung (connection, requester, request ID, tạo/hết hạn + countdown), SQL (Shiki), params list, ước lượng tác động + warnings, EXPLAIN plan collapsible, form quyết định (lý do optional khi approve, bắt buộc khi reject). Approve → confirm dialog. Hết hạn → disable. 409 → báo đã xử lý bởi người khác.
+Thông tin chung (connection, requester, request ID, tạo/hết hạn + countdown), SQL readonly PG dialect, params list, ước lượng tác động + warnings, EXPLAIN plan collapsible, form quyết định (lý do optional khi approve, bắt buộc khi reject). Approve → confirm dialog. Hết hạn → disable. 409 → báo đã xử lý bởi người khác.
 
 ### 5.4. Audit `/audit`
 
@@ -150,17 +225,18 @@ List id/name/scopes/tạo/hết hạn/last used + Revoke (confirm). Modal tạo 
 
 ### 5.7. Dashboard `/dashboard` (P2)
 
-KPI cards, chart requests over time (Recharts), top denials, top connections, link Grafana.
+KPI cards, line chart requests over time (flarecharts), top denials, top connections, link Grafana.
 
 ## 6. Auth & Phân quyền
 
 - Local: login → cookie → user info memory (không localStorage) → 401 redirect login.
-- Roles: `viewer(audit:read,connection:read)`, `approver(+approval:*)`, `admin(+token:*,connection:*,config:read)`, `auditor(audit:read,export)`. FE ẩn/hiện UI theo permission, server luôn validate.
+- OIDC SSO: `/login` → SSO → `/auth/oidc/authorize?redirect_uri` → IdP → `/callback` → cookie → `/me`.
+- Roles: `viewer(audit:read,connection:read)`, `approver(+approval:*)`, `admin(+token:*,connection:*,config:read)`, `auditor(audit:read,export)`. FE ẩn/hiện theo permission, server luôn validate.
 - Session: TTL 8h sliding, CSRF `SameSite=Lax` + header `X-Requested-With`, logout xóa session.
 
 ## 7. Real-time (SSE)
 
-`EventSource('/api/v1/approvals/stream')` listen `approval.created/expired` → invalidate TanStack Query + toast. Auto-reconnect exponential backoff. Fallback polling 10s khi tab active nếu SSE bị chặn.
+`app.d.ts` typing `App.Events`: `approval.created`, `approval.expired`, `approval.decided`. Server forward SSE từ Janus Core (`src/routes/api/v1/approvals/stream/+server.ts`). Client `useApprovalSSE` (`useSSE.svelte.ts`): `onMount` mở `EventSource`, `on('approval.created/expired')` → invalidate queries + toast, `onDestroy` close. Auto-reconnect exponential backoff. Fallback polling 10s khi tab active nếu SSE bị chặn.
 
 ## 8. UX
 
@@ -168,25 +244,25 @@ Không giấu SQL/params/affected rows; confirm mọi destructive; không undo �
 
 ## 9. Security FE
 
-CSP strict, không token ở storage, không log sensitive, sanitize input (tránh `dangerouslySetInnerHTML`), validate client chỉ UX, HTTPS+HSTS, SRI nếu CDN ngoài, Dependabot/Snyk, không expose sourcemap prod. SQL highlight Shiki (không eval HTML thô). Params dạng list, truncate string dài, binary → `[binary, N bytes]`.
+CSP strict, không token ở storage, không log sensitive, sanitize input (tránh `{@html}` không escape), validate client chỉ UX, HTTPS+HSTS, SRI nếu CDN ngoài, Dependabot/Snyk, không expose sourcemap prod. SQL highlight an toàn. Params dạng list, truncate string dài, binary → `[binary, N bytes]`.
 
 ## 10. Testing
 
-- Unit (Vitest): utils, hooks với MSW, components. Target >70%.
-- Integration (Testing Library): login, approval approve, audit filter.
-- E2E (Playwright): happy path login→approve→audit, expired, reject, token create-once. Visual regression screenshots baseline.
+- Unit Vitest: utils, schemas, hooks với MSW, components với testing-library/svelte. Target >70%.
+- E2E Playwright: happy path login→approve→audit, expired, reject với lý do, token once. Critical paths + visual regression screenshots baseline.
 
 ## 11. Build & Deploy
 
-Env: `VITE_API_BASE_URL, VITE_SSE_ENABLED, VITE_GRAFANA_URL, VITE_APP_NAME, VITE_SENTRY_DSN`.
-Build `npm run build → dist/`. Dockerfile node:20 builder + nginx serve, SPA fallback, `/api/` proxy về `janus-core:8788` với SSE (`proxy_buffering off`, `read_timeout 24h`), security headers. Options: Docker+nginx, Vercel/Netlify (CORS), S3+CloudFront, hoặc `embed.FS` serve từ Go binary.
+- `svelte.config.js` adapter-static fallback `index.html` (SPA mode).
+- Env: `VITE_API_BASE_URL, VITE_SSE_ENABLED, VITE_GRAFANA_URL, VITE_APP_NAME`.
+- Dockerfile node:20 builder + nginx serve `build/`, SPA fallback, `/api/` proxy `janus-core:8788` + SSE (`proxy_buffering off`, `read_timeout 24h`), security headers. Options: Docker+nginx, Vercel/Netlify (CORS), S3+CloudFront, Go `embed.FS`.
 
 ## 12. Roadmap
 
-- v0.1 MVP: login local, approval queue+detail, audit viewer cơ bản.
-- v0.2: SSE, toast, dark mode, shortcuts, audit filter nâng cao.
+- v0.1: SvelteKit + `@ohjanus/ui` setup, login local, approval queue+detail, audit cơ bản.
+- v0.2: SSE, toast kit, dark mode, shortcuts, audit filter nâng cao.
 - v0.3: tokens, connections, SSO OIDC.
-- v0.4: dashboard, export, link Grafana.
+- v0.4: dashboard flarecharts, export, link Grafana.
 - v1.0: coverage, a11y audit, perf, docs.
 
 ## 13. DoD
@@ -198,11 +274,11 @@ Unit+integration happy/error path, E2E critical flow, screenshots `docs/screensh
 | Khía cạnh | Quyết định |
 | :--- | :--- |
 | Phạm vi | Tối giản: approval + audit |
-| Repo | Riêng `janus-ui` |
-| Stack | React+TS+Vite+TanStack Query+shadcn/ui |
+| Repo/App | `ohjanus-ui` (Svelte 5 + SvelteKit) |
+| UI kit | `@ohjanus/ui` — xem `ui-kit.md`, trang admin dùng trực tiếp |
 | Backend | Admin API riêng :8788 |
 | Auth | Session cookie + OIDC optional |
-| Real-time | SSE |
-| Deploy | Docker+nginx / Vercel / S3 / Go embed |
+| Real-time | SSE typed end-to-end |
+| Deploy | adapter-static + nginx / Vercel / S3 / Go embed |
 | Ưu tiên | Approval > Audit > Tokens/Connections > Dashboard |
 | Không làm | SQL editor, schema browser, config editor, Grafana replacement |
