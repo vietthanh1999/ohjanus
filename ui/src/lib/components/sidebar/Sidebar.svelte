@@ -405,7 +405,7 @@
     flex-direction: column;
     min-height: 120px;
     overflow: hidden;
-    background-color: var(--bg-canvas, #1E1F22);
+    background-color: var(--bg-card, #191A1C);
     border: none;
     border-radius: 8px;
   }
@@ -495,7 +495,7 @@
   .services-pane {
     display: flex;
     flex-direction: column;
-    background-color: var(--bg-canvas, #1E1F22);
+    background-color: var(--bg-card, #191A1C);
     border: none;
     border-radius: 8px;
     overflow: hidden;

@@ -1,22 +1,23 @@
 :root {
-  /* Surfaces */
-  --bg-window-frame: #24272A;
-  --bg-canvas: #1E1F22;
-  --bg-sidebar: #1E1F22;
-  --bg-toolbar: #2B2D30;
-  --bg-table-header: #25272A;
-  --bg-table-row: #1E1F22;
+  /* Surfaces - Exact JetBrains Dark Design Spec */
+  --bg-window-frame: #26282B;
+  --bg-canvas: #191A1C;
+  --bg-card: #191A1C;
+  --bg-sidebar: #191A1C;
+  --bg-toolbar: #191A1C;
+  --bg-table-header: #191A1C;
+  --bg-table-row: #191A1C;
   --bg-hover: #2B2D30;
   --bg-selected: #2E3A4E;
   --bg-active-tab: #1F2E4A;
   --bg-inactive-tab: transparent;
-  --bg-floating: #2B2D30;
+  --bg-floating: #242629;
   --bg-execution-block: rgba(31, 67, 136, 0.45);
 
   /* Borders */
   --border-panel: rgba(255, 255, 255, 0.08);
-  --border-subtle: #2B2D30;
-  --border-default: #393B40;
+  --border-subtle: #26282B;
+  --border-default: #323438;
   --border-strong: #4E5157;
   --border-accent: #3574F0;
   --border-execution: #3569C8;

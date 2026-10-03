@@ -213,7 +213,13 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background-color: var(--bg-window-frame, #24272A);
+    background: linear-gradient(
+      90deg,
+      #2a3032 0%,
+      #292f32 30%,
+      #26282b 70%,
+      #26282b 100%
+    );
   }
 
   :global(.main-layout) {
@@ -223,7 +229,7 @@
     position: relative;
     padding: 0 6px 6px 6px;
     gap: 0;
-    background-color: var(--bg-window-frame, #24272A);
+    background: transparent;
   }
 
   .vertical-splitter {
@@ -257,7 +263,7 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    background-color: var(--bg-canvas, #1E1F22);
+    background-color: var(--bg-card, #191A1C);
     border: none;
     border-radius: 8px;
     overflow: hidden;
@@ -278,7 +284,7 @@
 
   .console-card-island {
     display: flex;
-    background-color: var(--bg-canvas, #1E1F22);
+    background-color: var(--bg-card, #191A1C);
     border: none;
     border-radius: 8px;
     overflow: hidden;
