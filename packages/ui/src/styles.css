@@ -71,6 +71,8 @@
 /* Input */
 .ohjanus-input-wrapper {
   display: inline-flex;
+  width: 100%;
+  box-sizing: border-box;
   align-items: center;
   border: 1px solid var(--border-default, #393B40);
   background-color: var(--bg-canvas, #1E1F22);

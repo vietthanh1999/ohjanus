@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/cobra"
 	adminapi "github.com/vietthanh1999/ohjanus/internal/adapter/in/admin"
 	"github.com/vietthanh1999/ohjanus/internal/adapter/in/mcp"
+	mcphttp "github.com/vietthanh1999/ohjanus/internal/adapter/in/transport/http"
 	"github.com/vietthanh1999/ohjanus/internal/adapter/in/transport/stdio"
 	cliapproval "github.com/vietthanh1999/ohjanus/internal/adapter/out/approval/cli"
 	auditfile "github.com/vietthanh1999/ohjanus/internal/adapter/out/audit/file"
@@ -30,6 +31,8 @@ import (
 	credchain "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/chain"
 	credenv "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/env"
 	credfile "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/file"
+	credkeyring "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/keyring"
+	vaultresolver "github.com/vietthanh1999/ohjanus/internal/adapter/out/credential/vault"
 	limitmemory "github.com/vietthanh1999/ohjanus/internal/adapter/out/limits/memory"
 	prommetrics "github.com/vietthanh1999/ohjanus/internal/adapter/out/metrics/prom"
 	policyyaml "github.com/vietthanh1999/ohjanus/internal/adapter/out/policy/yaml"
@@ -106,8 +109,8 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if cfg.Server.Transport != "stdio" {
-				return fmt.Errorf("transport %q lands in v0.2, only stdio is wired in v0.1", cfg.Server.Transport)
+			if cfg.Server.Transport != "stdio" && cfg.Server.Transport != "http" && cfg.Server.Transport != "sse" {
+				return fmt.Errorf("transport %q must be stdio|http|sse", cfg.Server.Transport)
 			}
 			logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: parseLogLevel(cfg.Observability.LogLevel)}))
 
@@ -144,7 +147,10 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 
 			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 			defer stop()
-			creds := credchain.New(credenv.New(), credfile.New(cfg.FileModeForScheme()))
+			creds, err := buildCredentialChain(ctx, cfg)
+			if err != nil {
+				return err
+			}
 			pools, err := openPools(ctx, cfg, creds)
 			if err != nil {
 				return err
@@ -193,9 +199,12 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 					return err
 				}
 			}
-			logger.Info("janus serving", "transport", "stdio", "connections", len(metas))
+			logger.Info("janus serving", "transport", cfg.Server.Transport, "connections", len(metas))
 
-			return stdio.New(server, os.Stdin, os.Stdout, logger).Serve(ctx)
+			if cfg.Server.Transport == "stdio" {
+				return stdio.New(server, os.Stdin, os.Stdout, logger).Serve(ctx)
+			}
+			return serveMCPHTTP(ctx, cfg, logger, server, tokenStore)
 		},
 	}
 }
@@ -256,6 +265,68 @@ func closePools(pools map[string]out.Pool) {
 	for _, p := range pools {
 		_ = p.Close()
 	}
+}
+
+// buildCredentialChain wires env + file always, keyring always (used only
+// when a ref matches), and Vault when configured. Vault AppRole credentials
+// resolve through the env/file chain to avoid recursion.
+func buildCredentialChain(ctx context.Context, cfg *config.Config) (*credchain.Chain, error) {
+	envR := credenv.New()
+	fileR := credfile.New(cfg.FileModeForScheme())
+	base := credchain.New(envR, fileR)
+	resolvers := []out.CredentialResolver{envR, fileR, credkeyring.New(cfg.CredentialKeyringService())}
+	for _, rc := range cfg.Credential.Resolvers {
+		if !strings.EqualFold(rc.Scheme, "vault") {
+			continue
+		}
+		roleID, err := resolveValue(ctx, base, rc.RoleIDRef)
+		if err != nil {
+			return nil, fmt.Errorf("vault role_id: %w", err)
+		}
+		secretID, err := resolveValue(ctx, base, rc.SecretIDRef)
+		if err != nil {
+			return nil, fmt.Errorf("vault secret_id: %w", err)
+		}
+		v, err := vaultresolver.New(rc.Address, roleID, secretID)
+		if err != nil {
+			return nil, fmt.Errorf("vault resolver: %w", err)
+		}
+		resolvers = append(resolvers, v)
+	}
+	return credchain.New(resolvers...), nil
+}
+
+// resolveValue resolves an env:/file: ref, or returns the literal.
+func resolveValue(ctx context.Context, chain *credchain.Chain, ref string) (string, error) {
+	if ref == "" {
+		return "", fmt.Errorf("empty ref")
+	}
+	if strings.Contains(ref, "://") || strings.HasPrefix(ref, "env:") || strings.HasPrefix(ref, "file:") {
+		creds, err := chain.Resolve(ctx, ref)
+		if err != nil {
+			return "", err
+		}
+		return creds.DSN, nil
+	}
+	return ref, nil
+}
+
+// serveMCPHTTP pre-binds the MCP HTTP port (fail fast) then serves
+// POST /mcp + GET /mcp/sse until ctx ends. Both "http" and "sse"
+// transports land here; sse is the stream-oriented alias.
+func serveMCPHTTP(ctx context.Context, cfg *config.Config, logger *slog.Logger, server *mcp.Server, tokenStore out.TokenStore) error {
+	if cfg.Server.HTTP.Listen == "" {
+		return fmt.Errorf("server.http.listen is required for http/sse transport")
+	}
+	ln, err := net.Listen("tcp", cfg.Server.HTTP.Listen)
+	if err != nil {
+		return fmt.Errorf("mcp http listen %s: %w", cfg.Server.HTTP.Listen, err)
+	}
+	transport := mcphttp.New(server, tokenStore, cfg.Auth.Mode, mcphttp.TLSConfig{
+		Enabled: cfg.Server.HTTP.TLS.Enabled, CertFile: cfg.Server.HTTP.TLS.CertFile, KeyFile: cfg.Server.HTTP.TLS.KeyFile,
+	}, logger)
+	logger.Info("mcp http serving", "listen", cfg.Server.HTTP.Listen, "tls", cfg.Server.HTTP.TLS.Enabled)
+	return transport.ServeListener(ctx, ln)
 }
 
 // startAdmin pre-binds the Admin port (fail fast) then serves it in the
@@ -471,7 +542,10 @@ func newConnectionCmd(cfgPath *string) *cobra.Command {
 				return fmt.Errorf("unknown connection %q", args[0])
 			}
 			ctx := context.Background()
-			chain := credchain.New(credenv.New(), credfile.New(cfg.FileModeForScheme()))
+			chain, err := buildCredentialChain(ctx, cfg)
+			if err != nil {
+				return err
+			}
 			creds, err := chain.Resolve(ctx, found.DSNRef)
 			if err != nil {
 				return fmt.Errorf("resolve %s: %w", found.DSNRef, err)

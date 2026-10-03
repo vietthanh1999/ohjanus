@@ -70,6 +70,13 @@ credential:
     - scheme: "file"
       base_path: "/etc/janus/secrets"
       file_mode: 384          # 0600 decimal; files must be owner read/write only
+    # - scheme: "keyring"
+    #   service_prefix: "janus"   # refs: keyring://service/key or keyring:key
+    # - scheme: "vault"           # refs: vault://mount/path#field (KV v2)
+    #   address: "https://vault.internal:8200"
+    #   auth_method: "approle"
+    #   role_id_ref: "env:VAULT_ROLE_ID"
+    #   secret_id_ref: "env:VAULT_SECRET_ID"
 
 audit:
   enabled: true

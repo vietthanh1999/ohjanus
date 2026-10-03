@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"strings"
+	"regexp"
 	"time"
 )
 
@@ -18,12 +18,24 @@ type Credentials struct {
 }
 
 // RedactedDSN returns the DSN with the password replaced by ***.
+// Resolvers usually fill only DSN, so the password is parsed out of the
+// DSN itself. Substring replacement is deliberately avoided: it mangles
+// hosts when the password is a substring of them.
 func (c Credentials) RedactedDSN() string {
-	if c.DSN == "" || c.Password == "" {
-		return c.DSN
+	if c.DSN == "" {
+		return ""
 	}
-	return strings.Replace(c.DSN, c.Password, "***", 1)
+	if out := urlDSNPasswordRe.ReplaceAllString(c.DSN, "$1***@"); out != c.DSN {
+		return out
+	}
+	return bareDSNPasswordRe.ReplaceAllString(c.DSN, "$1***@")
 }
+
+// postgres://user:pass@host/db (pass itself may contain @, but not /).
+var urlDSNPasswordRe = regexp.MustCompile(`(://[^/:@?]+:)[^/]+@`)
+
+// Non-URL DSNs, e.g. MySQL user:pass@tcp(host)/db.
+var bareDSNPasswordRe = regexp.MustCompile(`^([^:@/]+:)[^/]+@`)
 
 // PoolConfig controls the per-alias connection pool.
 type PoolConfig struct {

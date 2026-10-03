@@ -389,8 +389,15 @@ func (c *Config) RedactPatterns() ([]domain.RedactPattern, error) {
 	return patterns, nil
 }
 
-// FileModeForScheme returns the expected file mode for file resolver refs,
-// or 0 when no file resolver is configured.
+// CredentialKeyringService returns the keyring service prefix, if configured.
+func (c *Config) CredentialKeyringService() string {
+	for _, r := range c.Credential.Resolvers {
+		if strings.EqualFold(r.Scheme, "keyring") && r.ServicePrefix != "" {
+			return r.ServicePrefix
+		}
+	}
+	return ""
+}
 func (c *Config) FileModeForScheme() uint32 {
 	for _, r := range c.Credential.Resolvers {
 		if r.Scheme == "file" && r.FileMode != 0 {
