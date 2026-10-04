@@ -8,6 +8,7 @@
     role?: string;
     onclick?: (e: MouseEvent) => void;
     children?: Snippet;
+    [key: string]: any;
   }
 
   let {
@@ -16,7 +17,8 @@
     style = '',
     role,
     onclick,
-    children
+    children,
+    ...restProps
   }: Props = $props();
 </script>
 
@@ -27,6 +29,7 @@
   {style}
   {role}
   {onclick}
+  {...restProps}
 >
   {@render children?.()}
 </svelte:element>
