@@ -24,7 +24,7 @@
 </script>
 
 <Flex align="center" justify="between" class="explorer-header-top">
-  <Text size="sm" weight="semibold">Database Explorer</Text>
+  <Text size="md" weight="semibold" truncate style="flex: 1; min-width: 0;">Database Explorer</Text>
   <Flex align="center" gap="1" class="header-window-icons">
     <Tooltip>
       <TooltipTrigger>
@@ -208,9 +208,22 @@
 
 <style>
   :global(.explorer-header-top) {
+    position: relative;
     height: var(--toolbar-height, 32px);
-    padding: 0 8px 0 12px;
+    /* Reserve the icon strip so the label truncates instead of wrapping.
+       Strip = 6 x 22px buttons + 5 x 4px gaps, right-aligned at 8px. */
+    padding: 0 160px 0 12px;
     flex-shrink: 0;
+  }
+
+  :global(.explorer-header-top .header-window-icons) {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    background-color: var(--bg-card, #191A1C);
+    padding-left: 6px;
+    z-index: 2;
   }
 
   :global(.explorer-toolbar) {
