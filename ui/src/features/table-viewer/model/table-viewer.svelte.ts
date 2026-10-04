@@ -29,8 +29,12 @@ class TableViewerManager {
 
   /** Focus a table: open its tab, point the viewer at it, and load live data. */
   async openTable(connection: string, schema: string, table: string): Promise<void> {
-    explorerState.selectedTreeNode = `table:${connection}.${schema}.${table}`;
     await explorerState.loadSchema(connection);
+    if (explorerState.scrollFromEditor) {
+      explorerState.revealTable(connection, schema, table);
+    } else {
+      explorerState.selectedTreeNode = `table:${connection}.${schema}.${table}`;
+    }
     workbenchState.openTableTab(connection, schema, table);
     this.tableViewer.connection = connection;
     this.tableViewer.schema = schema;

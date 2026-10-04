@@ -1,18 +1,10 @@
 <script lang="ts">
   import { connectionsState } from '@/features/connections';
   import { consoleState } from '@/features/console';
-  import { explorerState } from '@/features/explorer';
+  import { connKey, explorerState, schemaKey } from '@/features/explorer';
   import { tableViewerState } from '@/features/table-viewer';
   import { Box, Stack, Text, Button } from '@ohjanus/ui';
   import ExplorerTreeItem from './ExplorerTreeItem.svelte';
-
-  function connKey(name: string) {
-    return `conn:${name}`;
-  }
-
-  function schemaKey(conn: string, schema: string) {
-    return `conn:${conn}:schema:${schema}`;
-  }
 
   async function toggleConnection(name: string) {
     explorerState.toggleTree(connKey(name));
@@ -22,7 +14,7 @@
   }
 
   function openConsole(name: string) {
-    explorerState.selectedTreeNode = `console:${name}`;
+    explorerState.revealConsole(name);
     consoleState.openConsole(name);
   }
 
@@ -33,6 +25,12 @@
   function matchesFilter(text: string): boolean {
     const q = explorerState.treeFilterQuery.trim().toLowerCase();
     return q === '' || text.toLowerCase().includes(q);
+  }
+
+  /** Pill for a connection row: schema count, or `…` while unloaded (DESIGN §3.1). */
+  function connectionBadge(name: string): string {
+    if (explorerState.schemaLoading[name] || !explorerState.schemas[name]) return '…';
+    return String(explorerState.visibleSchemas(name).length);
   }
 </script>
 
@@ -65,12 +63,14 @@
       <ExplorerTreeItem
         depth={0}
         icon="database"
-        iconColor="#3B82F6"
+        iconColor="#4A88C7"
         label={conn.name}
-        badgeText={conn.readonly ? '[ReadOnly]' : undefined}
+        locked={conn.readonly}
+        badge={connectionBadge(conn.name)}
         hasChevron={true}
         isExpanded={explorerState.treeExpanded[connKey(conn.name)]}
         warnStatus={conn.status !== 'healthy' ? conn.status : undefined}
+        title={conn.readonly ? `${conn.name} (read-only)` : conn.name}
         onclick={() => void toggleConnection(conn.name)}
       />
 
@@ -101,16 +101,17 @@
             </Button>
           </Stack>
         {:else}
-          {#each explorerState.schemasOf(conn.name) as schema (schema.name)}
+          {#each explorerState.visibleSchemas(conn.name) as schema (schema.name)}
             {#if matchesFilter(schema.name) || schema.tables.some((t) => matchesFilter(t.name))}
               <ExplorerTreeItem
                 depth={1}
                 icon="folder"
                 iconColor="#C29D38"
                 label={schema.name}
-                badgeCount={schema.tables.length}
+                badge={String(schema.tables.length)}
                 hasChevron={true}
                 isExpanded={explorerState.treeExpanded[schemaKey(conn.name, schema.name)]}
+                title={`${conn.name}.${schema.name} (${schema.tables.length} tables)`}
                 onclick={() => explorerState.toggleTree(schemaKey(conn.name, schema.name))}
               />
 
@@ -122,6 +123,7 @@
                     iconColor="#4A88C7"
                     label={table.name}
                     isSelected={explorerState.selectedTreeNode === `table:${conn.name}.${schema.name}.${table.name}`}
+                    title={`${conn.name}.${schema.name}.${table.name}`}
                     onclick={() => void openTable(conn.name, schema.name, table.name)}
                   />
                 {/each}

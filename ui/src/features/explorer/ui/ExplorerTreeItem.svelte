@@ -7,12 +7,17 @@
     icon: IconName;
     iconColor?: string;
     label: string;
+    /** Right-aligned count pill, e.g. `[15]` (DESIGN §3.1). */
+    badge?: string;
     badgeText?: string;
     badgeCount?: number;
+    /** Show a lock after the label (read-only connection). */
+    locked?: boolean;
     hasChevron?: boolean;
     isExpanded?: boolean;
     isSelected?: boolean;
     warnStatus?: string;
+    title?: string;
     onclick?: () => void;
   }
 
@@ -21,12 +26,15 @@
     icon,
     iconColor = '#3B82F6',
     label,
+    badge,
     badgeText,
     badgeCount,
+    locked = false,
     hasChevron = false,
     isExpanded = false,
     isSelected = false,
     warnStatus,
+    title,
     onclick
   }: Props = $props();
 </script>
@@ -34,6 +42,7 @@
 <Button
   variant="ghost"
   class="tree-node depth-{depth} {isSelected ? 'selected' : ''}"
+  title={title ?? label}
   onclick={() => onclick?.()}
 >
   {#if hasChevron}
@@ -56,8 +65,16 @@
     {/if}
   </Text>
 
+  {#if locked}
+    <Icon name="lock" size={10} color="#7A7E85" class="node-lock" />
+  {/if}
+
   {#if warnStatus}
     <Text size="xs" color="danger" class="conn-warn" title={warnStatus}>●</Text>
+  {/if}
+
+  {#if badge !== undefined}
+    <span class="node-badge" title="{badge} items">{badge}</span>
   {/if}
 </Button>
 
@@ -141,5 +158,28 @@
   :global(.conn-warn) {
     margin-left: auto;
     font-size: 9px;
+  }
+
+  :global(.node-lock) {
+    flex-shrink: 0;
+    margin-left: 2px;
+  }
+
+  /* Count pill, right-aligned (DESIGN §3.1: bg #393B40, fg #9DA0A8). */
+  :global(.node-badge) {
+    flex-shrink: 0;
+    margin-left: auto;
+    min-width: 18px;
+    height: 16px;
+    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--badge-bg, #393B40);
+    color: var(--badge-fg, #9DA0A8);
+    font-size: 10px;
+    font-weight: 500;
+    border-radius: 8px;
+    font-variant-numeric: tabular-nums;
   }
 </style>

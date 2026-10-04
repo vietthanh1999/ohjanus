@@ -93,9 +93,7 @@ class WorkbenchManager {
       }));
   });
 
-  consoleLogs = $state<ConsoleLogEntry[]>([]);
-
-  pushLog(entry: Omit<ConsoleLogEntry, 'id' | 'timestamp'> & { timestamp?: string }): void {
+  consoleLogs = $state<ConsoleLogEntry[]>([]);  pushLog(entry: Omit<ConsoleLogEntry, 'id' | 'timestamp'> & { timestamp?: string }): void {
     this.consoleLogs.push({
       id: `log-${Date.now()}-${Math.floor(Math.random() * 1e6)}`,
       timestamp: entry.timestamp ?? nowStamp(),
@@ -109,6 +107,25 @@ class WorkbenchManager {
 
   clearLogs() {
     this.consoleLogs = [];
+  }
+
+  // ---- Services batch selection (checkbox column, DESIGN §3.2) ----
+  selectedSessionIds = $state<string[]>([]);
+
+  toggleSession(id: string) {
+    this.selectedSessionIds = this.selectedSessionIds.includes(id)
+      ? this.selectedSessionIds.filter((s) => s !== id)
+      : [...this.selectedSessionIds, id];
+  }
+
+  clearSessionSelection() {
+    this.selectedSessionIds = [];
+  }
+
+  /** Close several sessions at once (Services header X). */
+  closeSessions(ids: string[]) {
+    for (const id of ids) this.closeTab(id);
+    this.selectedSessionIds = this.selectedSessionIds.filter((s) => !ids.includes(s));
   }
 }
 
