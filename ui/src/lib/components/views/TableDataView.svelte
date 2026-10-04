@@ -1,7 +1,7 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
-  import { Alert, Text } from '@ohjanus/ui';
+  import { Alert, Button, Select, Text, toast } from '@ohjanus/ui';
   import {
     DataGrid,
     DataGridHead,
@@ -16,6 +16,8 @@
 
   let selectedRowIndex = $state(0);
   let selectedColumn = $state(0);
+  let txMode = $state('auto');
+  let exportFormat = $state('CSV');
 
   let viewer = $derived(appState.tableViewer);
   let tableDef = $derived(
@@ -46,14 +48,150 @@
     }
     handleReload();
   }
+
+  function handleExport() {
+    if (viewer.rows.length === 0 || viewer.columns.length === 0) {
+      toast.info('Export', 'No data to export.');
+      return;
+    }
+    if (exportFormat === 'JSON') {
+      const objects = viewer.rows.map((row) => {
+        const obj: Record<string, unknown> = {};
+        viewer.columns.forEach((col, idx) => {
+          obj[col] = row[idx];
+        });
+        return obj;
+      });
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(objects, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute('href', dataStr);
+      downloadAnchor.setAttribute('download', `${viewer.table || 'table'}_${Date.now()}.json`);
+      downloadAnchor.click();
+      toast.success('Data Exported', `Exported ${viewer.rowCount} rows to JSON`);
+    } else {
+      const headers = viewer.columns.map((c) => `"${c.replace(/"/g, '""')}"`).join(',');
+      const rows = viewer.rows.map((row) =>
+        row.map((cell) => cell === null || cell === undefined ? '' : `"${String(cell).replace(/"/g, '""')}"`).join(',')
+      ).join('\n');
+      const csvContent = [headers, ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${viewer.table || 'table'}_${Date.now()}.csv`);
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success('Data Exported', `Exported ${viewer.rowCount} rows to CSV`);
+    }
+  }
 </script>
 
 <div class="table-data-view">
   <div class="table-toolbar">
     <div class="toolbar-left">
-      <button type="button" class="jb-icon-btn" title="Reload (Cmd+Enter)" onclick={handleReload} disabled={viewer.loading}>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Reload (Cmd+Enter)"
+        onclick={handleReload}
+        disabled={viewer.loading}
+      >
         <Icon name="refresh" size={13} />
-      </button>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Audit history"
+        onclick={() => (appState.activeTabId = "audit")}
+      >
+        <Icon name="clock" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Stop Execution"
+        disabled
+      >
+        <Icon name="stop" size={13} color="#E55353" />
+      </Button>
+      <span class="bar-separator"></span>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Add Row (+)"
+        disabled
+      >
+        <Icon name="plus" size={13} color="#57D38C" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Delete Row (-)"
+        disabled
+      >
+        <Icon name="minus" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Undo"
+        disabled
+      >
+        <Icon name="undo" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Redo"
+        disabled
+      >
+        <Icon name="redo" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Submit Changes"
+        disabled
+      >
+        <Icon name="arrow-up" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Rollback Changes"
+        disabled
+      >
+        <Icon name="arrow-down" size={13} />
+      </Button>
+      <span class="bar-separator"></span>
+      <div class="borderless-select-wrapper">
+        <Select
+          class="toolbar-select borderless-select"
+          options={[
+            { value: "auto", label: "Tx: Auto" },
+            { value: "manual", label: "Tx: Manual" },
+          ]}
+          bind:value={txMode}
+        />
+      </div>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn ddl-btn"
+        title="Generate Table DDL"
+        onclick={() => (appState.ddlModalOpen = true)}
+      >
+        <Text size="xs" weight="bold" color="muted" mono>DDL</Text>
+      </Button>
       <span class="bar-separator"></span>
       <span class="tx-selector" title="Target table">
         {#if viewer.connection && viewer.table}
@@ -62,10 +200,6 @@
           No table selected
         {/if}
       </span>
-      <span class="bar-separator"></span>
-      <button type="button" class="jb-icon-btn ddl-btn" title="Generate Table DDL" onclick={() => appState.ddlModalOpen = true}>
-        <Text size="xs" weight="bold" color="muted" mono>DDL</Text>
-      </button>
       {#if viewer.loading}
         <Text size="sm" color="muted" mono style="padding: 0 6px;">Loading…</Text>
       {:else if viewer.durationMs > 0}
@@ -74,6 +208,35 @@
     </div>
 
     <div class="toolbar-right">
+      <div class="borderless-select-wrapper format-select-wrapper">
+        <Select
+          class="toolbar-select borderless-select"
+          options={[
+            { value: "CSV", label: "CSV" },
+            { value: "JSON", label: "JSON" },
+          ]}
+          bind:value={exportFormat}
+        />
+      </div>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Export Data"
+        onclick={handleExport}
+      >
+        <Icon name="download" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Import Data"
+        disabled
+      >
+        <Icon name="upload" size={13} />
+      </Button>
+      <span class="bar-separator"></span>
       <label class="limit-label" title="Row limit">
         Limit
         <input
@@ -85,6 +248,16 @@
           onchange={handleReload}
         />
       </label>
+      <span class="bar-separator"></span>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Settings"
+        onclick={() => (appState.settingsModalOpen = true)}
+      >
+        <Icon name="settings" size={13} />
+      </Button>
     </div>
   </div>
 
@@ -218,9 +391,36 @@
 
   .bar-separator {
     width: 1px;
-    height: 12px;
+    height: 14px;
     background-color: var(--border-default);
-    margin: 0 3px;
+    margin: 0 4px;
+  }
+
+  .borderless-select-wrapper {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  :global(.table-data-view .borderless-select) {
+    min-width: unset !important;
+    width: auto !important;
+  }
+
+  :global(.table-data-view .borderless-select .ohjanus-select-trigger) {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: 24px !important;
+    padding: 0 6px !important;
+    gap: 4px !important;
+    font-size: var(--font-size-xs, 12px) !important;
+    color: var(--text-secondary, #9DA0A8) !important;
+    cursor: pointer;
+  }
+
+  :global(.table-data-view .borderless-select .ohjanus-select-trigger:hover) {
+    background-color: var(--bg-hover, #313438) !important;
+    color: var(--text-primary, #DFE1E5) !important;
   }
 
   .tx-selector {

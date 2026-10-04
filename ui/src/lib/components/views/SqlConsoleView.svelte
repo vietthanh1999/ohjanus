@@ -79,13 +79,16 @@
       {#if appState.connections.length === 0}
         <span class="schema-name">No connection</span>
       {:else}
-        <Select
-          options={appState.connections.map((conn) => ({
-            value: conn.name,
-            label: conn.readonly ? `${conn.name} (readonly)` : conn.name
-          }))}
-          bind:value={appState.console.connection}
-        />
+        <div class="borderless-select-wrapper">
+          <Select
+            class="toolbar-select borderless-select"
+            options={appState.connections.map((conn) => ({
+              value: conn.name,
+              label: conn.readonly ? `${conn.name} (readonly)` : conn.name
+            }))}
+            bind:value={appState.console.connection}
+          />
+        </div>
       {/if}
     </div>
   </div>
@@ -245,6 +248,33 @@
     height: 14px;
     background-color: var(--border-default);
     margin: 0 4px;
+  }
+
+  .borderless-select-wrapper {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  :global(.sql-console-view .borderless-select) {
+    min-width: unset !important;
+    width: auto !important;
+  }
+
+  :global(.sql-console-view .borderless-select .ohjanus-select-trigger) {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: 24px !important;
+    padding: 0 6px !important;
+    gap: 4px !important;
+    font-size: var(--font-size-xs, 12px) !important;
+    color: var(--text-secondary, #9DA0A8) !important;
+    cursor: pointer;
+  }
+
+  :global(.sql-console-view .borderless-select .ohjanus-select-trigger:hover) {
+    background-color: var(--bg-hover, #313438) !important;
+    color: var(--text-primary, #DFE1E5) !important;
   }
 
   .schema-name {

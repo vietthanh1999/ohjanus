@@ -3,8 +3,10 @@
   import {
     Button,
     Badge,
+    Select,
     Alert,
     EmptyState,
+    toast,
     Box,
     Flex,
     Stack,
@@ -12,14 +14,52 @@
   } from "@ohjanus/ui";
   import { Icon } from "@ohjanus/icons";
 
-  let selectedFilter = $state<"pending" | "approved" | "rejected" | "all">(
-    "pending",
-  );
+  let selectedFilter = $state<string>("pending");
+  let whereFilter = $state("");
+  let orderByFilter = $state("");
+  let searchRef = $state<HTMLInputElement>();
   let selectedDetail = $state<ApprovalRequest | null>(null);
 
   let filteredApprovals = $derived.by(() => {
-    if (selectedFilter === "all") return appState.approvals;
-    return appState.approvals.filter((a) => a.state === selectedFilter);
+    let list = appState.approvals;
+    if (selectedFilter !== "all") {
+      list = list.filter((a) => a.state === selectedFilter);
+    }
+    const w = whereFilter.trim().toLowerCase();
+    if (w) {
+      list = list.filter(
+        (a) =>
+          a.statement_type.toLowerCase().includes(w) ||
+          a.connection.toLowerCase().includes(w) ||
+          a.sql.toLowerCase().includes(w) ||
+          a.id.toLowerCase().includes(w) ||
+          (a.requested_by?.client && a.requested_by.client.toLowerCase().includes(w)),
+      );
+    }
+    const o = orderByFilter.trim().toLowerCase();
+    if (o) {
+      const isDesc = o.includes("desc");
+      if (o.includes("created") || o.includes("time")) {
+        list = [...list].sort((a, b) =>
+          isDesc
+            ? (b.created_at || "").localeCompare(a.created_at || "")
+            : (a.created_at || "").localeCompare(b.created_at || ""),
+        );
+      } else if (o.includes("type") || o.includes("statement")) {
+        list = [...list].sort((a, b) =>
+          isDesc
+            ? b.statement_type.localeCompare(a.statement_type)
+            : a.statement_type.localeCompare(b.statement_type),
+        );
+      } else if (o.includes("conn") || o.includes("connection")) {
+        list = [...list].sort((a, b) =>
+          isDesc
+            ? b.connection.localeCompare(a.connection)
+            : a.connection.localeCompare(b.connection),
+        );
+      }
+    }
+    return list;
   });
 
   function getStatementVariant(
@@ -47,6 +87,21 @@
     appState.approvalDecisionReason =
       mode === "approve" ? "Approved for execution" : "";
   }
+
+  async function handleReload() {
+    try {
+      await appState.loadApprovals();
+      toast.info("Approvals Refreshed", "Loaded latest approval requests.");
+    } catch (e) {
+      toast.error("Reload Failed", e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  function handleClearFilters() {
+    selectedFilter = "pending";
+    whereFilter = "";
+    orderByFilter = "";
+  }
 </script>
 
 <Box class="approvals-view">
@@ -67,51 +122,141 @@
       </Alert>
     </Box>
   {/if}
-  <!-- Header Bar -->
-  <Flex as="header" class="view-header" align="center" justify="between">
-    <Stack class="header-left" gap="2px">
-      <Flex class="header-title" align="center" gap="8px">
-        <Icon name="shield" size={16} color="#EDA200" />
-        <Text class="header-title" size="xl" weight="semibold">MCP Gateway Approval Queue</Text>
-      </Flex>
-    </Stack>
+  <!-- Toolbar 1: Actions (matching design2.png) -->
+  <div class="table-toolbar">
+    <div class="toolbar-left">
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Reload approval queue (Cmd+Enter)"
+        onclick={handleReload}
+      >
+        <Icon name="refresh" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Clear filters"
+        onclick={handleClearFilters}
+      >
+        <Icon name="stop" size={13} color="#E55353" />
+      </Button>
+      <span class="bar-separator"></span>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Approve selected request"
+        disabled={!selectedDetail || selectedDetail.state !== "pending"}
+        onclick={() => selectedDetail && openActionModal(selectedDetail, "approve")}
+      >
+        <Icon name="check" size={13} color="#57D38C" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Reject selected request"
+        disabled={!selectedDetail || selectedDetail.state !== "pending"}
+        onclick={() => selectedDetail && openActionModal(selectedDetail, "reject")}
+      >
+        <Icon name="close" size={13} color="#E55353" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Toggle inspection panel"
+        onclick={() => (selectedDetail = selectedDetail ? null : filteredApprovals[0] || null)}
+      >
+        <Icon name="layout" size={13} />
+      </Button>
+      <span class="bar-separator"></span>
+      <div class="borderless-select-wrapper">
+        <Select
+          class="toolbar-select borderless-select"
+          options={[
+            {
+              value: "pending",
+              label: `Queue: Pending (${appState.approvals.filter((a) => a.state === "pending").length})`,
+            },
+            { value: "approved", label: "Queue: Approved" },
+            { value: "rejected", label: "Queue: Rejected" },
+            { value: "all", label: "Queue: All Requests" },
+          ]}
+          bind:value={selectedFilter}
+        />
+      </div>
+      <span class="bar-separator"></span>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn ddl-btn"
+        title="View DDL"
+        onclick={() => (appState.ddlModalOpen = true)}
+      >
+        <Text size="xs" weight="bold" color="muted" mono>DDL</Text>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Search requests"
+        onclick={() => searchRef?.focus()}
+      >
+        <Icon name="search" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Observability metrics"
+        onclick={() => (appState.activeTabId = "dashboard")}
+      >
+        <Icon name="chart" size={13} />
+      </Button>
+    </div>
 
-    <!-- Filter tabs -->
-    <Flex class="state-tabs" align="center">
-      <button
-        class="state-tab-btn"
-        class:active={selectedFilter === "pending"}
-        onclick={() => (selectedFilter = "pending")}
+    <div class="toolbar-right">
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Settings"
+        onclick={() => (appState.settingsModalOpen = true)}
       >
-        Pending
-        <Text class="count-pill" size="sm" weight="bold"
-          >{appState.approvals.filter((a) => a.state === "pending")
-            .length}</Text
-        >
-      </button>
-      <button
-        class="state-tab-btn"
-        class:active={selectedFilter === "approved"}
-        onclick={() => (selectedFilter = "approved")}
-      >
-        Approved
-      </button>
-      <button
-        class="state-tab-btn"
-        class:active={selectedFilter === "rejected"}
-        onclick={() => (selectedFilter = "rejected")}
-      >
-        Rejected
-      </button>
-      <button
-        class="state-tab-btn"
-        class:active={selectedFilter === "all"}
-        onclick={() => (selectedFilter = "all")}
-      >
-        All
-      </button>
-    </Flex>
-  </Flex>
+        <Icon name="settings" size={13} />
+      </Button>
+    </div>
+  </div>
+
+  <!-- Toolbar 2: WHERE & ORDER BY (matching design2.png) -->
+  <div class="filter-bar">
+    <div class="filter-group where-group">
+      <span class="filter-icon"><Icon name="filter" size={11} /></span>
+      <Text size="sm" weight="semibold" color="secondary" style="user-select: none;">WHERE</Text>
+      <input
+        type="text"
+        class="filter-input code-text"
+        placeholder="e.g. statement = 'DELETE' or connection or SQL snippet"
+        bind:this={searchRef}
+        bind:value={whereFilter}
+      />
+    </div>
+
+    <div class="filter-group orderby-group">
+      <span class="filter-icon"><Icon name="sort" size={11} /></span>
+      <Text size="sm" weight="semibold" color="secondary" style="user-select: none;">ORDER BY</Text>
+      <input
+        type="text"
+        class="filter-input code-text"
+        placeholder="e.g. created_at DESC"
+        bind:value={orderByFilter}
+      />
+    </div>
+  </div>
 
   <!-- Content Split: Queue List & Inspection Drawer -->
   <Flex class="content-layout">
@@ -336,60 +481,117 @@
     overflow: hidden;
   }
 
-  :global(.approvals-view .view-header) {
-    height: 48px;
+  :global(.approvals-view .table-toolbar) {
+    height: var(--toolbar-height, 32px);
     background-color: var(--bg-toolbar);
-    border-bottom: 1px solid var(--border-default);
-    padding: 0 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
     flex-shrink: 0;
   }
 
-  :global(.approvals-view .header-left) {
+  :global(.approvals-view .toolbar-left),
+  :global(.approvals-view .toolbar-right) {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 2px;
   }
 
-  :global(.approvals-view .header-title) {
-    font-size: var(--font-size-lg, 16px);
-    font-weight: 600;
-    color: var(--text-primary);
+  :global(.approvals-view .bar-separator) {
+    width: 1px;
+    height: 14px;
+    background-color: var(--border-default);
+    margin: 0 4px;
   }
 
-  :global(.approvals-view .header-desc) {
-    font-size: var(--font-size-xs, 12px);
-    color: var(--text-muted);
+  :global(.approvals-view .borderless-select-wrapper) {
+    display: inline-flex;
+    align-items: center;
   }
 
-  :global(.approvals-view .state-tabs) {
-    background-color: #1e1f22;
-    padding: 3px;
-    border-radius: 4px;
-    border: 1px solid var(--border-default);
+  :global(.approvals-view .borderless-select) {
+    min-width: unset !important;
+    width: auto !important;
   }
 
-  :global(.approvals-view .state-tab-btn) {
-    padding: 4px 12px;
-    font-size: var(--font-size-xs, 12px);
-    color: var(--text-secondary);
-    border-radius: 3px;
+  :global(.approvals-view .borderless-select .ohjanus-select-trigger) {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: 24px !important;
+    padding: 0 6px !important;
+    gap: 4px !important;
+    font-size: var(--font-size-xs, 12px) !important;
+    color: var(--text-secondary, #9DA0A8) !important;
+    cursor: pointer;
+  }
+
+  :global(.approvals-view .borderless-select .ohjanus-select-trigger:hover) {
+    background-color: var(--bg-hover, #313438) !important;
+    color: var(--text-primary, #DFE1E5) !important;
+  }
+
+  :global(.approvals-view .ddl-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px !important;
+    width: auto !important;
+  }
+
+  :global(.approvals-view .filter-bar) {
+    height: var(--filterbar-height, 30px);
+    background-color: var(--bg-canvas);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  :global(.approvals-view .filter-group) {
     display: flex;
     align-items: center;
     gap: 6px;
   }
 
-  :global(.approvals-view .state-tab-btn.active) {
-    background-color: #313438;
-    color: var(--text-primary);
-    font-weight: 500;
+  :global(.approvals-view .where-group) {
+    flex: 1.1;
   }
 
-  :global(.approvals-view .count-pill) {
-    background-color: #eda200;
-    color: #1e1f22;
-    font-size: var(--font-size-2xs, 11px);
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 10px;
+  :global(.approvals-view .orderby-group) {
+    flex: 0.9;
+  }
+
+  :global(.approvals-view .filter-icon) {
+    color: var(--text-muted);
+    font-size: 11px;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  :global(.approvals-view .filter-input) {
+    flex: 1;
+    height: var(--control-height-xs, 24px);
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0 8px;
+    font-size: var(--font-size-sm, 13px);
+    color: var(--text-primary);
+    font-family: var(--font-code);
+  }
+
+  :global(.approvals-view .filter-input:focus),
+  :global(.approvals-view .filter-input:hover) {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   :global(.approvals-view .content-layout) {

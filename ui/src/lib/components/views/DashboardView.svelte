@@ -1,7 +1,18 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
-  import { Card, Badge, Alert, Button, Text, Box, Flex, Grid, Stack } from '@ohjanus/ui';
+  import { Card, Badge, Alert, Button, Select, Text, Box, Flex, Grid, Stack, toast } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
+
+  let selectedWindow = $state<string>('1h');
+
+  async function handleReload() {
+    try {
+      await Promise.all([appState.loadSummary(), appState.loadApprovals(), appState.loadAudit()]);
+      toast.info('Metrics Refreshed', 'Observability metrics and live KPIs updated.');
+    } catch (e) {
+      toast.error('Reload Failed', e instanceof Error ? e.message : String(e));
+    }
+  }
 </script>
 
 <Box class="dashboard-view">
@@ -15,12 +26,89 @@
       </Alert>
     </Box>
   {/if}
-  <Flex as="header" class="view-header" align="center">
-    <Flex align="center" gap="8px">
-      <Icon name="chart" size={16} color="#3574F0" />
-      <Text class="view-title" size="xl" weight="semibold">OhJanus MCP Gateway Observability &amp; Metrics</Text>
-    </Flex>
-  </Flex>
+  <!-- Toolbar: Observability Actions (matching design2.png) -->
+  <div class="table-toolbar">
+    <div class="toolbar-left">
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Reload metrics (Cmd+Enter)"
+        onclick={handleReload}
+      >
+        <Icon name="refresh" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Live monitoring active"
+      >
+        <Icon name="clock" size={13} color="#57D38C" />
+      </Button>
+      <span class="bar-separator"></span>
+      <div class="borderless-select-wrapper">
+        <Select
+          class="toolbar-select borderless-select"
+          options={[
+            { value: '1h', label: 'Window: Last 1 Hour' },
+            { value: '24h', label: 'Window: Last 24 Hours' },
+            { value: '7d', label: 'Window: Last 7 Days' },
+          ]}
+          bind:value={selectedWindow}
+        />
+      </div>
+      <span class="bar-separator"></span>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Audit Trail"
+        onclick={() => (appState.activeTabId = "audit")}
+      >
+        <Icon name="audit" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Approval Queue"
+        onclick={() => (appState.activeTabId = "approvals")}
+      >
+        <Icon name="shield" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="SQL Console"
+        onclick={() => (appState.activeTabId = "console")}
+      >
+        <Icon name="terminal" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Client Tokens"
+        onclick={() => (appState.activeTabId = "tokens")}
+      >
+        <Icon name="key" size={13} />
+      </Button>
+    </div>
+
+    <div class="toolbar-right">
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Settings"
+        onclick={() => (appState.settingsModalOpen = true)}
+      >
+        <Icon name="settings" size={13} />
+      </Button>
+    </div>
+  </div>
 
   <Stack class="dashboard-body" gap="16px">
     <!-- Top KPI Cards via @ohjanus/ui -->
@@ -129,14 +217,57 @@
     overflow-y: auto;
   }
 
-  :global(.dashboard-view .view-header) {
-    height: 52px;
-    background: var(--bg-toolbar);
-    border-bottom: 1px solid var(--border-default);
-    padding: 0 16px;
+  :global(.dashboard-view .table-toolbar) {
+    height: var(--toolbar-height, 32px);
+    background-color: var(--bg-toolbar);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    flex-shrink: 0;
   }
 
-  :global(.dashboard-view .view-title) { font-weight: 600; font-size: var(--font-size-lg, 16px); }
+  :global(.dashboard-view .toolbar-left),
+  :global(.dashboard-view .toolbar-right) {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  :global(.dashboard-view .bar-separator) {
+    width: 1px;
+    height: 14px;
+    background-color: var(--border-default);
+    margin: 0 4px;
+  }
+
+  :global(.dashboard-view .borderless-select-wrapper) {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  :global(.dashboard-view .borderless-select) {
+    min-width: unset !important;
+    width: auto !important;
+  }
+
+  :global(.dashboard-view .borderless-select .ohjanus-select-trigger) {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: 24px !important;
+    padding: 0 6px !important;
+    gap: 4px !important;
+    font-size: var(--font-size-xs, 12px) !important;
+    color: var(--text-secondary, #9DA0A8) !important;
+    cursor: pointer;
+  }
+
+  :global(.dashboard-view .borderless-select .ohjanus-select-trigger:hover) {
+    background-color: var(--bg-hover, #313438) !important;
+    color: var(--text-primary, #DFE1E5) !important;
+  }
 
   :global(.dashboard-view .dashboard-body) {
     padding: 16px;

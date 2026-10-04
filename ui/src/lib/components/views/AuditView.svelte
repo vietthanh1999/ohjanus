@@ -26,29 +26,104 @@
 
   let filterStatus = $state<string>("ALL");
   let searchQuery = $state<string>("");
+  let orderByFilter = $state<string>("");
+  let exportFormat = $state<string>("CSV");
+  let searchRef = $state<HTMLInputElement>();
   let selectedAudit = $state<AuditRecord | null>(null);
 
   let filteredAuditLogs = $derived.by(() => {
-    let list = appState.auditLogs;
+    let list = [...appState.auditLogs];
     if (filterStatus !== "ALL") {
       list = list.filter((item) => item.policy_decision === filterStatus);
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      list = list.filter(
-        (item) =>
-          item.client.toLowerCase().includes(q) ||
-          item.sql_normalized.toLowerCase().includes(q) ||
-          item.token_id.toLowerCase().includes(q) ||
-          item.connection.toLowerCase().includes(q),
-      );
+    const q = searchQuery.toLowerCase().trim();
+    if (q) {
+      if (q.includes("decision = 'deny'") || q === "deny" || q === "denied") {
+        list = list.filter((item) => item.policy_decision === "DENY");
+      } else if (q.includes("decision = 'allow'") || q === "allow" || q === "allowed") {
+        list = list.filter((item) => item.policy_decision === "ALLOW");
+      } else if (q.includes("decision = 'approval'") || q === "approval") {
+        list = list.filter((item) => item.policy_decision === "REQUIRE_APPROVAL");
+      } else {
+        list = list.filter(
+          (item) =>
+            item.client.toLowerCase().includes(q) ||
+            item.sql_normalized.toLowerCase().includes(q) ||
+            item.token_id.toLowerCase().includes(q) ||
+            item.connection.toLowerCase().includes(q) ||
+            item.policy_decision.toLowerCase().includes(q),
+        );
+      }
     }
+
+    const o = orderByFilter.trim().toLowerCase();
+    if (o) {
+      const isDesc = o.includes("desc");
+      if (o.includes("time") || o.includes("timestamp") || o.includes("ts")) {
+        list.sort((a, b) =>
+          isDesc
+            ? (b.ts || "").localeCompare(a.ts || "")
+            : (a.ts || "").localeCompare(b.ts || ""),
+        );
+      } else if (o.includes("client")) {
+        list.sort((a, b) =>
+          isDesc ? b.client.localeCompare(a.client) : a.client.localeCompare(b.client),
+        );
+      } else if (o.includes("conn") || o.includes("connection")) {
+        list.sort((a, b) =>
+          isDesc
+            ? b.connection.localeCompare(a.connection)
+            : a.connection.localeCompare(b.connection),
+        );
+      } else if (o.includes("decision")) {
+        list.sort((a, b) =>
+          isDesc
+            ? b.policy_decision.localeCompare(a.policy_decision)
+            : a.policy_decision.localeCompare(b.policy_decision),
+        );
+      }
+    }
+
     return list;
   });
 
-  async function exportCSV() {
-    // Note: the server export supports text search (q) but has no
-    // policy-decision filter, so the on-screen decision filter is not forwarded.
+  function toggleSort(col: string) {
+    if (orderByFilter.startsWith(col)) {
+      orderByFilter = orderByFilter.toUpperCase().includes("DESC")
+        ? `${col} ASC`
+        : `${col} DESC`;
+    } else {
+      orderByFilter = `${col} ASC`;
+    }
+  }
+
+  function handleClearFilters() {
+    filterStatus = "ALL";
+    searchQuery = "";
+    orderByFilter = "";
+  }
+
+  async function handleReload() {
+    try {
+      await appState.loadAudit();
+      toast.info("Audit Refreshed", "Loaded latest gateway audit records.");
+    } catch (e) {
+      toast.error("Reload Failed", e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  async function handleExport() {
+    if (exportFormat === "JSON") {
+      const dataStr =
+        "data:text/json;charset=utf-8," +
+        encodeURIComponent(JSON.stringify(filteredAuditLogs, null, 2));
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `audit_logs_${Date.now()}.json`);
+      downloadAnchor.click();
+      toast.success("Audit Exported", `Exported ${filteredAuditLogs.length} audit logs to JSON`);
+      return;
+    }
     try {
       await exportAudit("csv", { q: searchQuery.trim() || undefined });
       toast.success(
@@ -79,42 +154,137 @@
       </Alert>
     </Box>
   {/if}
-  <!-- View Header & Filters -->
-  <Flex as="header" class="audit-header" align="center" justify="between">
-    <Stack class="header-left" gap="2px">
-      <Flex class="header-title" align="center" gap="8px">
-        <Icon name="audit" size={16} color="#56A8F5" />
-        <Text class="header-title" size="xl" weight="semibold">MCP Gateway Audit Log Trail</Text>
-      </Flex>
-    </Stack>
-
-    <Flex class="header-right" align="center" gap="8px">
-      <!-- Search Input via UI Kit -->
-      <Box style="width: 240px;">
-        <Input
-          placeholder="Filter by client, token, SQL..."
-          bind:value={searchQuery}
-        />
-      </Box>
-
-      <!-- Decision Filter -->
-      <Select
-        options={[
-          { value: "ALL", label: "All Decisions" },
-          { value: "ALLOW", label: "ALLOWED" },
-          { value: "REQUIRE_APPROVAL", label: "NEEDS APPROVAL" },
-          { value: "DENY", label: "DENIED" },
-        ]}
-        bind:value={filterStatus}
-      />
-
-      <!-- Export Button via UI Kit -->
-      <Button variant="secondary" size="sm" onclick={exportCSV}>
-        <Icon name="download" size={14} />
-        <Text size="md">Export CSV</Text>
+  <!-- Toolbar 1: Actions (matching design2.png) -->
+  <div class="table-toolbar">
+    <div class="toolbar-left">
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Reload audit log (Cmd+Enter)"
+        onclick={handleReload}
+      >
+        <Icon name="refresh" size={13} />
       </Button>
-    </Flex>
-  </Flex>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Clear filters"
+        onclick={handleClearFilters}
+      >
+        <Icon name="stop" size={13} color="#E55353" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Toggle Detail Inspection Panel"
+        onclick={() => (selectedAudit = selectedAudit ? null : filteredAuditLogs[0] || null)}
+      >
+        <Icon name="layout" size={13} />
+      </Button>
+      <span class="bar-separator"></span>
+      <div class="borderless-select-wrapper">
+        <Select
+          class="toolbar-select borderless-select"
+          options={[
+            { value: "ALL", label: "Decision: ALL" },
+            { value: "ALLOW", label: "Decision: ALLOWED" },
+            { value: "REQUIRE_APPROVAL", label: "Decision: NEEDS APPROVAL" },
+            { value: "DENY", label: "Decision: DENIED" },
+          ]}
+          bind:value={filterStatus}
+        />
+      </div>
+      <span class="bar-separator"></span>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn ddl-btn"
+        title="View DDL"
+        onclick={() => (appState.ddlModalOpen = true)}
+      >
+        <Text size="xs" weight="bold" color="muted" mono>DDL</Text>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Search audit records"
+        onclick={() => searchRef?.focus()}
+      >
+        <Icon name="search" size={13} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Observability metrics"
+        onclick={() => (appState.activeTabId = "dashboard")}
+      >
+        <Icon name="chart" size={13} />
+      </Button>
+    </div>
+
+    <div class="toolbar-right">
+      <div class="borderless-select-wrapper format-select-wrapper">
+        <Select
+          class="toolbar-select borderless-select"
+          options={[
+            { value: "CSV", label: "CSV" },
+            { value: "JSON", label: "JSON" },
+          ]}
+          bind:value={exportFormat}
+        />
+      </div>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Export Audit Log"
+        onclick={handleExport}
+      >
+        <Icon name="download" size={13} />
+      </Button>
+      <span class="bar-separator"></span>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="Settings"
+        onclick={() => (appState.settingsModalOpen = true)}
+      >
+        <Icon name="settings" size={13} />
+      </Button>
+    </div>
+  </div>
+
+  <!-- Toolbar 2: WHERE & ORDER BY (matching design2.png) -->
+  <div class="filter-bar">
+    <div class="filter-group where-group">
+      <span class="filter-icon"><Icon name="filter" size={11} /></span>
+      <Text size="sm" weight="semibold" color="secondary" style="user-select: none;">WHERE</Text>
+      <input
+        type="text"
+        class="filter-input code-text"
+        placeholder="e.g. decision = 'DENY' or SQL/client snippet"
+        bind:this={searchRef}
+        bind:value={searchQuery}
+      />
+    </div>
+
+    <div class="filter-group orderby-group">
+      <span class="filter-icon"><Icon name="sort" size={11} /></span>
+      <Text size="sm" weight="semibold" color="secondary" style="user-select: none;">ORDER BY</Text>
+      <input
+        type="text"
+        class="filter-input code-text"
+        placeholder="e.g. timestamp DESC"
+        bind:value={orderByFilter}
+      />
+    </div>
+  </div>
 
   <!-- Main Content Layout -->
   <Flex class="content-layout">
@@ -386,28 +556,117 @@
     overflow: hidden;
   }
 
-  :global(.audit-view .audit-header) {
-    height: 48px;
+  :global(.audit-view .table-toolbar) {
+    height: var(--toolbar-height, 32px);
     background-color: var(--bg-toolbar);
-    border-bottom: 1px solid var(--border-default);
-    padding: 0 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
     flex-shrink: 0;
   }
 
-  :global(.audit-view .header-left) {
+  :global(.audit-view .toolbar-left),
+  :global(.audit-view .toolbar-right) {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 2px;
   }
 
-  :global(.audit-view .header-title) {
-    font-size: var(--font-size-lg, 16px);
-    font-weight: 600;
-    color: var(--text-primary);
+  :global(.audit-view .bar-separator) {
+    width: 1px;
+    height: 14px;
+    background-color: var(--border-default);
+    margin: 0 4px;
   }
 
-  :global(.audit-view .header-desc) {
-    font-size: var(--font-size-xs, 12px);
+  :global(.audit-view .borderless-select-wrapper) {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  :global(.audit-view .borderless-select) {
+    min-width: unset !important;
+    width: auto !important;
+  }
+
+  :global(.audit-view .borderless-select .ohjanus-select-trigger) {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: 24px !important;
+    padding: 0 6px !important;
+    gap: 4px !important;
+    font-size: var(--font-size-xs, 12px) !important;
+    color: var(--text-secondary, #9DA0A8) !important;
+    cursor: pointer;
+  }
+
+  :global(.audit-view .borderless-select .ohjanus-select-trigger:hover) {
+    background-color: var(--bg-hover, #313438) !important;
+    color: var(--text-primary, #DFE1E5) !important;
+  }
+
+  :global(.audit-view .ddl-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px !important;
+    width: auto !important;
+  }
+
+  :global(.audit-view .filter-bar) {
+    height: var(--filterbar-height, 30px);
+    background-color: var(--bg-canvas);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  :global(.audit-view .filter-group) {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  :global(.audit-view .where-group) {
+    flex: 1.1;
+  }
+
+  :global(.audit-view .orderby-group) {
+    flex: 0.9;
+  }
+
+  :global(.audit-view .filter-icon) {
     color: var(--text-muted);
+    font-size: 11px;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  :global(.audit-view .filter-input) {
+    flex: 1;
+    height: var(--control-height-xs, 24px);
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0 8px;
+    font-size: var(--font-size-sm, 13px);
+    color: var(--text-primary);
+    font-family: var(--font-code);
+  }
+
+  :global(.audit-view .filter-input:focus),
+  :global(.audit-view .filter-input:hover) {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   :global(.audit-view .content-layout) {
