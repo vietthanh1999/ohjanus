@@ -49,3 +49,15 @@
   top: 50%;
   transform: translateY(-50%);
 }
+
+/* Portaled content escapes overflow:hidden ancestors (cards, panes, dialogs):
+   fixed positioning is set by JS, side/align classes must not apply. */
+.ohjanus-tooltip-content[data-portal='true'] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: auto;
+  right: auto;
+  transform: none;
+  margin: 0;
+}

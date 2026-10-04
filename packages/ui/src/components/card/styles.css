@@ -1,14 +1,21 @@
-/* Card */
+/* Card — overflow phải là visible để tooltip / dropdown / popover / select
+   render absolute bên trong không bị cắt. Dùng radius kế thừa cho
+   header/footer thay vì overflow:hidden. */
 .ohjanus-card {
   background-color: var(--bg-canvas, #1E1F22);
   border: 1px solid var(--border-panel, #393B40);
   border-radius: var(--radius-lg, 8px);
+  overflow: visible;
+}
+.ohjanus-card--clipped {
   overflow: hidden;
 }
 .ohjanus-card-header {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-subtle, #2B2D30);
   font-weight: 600;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
 }
 .ohjanus-card-body {
   padding: 16px;
@@ -17,6 +24,8 @@
   padding: 12px 16px;
   border-top: 1px solid var(--border-subtle, #2B2D30);
   background-color: rgba(0, 0, 0, 0.1);
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
 }
 
 /* Card Compound */

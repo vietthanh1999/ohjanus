@@ -14,6 +14,7 @@
 
   let open = $state(false);
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let anchor: HTMLElement | undefined = $state();
 
   function scheduleOpen() {
     clearTimeout(timer);
@@ -27,12 +28,14 @@
 
   setContext('ohjanus-tooltip', {
     get open() { return open; },
+    get anchor() { return anchor; },
     scheduleOpen,
     scheduleClose
   });
 </script>
 
 <span
+  bind:this={anchor}
   class="ohjanus-tooltip {className}"
   {style}
   data-open={open}

@@ -253,7 +253,7 @@
             <DataGridHeadCell width="240px">
               <DataGridHeaderInner>
                 <Icon name="clock" size={12} color="#56A8F5" />
-                <Text size="xs">Timestamp</Text>
+                <Text size="md" weight="semibold">Timestamp</Text>
                 <Button
                   variant="ghost"
                   size="icon-xs"
@@ -268,7 +268,7 @@
             <DataGridHeadCell width="110px">
               <DataGridHeaderInner>
                 <Icon name="shield" size={12} color="#EDA200" />
-                <Text size="xs">Decision</Text>
+                <Text size="md" weight="semibold">Decision</Text>
                 <Button
                   variant="ghost"
                   size="icon-xs"
@@ -283,7 +283,7 @@
             <DataGridHeadCell width="170px">
               <DataGridHeaderInner>
                 <Icon name="user" size={12} color="#7A7E85" />
-                <Text size="xs">Client Agent</Text>
+                <Text size="md" weight="semibold">Client Agent</Text>
                 <Button
                   variant="ghost"
                   size="icon-xs"
@@ -298,7 +298,7 @@
             <DataGridHeadCell width="150px">
               <DataGridHeaderInner>
                 <Icon name="database" size={12} color="#3B82F6" />
-                <Text size="xs">Connection</Text>
+                <Text size="md" weight="semibold">Connection</Text>
                 <Button
                   variant="ghost"
                   size="icon-xs"
@@ -313,30 +313,30 @@
             <DataGridHeadCell width="90px">
               <DataGridHeaderInner>
                 <Icon name="terminal" size={12} color="#9DA0A8" />
-                <Text size="xs">Type</Text>
+                <Text size="md" weight="semibold">Type</Text>
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell width="140px">
               <DataGridHeaderInner>
                 <Icon name="table" size={12} color="#3B82F6" />
-                <Text size="xs">Tables</Text>
+                <Text size="md" weight="semibold">Tables</Text>
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell width="70px">
               <DataGridHeaderInner>
                 <Icon name="chart" size={12} color="#7A7E85" />
-                <Text size="xs">Rows</Text>
+                <Text size="md" weight="semibold">Rows</Text>
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell width="90px">
               <DataGridHeaderInner>
                 <Icon name="lightning" size={12} color="#FACC15" />
-                <Text size="xs">Duration</Text>
+                <Text size="md" weight="semibold">Duration</Text>
               </DataGridHeaderInner>
             </DataGridHeadCell>
             <DataGridHeadCell>
               <DataGridHeaderInner>
-                <Text size="xs">Normalized SQL</Text>
+                <Text size="md" weight="semibold">Normalized SQL</Text>
               </DataGridHeaderInner>
             </DataGridHeadCell>
           </DataGridRow>
