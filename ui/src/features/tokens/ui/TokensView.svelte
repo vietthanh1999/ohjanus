@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { tokensState } from '@/features/tokens';
-  import { settingsState } from '@/features/settings';
+  import { tokensState } from "@/features/tokens";
+  import { settingsState } from "@/features/settings";
   import {
     Button,
     Badge,
@@ -26,7 +26,7 @@
     BorderlessSelect,
     FilterBar,
     FloatingRowCount,
-  } from '@/shared/ui/toolbar';
+  } from "@/shared/ui/toolbar";
 
   let selectedRowIndex = $state(0);
   let whereFilter = $state("");
@@ -87,7 +87,9 @@
         );
       } else if (o.includes("state")) {
         list.sort((a, b) =>
-          isDesc ? b.state.localeCompare(a.state) : a.state.localeCompare(b.state),
+          isDesc
+            ? b.state.localeCompare(a.state)
+            : a.state.localeCompare(b.state),
         );
       } else if (o.includes("id")) {
         list.sort((a, b) =>
@@ -138,7 +140,10 @@
       downloadAnchor.setAttribute("href", dataStr);
       downloadAnchor.setAttribute("download", `mcp_tokens_${Date.now()}.json`);
       downloadAnchor.click();
-      toast.success("Tokens Exported", `Exported ${filteredTokens.length} tokens to JSON`);
+      toast.success(
+        "Tokens Exported",
+        `Exported ${filteredTokens.length} tokens to JSON`,
+      );
     } else {
       const headers = [
         "id",
@@ -168,7 +173,10 @@
       link.setAttribute("download", `mcp_tokens_${Date.now()}.csv`);
       link.click();
       URL.revokeObjectURL(url);
-      toast.success("Tokens Exported", `Exported ${filteredTokens.length} tokens to CSV`);
+      toast.success(
+        "Tokens Exported",
+        `Exported ${filteredTokens.length} tokens to CSV`,
+      );
     }
   }
 
@@ -197,11 +205,7 @@
     <Box style="padding: 8px 16px;">
       <Alert variant="danger" title="Admin API unreachable">
         <Text color="danger">{tokensState.error}</Text>
-        <Button
-          variant="secondary"
-          size="sm"
-          onclick={handleReload}
-        >
+        <Button variant="secondary" size="sm" onclick={handleReload}>
           Retry
         </Button>
       </Alert>
@@ -259,7 +263,12 @@
         bind:value={txMode}
       />
       <ToolbarSeparator />
-      <Text size="xs" color="muted" class="tx-selector" title="Active Filter Count">
+      <Text
+        size="xs"
+        color="muted"
+        class="tx-selector"
+        title="Active Filter Count"
+      >
         {filteredTokens.length} token(s)
       </Text>
     {/snippet}
@@ -315,7 +324,7 @@
           <DataGridHeadCell width="150px">
             <DataGridHeaderInner>
               <Icon name="key" size={12} color="#EDA200" />
-              <Text size="xs">Token ID</Text>
+              <Text size="md">Token ID</Text>
               <Button
                 variant="ghost"
                 size="icon-xs"
@@ -330,7 +339,7 @@
           <DataGridHeadCell width="220px">
             <DataGridHeaderInner>
               <Icon name="user" size={12} color="#7A7E85" />
-              <Text size="xs">Agent / Client Name</Text>
+              <Text size="md">Agent / Client Name</Text>
               <Button
                 variant="ghost"
                 size="icon-xs"
@@ -345,13 +354,13 @@
           <DataGridHeadCell>
             <DataGridHeaderInner>
               <Icon name="shield" size={12} color="#3B82F6" />
-              <Text size="xs">Scopes</Text>
+              <Text size="md">Scopes</Text>
             </DataGridHeaderInner>
           </DataGridHeadCell>
           <DataGridHeadCell width="120px">
             <DataGridHeaderInner>
               <Icon name="clock" size={12} color="#56A8F5" />
-              <Text size="xs">Created</Text>
+              <Text size="md">Created</Text>
               <Button
                 variant="ghost"
                 size="icon-xs"
@@ -366,7 +375,7 @@
           <DataGridHeadCell width="170px">
             <DataGridHeaderInner>
               <Icon name="clock" size={12} color="#56A8F5" />
-              <Text size="xs">Expires</Text>
+              <Text size="md">Expires</Text>
               <Button
                 variant="ghost"
                 size="icon-xs"
@@ -381,13 +390,13 @@
           <DataGridHeadCell width="120px">
             <DataGridHeaderInner>
               <Icon name="clock" size={12} color="#56A8F5" />
-              <Text size="xs">Last Used</Text>
+              <Text size="md">Last Used</Text>
             </DataGridHeaderInner>
           </DataGridHeadCell>
           <DataGridHeadCell width="100px">
             <DataGridHeaderInner>
               <Icon name="chart" size={12} color="#57D38C" />
-              <Text size="xs">State</Text>
+              <Text size="md">State</Text>
               <Button
                 variant="ghost"
                 size="icon-xs"
@@ -401,7 +410,7 @@
           </DataGridHeadCell>
           <DataGridHeadCell width="90px">
             <DataGridHeaderInner style="justify-content: flex-end;">
-              <Text size="xs">Actions</Text>
+              <Text size="md">Actions</Text>
             </DataGridHeaderInner>
           </DataGridHeadCell>
         </DataGridRow>
@@ -425,7 +434,9 @@
               onclick={() => (selectedRowIndex = idx)}
             >
               <DataGridRowNum index={idx} />
-              <DataGridCell class="id-cell" truncate title={tok.id}>{tok.id}</DataGridCell>
+              <DataGridCell class="id-cell" truncate title={tok.id}
+                >{tok.id}</DataGridCell
+              >
               <DataGridCell class="name-cell" truncate title={tok.name}>
                 <Text weight="bold">{tok.name}</Text>
               </DataGridCell>
@@ -438,9 +449,13 @@
                   {/each}
                 </Flex>
               </DataGridCell>
-              <DataGridCell tone="secondary">{tok.created_at || "—"}</DataGridCell>
+              <DataGridCell tone="secondary"
+                >{tok.created_at || "—"}</DataGridCell
+              >
               <DataGridCell tone="secondary">{tok.expires_at}</DataGridCell>
-              <DataGridCell tone="secondary">{tok.last_used_at || "—"}</DataGridCell>
+              <DataGridCell tone="secondary"
+                >{tok.last_used_at || "—"}</DataGridCell
+              >
               <DataGridCell>
                 {#if tok.state === "active"}
                   <Badge variant="success" size="md">ACTIVE</Badge>
