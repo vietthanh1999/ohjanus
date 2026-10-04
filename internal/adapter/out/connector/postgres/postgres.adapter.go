@@ -2,11 +2,13 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/vietthanh1999/ohjanus/internal/core/domain"
@@ -47,22 +49,39 @@ func (c *Connector) Open(ctx context.Context, creds domain.Credentials, pool dom
 		return nil, dbErr(err)
 	}
 	// Retry the initial ping: the database may still be starting
-	// (container boot, failover) when the gateway comes up.
+	// (container boot, failover) when the gateway comes up. Permanent
+	// errors (bad credentials, unknown database) fail fast instead of
+	// burning the whole retry budget and masking the real cause.
 	var pingErr error
 	for i := 0; i < 15; i++ {
 		pingErr = p.Ping(ctx)
 		if pingErr == nil {
 			return &Pool{pool: p}, nil
 		}
+		if isPermanentConnectError(pingErr) {
+			p.Close()
+			return nil, dbErr(pingErr)
+		}
 		select {
 		case <-ctx.Done():
 			p.Close()
-			return nil, dbErr(ctx.Err())
+			return nil, dbErr(pingErr)
 		case <-time.After(time.Second):
 		}
 	}
 	p.Close()
 	return nil, dbErr(pingErr)
+}
+
+// isPermanentConnectError reports errors that retries will never fix:
+// authentication failures (class 28, SASL protocol violation 08P01) and
+// unknown databases (3D000).
+func isPermanentConnectError(err error) bool {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) {
+		return false
+	}
+	return strings.HasPrefix(string(pgErr.Code), "28") || pgErr.Code == "3D000" || pgErr.Code == "08P01"
 }
 
 // Pool executes queries against one Postgres database.

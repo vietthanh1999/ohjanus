@@ -215,6 +215,9 @@ func requiredScope(r *http.Request) domain.Scope {
 	if r.URL.Path == "/api/v1/connections" && r.Method == http.MethodPost {
 		return domain.ScopeAdmin
 	}
+	if r.URL.Path == "/api/v1/connections/test" && r.Method == http.MethodPost {
+		return domain.ScopeAdmin
+	}
 	return domain.ScopeRead
 }
 
@@ -552,49 +555,22 @@ func connectionItem(m domain.ConnectionMeta, status string, now time.Time) map[s
 	}
 }
 
-var connectionNameRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.\-]{0,63}$`)
+var connectionNameRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9 _.\-\[\]]{0,63}$`)
 
 // handleConnectionCreate registers a PostgreSQL connection at runtime: the
 // DSN is validated, the database is pinged (test-on-create), and only then
 // the pool, metadata and validator rules are attached. Secrets are never
 // logged or returned.
 func (s *Server) handleConnectionCreate(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Name     string `json:"name"`
-		Driver   string `json:"driver"`
-		DSN      string `json:"dsn"`
-		Host     string `json:"host"`
-		Port     int    `json:"port"`
-		Database string `json:"database"`
-		Username string `json:"username"`
-		Password string `json:"password"`
-		SSLMode  string `json:"sslmode"`
-		ReadOnly bool   `json:"read_only"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "invalid body")
+	name, dsn, readOnly, code, status, msg := parseConnectionBody(r)
+	if msg != "" {
+		writeError(w, r, status, code, msg)
 		return
 	}
-	name := strings.TrimSpace(body.Name)
-	if !connectionNameRe.MatchString(name) {
-		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "name must be 1-64 chars: letters, digits, _, ., -")
-		return
-	}
-	driver := strings.TrimSpace(body.Driver)
-	if driver == "" {
-		driver = "postgres"
-	}
+	driver := "postgres"
 	if s.connector == nil || driver != s.connector.Driver() {
-		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, fmt.Sprintf("driver %q is not supported", driver))
+		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, `driver "postgres" is not supported`)
 		return
-	}
-	dsn := strings.TrimSpace(body.DSN)
-	if dsn == "" {
-		if strings.TrimSpace(body.Host) == "" || strings.TrimSpace(body.Database) == "" {
-			writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "host and database are required (or provide a full dsn)")
-			return
-		}
-		dsn = buildPostgresDSN(body.Host, body.Port, body.Database, body.Username, body.Password, body.SSLMode)
 	}
 	if s.conns.Has(name) {
 		writeError(w, r, http.StatusConflict, domain.CodeInternal, fmt.Sprintf("connection %q already exists", name))
@@ -608,7 +584,7 @@ func (s *Server) handleConnectionCreate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	meta := domain.ConnectionMeta{
-		Connection: domain.Connection{Name: name, Driver: driver, ReadOnly: body.ReadOnly},
+		Connection: domain.Connection{Name: name, Driver: driver, ReadOnly: readOnly},
 	}
 	s.conns.Attach(name, pool, meta)
 	s.valRouter.Attach(name, s.pgVal)
@@ -621,6 +597,74 @@ func (s *Server) handleConnectionCreate(w http.ResponseWriter, r *http.Request) 
 		})
 	}
 	writeJSON(w, http.StatusCreated, connectionItem(meta, "healthy", s.clock.Now()))
+}
+
+// handleConnectionProbe tests connection parameters without saving anything
+// (the "Test Connection" button). Same validation and timeout as create.
+func (s *Server) handleConnectionProbe(w http.ResponseWriter, r *http.Request) {
+	_, dsn, _, code, status, msg := parseConnectionBody(r)
+	if msg != "" {
+		writeError(w, r, status, code, msg)
+		return
+	}
+	if s.connector == nil {
+		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, `driver "postgres" is not supported`)
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
+	start := time.Now()
+	pool, err := s.connector.Open(ctx, domain.Credentials{DSN: dsn}, domain.PoolConfig{})
+	if err != nil {
+		writeError(w, r, http.StatusBadGateway, domain.CodeDBError, "could not connect: "+err.Error())
+		return
+	}
+	defer pool.Close()
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status": "healthy", "latency_ms": time.Since(start).Milliseconds(),
+	})
+}
+
+// parseConnectionBody decodes and validates a create/probe body, returning
+// the resolved DSN. A non-empty msg means the request is rejected.
+func parseConnectionBody(r *http.Request) (name, dsn string, readOnly bool, code domain.Code, status int, msg string) {
+	var body struct {
+		Name     string `json:"name"`
+		Driver   string `json:"driver"`
+		DSN      string `json:"dsn"`
+		Host     string `json:"host"`
+		Port     int    `json:"port"`
+		Database string `json:"database"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+		SSLMode  string `json:"sslmode"`
+		ReadOnly bool   `json:"read_only"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		return "", "", false, domain.CodeInternal, http.StatusBadRequest, "invalid body"
+	}
+	// Probes don't need a name; creates do (checked by the caller via msg).
+	name = strings.TrimSpace(body.Name)
+	if r.URL.Path == "/api/v1/connections" && !connectionNameRe.MatchString(name) {
+		return "", "", false, domain.CodeInternal, http.StatusBadRequest, "name must be 1-64 chars: letters, digits, space, _, ., -, [, ]"
+	}
+	if driver := strings.TrimSpace(body.Driver); driver != "" && driver != "postgres" {
+		return "", "", false, domain.CodeInternal, http.StatusBadRequest, fmt.Sprintf("driver %q is not supported", driver)
+	}
+	dsn = strings.TrimSpace(body.DSN)
+	if dsn == "" {
+		if strings.TrimSpace(body.Host) == "" {
+			return "", "", false, domain.CodeInternal, http.StatusBadRequest, "host is required (or provide a full dsn)"
+		}
+		// Empty database connects to the maintenance database so the whole
+		// server is reachable (one Postgres connection = exactly one DB).
+		database := strings.TrimSpace(body.Database)
+		if database == "" {
+			database = "postgres"
+		}
+		dsn = buildPostgresDSN(body.Host, body.Port, database, body.Username, body.Password, body.SSLMode)
+	}
+	return name, dsn, body.ReadOnly, "", 0, ""
 }
 
 // buildPostgresDSN assembles a DSN from discrete fields (password is URL-escaped).
@@ -651,6 +695,10 @@ func buildPostgresDSN(host string, port int, database, username, password, sslmo
 
 func (s *Server) handleConnectionSub(w http.ResponseWriter, r *http.Request, _ context.Context) {
 	rest := strings.TrimPrefix(r.URL.Path, "/api/v1/connections/")
+	if rest == "test" && r.Method == http.MethodPost {
+		s.handleConnectionProbe(w, r)
+		return
+	}
 	parts := strings.SplitN(rest, "/", 2)
 	if len(parts) != 2 || parts[1] != "test" || r.Method != http.MethodPost {
 		writeError(w, r, http.StatusNotFound, domain.CodeInternal, "not found")

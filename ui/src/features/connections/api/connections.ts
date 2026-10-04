@@ -27,3 +27,13 @@ export interface CreateConnectionInput {
 export function createConnection(input: CreateConnectionInput): Promise<ApiConnection> {
   return apiFetch<ApiConnection>('/api/v1/connections', { method: 'POST', body: input });
 }
+
+export interface ConnectionProbe {
+  status: string;
+  latency_ms: number;
+}
+
+/** Test parameters without saving (the "Test Connection" button). */
+export function probeConnection(input: CreateConnectionInput): Promise<ConnectionProbe> {
+  return apiFetch<ConnectionProbe>('/api/v1/connections/test', { method: 'POST', body: input });
+}

@@ -488,7 +488,7 @@ func (s *stubConnector) Open(_ context.Context, _ domain.Credentials, _ domain.P
 	return s.pool, nil
 }
 
-func testConnServer(t *testing.T) (*httptest.Server, string, string) {
+func testConnServer(t *testing.T) (*httptest.Server, *Server, string, string) {
 	t.Helper()
 	adminSecret := "jn_admin_secret"
 	readSecret := "jn_read_secret"
@@ -507,7 +507,7 @@ func testConnServer(t *testing.T) (*httptest.Server, string, string) {
 		service.NewConnRegistry(nil, nil), router, pgVal, &stubConnector{pool: stubPool{}}, clock)
 	ts := httptest.NewServer(s.mux)
 	t.Cleanup(ts.Close)
-	return ts, adminSecret, readSecret
+	return ts, s, adminSecret, readSecret
 }
 
 func postConn(t *testing.T, ts *httptest.Server, secret, body string) (int, map[string]any) {
@@ -528,7 +528,7 @@ func postConn(t *testing.T, ts *httptest.Server, secret, body string) (int, map[
 }
 
 func TestAdminConnectionCreate(t *testing.T) {
-	ts, adminSecret, readSecret := testConnServer(t)
+	ts, s, adminSecret, readSecret := testConnServer(t)
 
 	// Valid field-based create → 201, tested-on-create (stub pings OK).
 	status, item := postConn(t, ts, adminSecret, `{"name":"prod","host":"db.internal","port":5432,"database":"app","username":"app","password":"s3cret","read_only":true}`)
@@ -580,5 +580,45 @@ func TestAdminConnectionCreate(t *testing.T) {
 	}
 	if len(list.Items) != 1 || list.Items[0]["name"] != "prod" {
 		t.Errorf("list = %v", list.Items)
+	}
+
+	// Probe tests parameters without saving: valid → 200, nothing added.
+	probeReq, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/v1/connections/test", strings.NewReader(`{"host":"db.internal","database":"app"}`))
+	probeReq.Header.Set("Content-Type", "application/json")
+	probeReq.Header.Set("Authorization", "Bearer "+adminSecret)
+	probeResp, err := http.DefaultClient.Do(probeReq)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer probeResp.Body.Close()
+	if probeResp.StatusCode != http.StatusOK {
+		t.Errorf("probe status = %d, want 200", probeResp.StatusCode)
+	}
+	if s.conns.Has("db.internal") || len(list.Items) != 1 {
+		t.Errorf("probe must not register a connection")
+	}
+
+	// Probe with missing fields → 400; probe with read token → 403.
+	probeReq, _ = http.NewRequest(http.MethodPost, ts.URL+"/api/v1/connections/test", strings.NewReader(`{"host":"","database":""}`))
+	probeReq.Header.Set("Content-Type", "application/json")
+	probeReq.Header.Set("Authorization", "Bearer "+adminSecret)
+	if resp, err := http.DefaultClient.Do(probeReq); err != nil {
+		t.Fatal(err)
+	} else {
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusBadRequest {
+			t.Errorf("bad probe status = %d, want 400", resp.StatusCode)
+		}
+	}
+	probeReq, _ = http.NewRequest(http.MethodPost, ts.URL+"/api/v1/connections/test", strings.NewReader(`{"host":"h","database":"d"}`))
+	probeReq.Header.Set("Content-Type", "application/json")
+	probeReq.Header.Set("Authorization", "Bearer "+readSecret)
+	if resp, err := http.DefaultClient.Do(probeReq); err != nil {
+		t.Fatal(err)
+	} else {
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusForbidden {
+			t.Errorf("read probe status = %d, want 403", resp.StatusCode)
+		}
 	}
 }
