@@ -14,7 +14,7 @@
 {#if item}
   <Box class="audit-drawer">
     <Flex class="drawer-header" align="center" justify="between">
-      <Text weight="semibold" size="sm" class="drawer-title">Audit Detail: {item.id}</Text>
+      <Text weight="semibold" size="md" class="drawer-title">Audit Detail: {item.id}</Text>
       <Button
         variant="ghost"
         size="icon-sm"
@@ -27,60 +27,60 @@
     </Flex>
     <Stack class="drawer-body" gap="8px">
       <Flex class="drawer-row" align="center" justify="between">
-        <Text size="xs" color="muted">Timestamp:</Text>
-        <Text size="xs" mono>{item.ts}</Text>
+        <Text size="md" color="muted">Timestamp:</Text>
+        <Text size="md" mono>{item.ts}</Text>
       </Flex>
       <Flex class="drawer-row" align="center" justify="between">
-        <Text size="xs" color="muted">Request ID:</Text>
-        <Text size="xs" mono>{item.request_id}</Text>
+        <Text size="md" color="muted">Request ID:</Text>
+        <Text size="md" mono>{item.request_id}</Text>
       </Flex>
       <Flex class="drawer-row" align="center" justify="between">
-        <Text size="xs" color="muted">Token ID:</Text>
-        <Text size="xs" mono>{item.token_id}</Text>
+        <Text size="md" color="muted">Token ID:</Text>
+        <Text size="md" mono>{item.token_id}</Text>
       </Flex>
       <Flex class="drawer-row" align="center" justify="between">
-        <Text size="xs" color="muted">Requesting Client:</Text>
-        <Text size="xs">{item.client}</Text>
+        <Text size="md" color="muted">Requesting Client:</Text>
+        <Text size="md">{item.client}</Text>
       </Flex>
       <Flex class="drawer-row" align="center" justify="between">
-        <Text size="xs" color="muted">Database Target:</Text>
-        <Text size="xs">{item.connection}</Text>
+        <Text size="md" color="muted">Database Target:</Text>
+        <Text size="md">{item.connection}</Text>
       </Flex>
       <Flex class="drawer-row" align="center" justify="between">
-        <Text size="xs" color="muted">Tables Touched:</Text>
+        <Text size="md" color="muted">Tables Touched:</Text>
         <Flex align="center" gap="4px" inline>
           {#if item.tables && item.tables.length > 0}
             {#each item.tables as t}
-              <Badge variant="default" size="sm" class="tbl-pill">{t}</Badge>
+              <Badge variant="default" size="md" class="tbl-pill">{t}</Badge>
             {/each}
           {:else}
-            <Text size="xs" color="muted">—</Text>
+            <Text size="md" color="muted">—</Text>
           {/if}
         </Flex>
       </Flex>
       <Flex class="drawer-row" align="center" justify="between">
-        <Text size="xs" color="muted">Policy Decision:</Text>
+        <Text size="md" color="muted">Policy Decision:</Text>
         <Box>
           {#if item.policy_decision === "ALLOW"}
-            <Badge variant="success" size="sm">ALLOW</Badge>
+            <Badge variant="success" size="md">ALLOW</Badge>
           {:else if item.policy_decision === "REQUIRE_APPROVAL"}
-            <Badge variant="warning" size="sm">APPROVAL</Badge>
+            <Badge variant="warning" size="md">APPROVAL</Badge>
           {:else}
-            <Badge variant="danger" size="sm">DENY</Badge>
+            <Badge variant="danger" size="md">DENY</Badge>
           {/if}
         </Box>
       </Flex>
       <Flex class="drawer-row" align="center" justify="between">
-        <Text size="xs" color="muted">Policy Rule Matched:</Text>
-        <Text size="xs" mono>{item.policy_rule}</Text>
+        <Text size="md" color="muted">Policy Rule Matched:</Text>
+        <Text size="md" mono>{item.policy_rule}</Text>
       </Flex>
       <Flex class="drawer-row" align="center" justify="between">
-        <Text size="xs" color="muted">Execution Duration:</Text>
-        <Text size="xs" mono>{item.duration_ms} ms</Text>
+        <Text size="md" color="muted">Execution Duration:</Text>
+        <Text size="md" mono>{item.duration_ms} ms</Text>
       </Flex>
 
       <Text
-        size="xs"
+        size="md"
         weight="semibold"
         color="secondary"
         style="margin-top: 8px;"
@@ -128,7 +128,7 @@
     border: 1px solid var(--border-subtle);
     border-radius: 4px;
     padding: 10px;
-    font-size: var(--font-size-xs, 12px);
+    font-size: var(--font-size-sm, 12px);
     color: var(--text-primary);
     white-space: pre-wrap;
     word-break: break-all;

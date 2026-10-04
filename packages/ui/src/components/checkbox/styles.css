@@ -1,4 +1,6 @@
-/* Checkbox */
+/* Checkbox — mirrors the native JetBrains style (app.css input[type="checkbox"]):
+   stroke-based SVG check drawn as a centered background, so the mark is
+   always crisp and centered (no icon-font baseline issues). */
 .ohjanus-checkbox-primitive {
   display: inline-flex;
   align-items: center;
@@ -7,24 +9,41 @@
 .ohjanus-checkbox {
   width: 15px;
   height: 15px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border-default, #393B40);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  display: inline-grid;
+  place-content: center;
+  border: 1px solid var(--border-strong, #4E5157);
   border-radius: 3px;
-  background-color: var(--bg-canvas, #1E1F22);
-  color: #fff;
-  font-size: 10px;
-  transition: all var(--transition-fast, 100ms);
+  background-color: #26282B;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
 }
-.ohjanus-checkbox.checked,
+.ohjanus-checkbox:hover {
+  border-color: #6C707E;
+}
+.ohjanus-checkbox.checked {
+  background-color: var(--action-primary, #3574F0);
+  border-color: var(--action-primary, #3574F0);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.5L6.5 11.5L12.5 4.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: 11px 11px;
+}
 .ohjanus-checkbox.indeterminate {
   background-color: var(--action-primary, #3574F0);
   border-color: var(--action-primary, #3574F0);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8H12.5' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-size: 11px 11px;
 }
 .ohjanus-checkbox.disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+.ohjanus-checkbox-primitive input:focus-visible + .ohjanus-checkbox {
+  box-shadow: 0 0 0 2px rgba(53, 116, 240, 0.4);
 }
 .ohjanus-visually-hidden {
   position: absolute;

@@ -4,15 +4,16 @@
   import { Icon } from '@ohjanus/icons';
 
   let tokenName = $state('');
-  let selectedScopes = $state<string[]>(['read', 'schema']);
+  let selectedScopes = $state<string[]>(['read']);
   let hasCopied = $state(false);
 
+  // Must match backend domain.ValidScopes (memory.adapter.go) — unknown
+  // scopes are rejected with `unknown scope %q` and creation fails.
   const availableScopes = [
-    { id: 'read', label: 'read (db_read, SELECT)', desc: 'Allow read-only queries' },
-    { id: 'write_with_approval', label: 'write_with_approval', desc: 'Allows write queries after human approval' },
-    { id: 'schema', label: 'schema (db_schema, introspection)', desc: 'Inspect table definitions and columns' },
-    { id: 'explain', label: 'explain (db_explain)', desc: 'Run EXPLAIN on query plans' },
-    { id: 'admin', label: 'admin (full gateway config)', desc: 'Full administration scopes' }
+    { id: 'read', label: 'read', desc: 'Read-only queries: SELECT, schema introspection, EXPLAIN' },
+    { id: 'write_preview', label: 'write_preview', desc: 'Preview write queries (approval flow)' },
+    { id: 'write_execute', label: 'write_execute', desc: 'Execute approved writes' },
+    { id: 'admin', label: 'admin', desc: 'Full administration (implies all scopes)' }
   ];
 
   function toggleScope(id: string) {
@@ -51,7 +52,7 @@
     tokensState.createTokenModalOpen = false;
     tokensState.createdTokenSecret = null;
     tokenName = '';
-    selectedScopes = ['read', 'schema'];
+    selectedScopes = ['read'];
   }
 </script>
 

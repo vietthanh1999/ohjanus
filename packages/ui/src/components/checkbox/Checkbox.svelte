@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Icon } from '@ohjanus/icons';
-  import { CheckboxPrimitive } from '@ohjanus/primitives';
+  import { CheckboxPrimitive } from "@ohjanus/primitives";
 
   interface Props {
     checked?: boolean;
@@ -20,8 +19,8 @@
     disabled = false,
     name,
     value,
-    ariaLabel = 'Checkbox',
-    class: className = '',
+    ariaLabel = "Checkbox",
+    class: className = "",
     onchange,
     ...restProps
   }: Props = $props();
@@ -32,21 +31,28 @@
   }
 </script>
 
-<CheckboxPrimitive {checked} {indeterminate} {disabled} {name} {value} onchange={handleChange} class={className} {...restProps}>
-  {#snippet children({ checked: isChecked, indeterminate: isIndeterminate, disabled: isDisabled })}
+<CheckboxPrimitive
+  {checked}
+  {indeterminate}
+  {disabled}
+  {name}
+  {value}
+  onchange={handleChange}
+  class={className}
+  {...restProps}
+>
+  {#snippet children({
+    checked: isChecked,
+    indeterminate: isIndeterminate,
+    disabled: isDisabled,
+  })}
     <span
       class="ohjanus-checkbox"
       class:checked={isChecked}
       class:indeterminate={isIndeterminate}
       class:disabled={isDisabled}
       role="presentation"
-    >
-      {#if isIndeterminate}
-        <span class="ohjanus-checkbox-mark" aria-hidden="true"><Icon name="minus" size={10} /></span>
-      {:else if isChecked}
-        <span class="ohjanus-checkbox-mark" aria-hidden="true"><Icon name="check" size={10} /></span>
-      {/if}
-    </span>
+    ></span>
     <span class="ohjanus-visually-hidden">{ariaLabel}</span>
   {/snippet}
 </CheckboxPrimitive>
