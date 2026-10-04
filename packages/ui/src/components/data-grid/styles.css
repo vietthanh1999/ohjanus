@@ -7,6 +7,7 @@
 }
 .ohjanus-data-grid-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-family: var(--font-code, 'JetBrains Mono', monospace);
   font-size: var(--font-size-sm, 12px);
@@ -31,6 +32,7 @@
   text-align: left;
   user-select: none;
   white-space: nowrap;
+  vertical-align: middle;
 }
 .ohjanus-data-grid-header-inner {
   display: flex;
@@ -41,12 +43,19 @@
   color: var(--text-muted, #7A7E85);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  padding: 0 !important;
+  border: none !important;
 }
 .ohjanus-data-grid-row-num-head {
   width: 36px;
   background-color: var(--bg-canvas, #1E1F22);
   border-bottom: 1px solid var(--border-subtle, #2B2D30);
   border-right: 1px solid var(--border-subtle, #2B2D30);
+  vertical-align: middle;
 }
 .ohjanus-data-grid-row-num {
   width: 36px;
@@ -60,6 +69,7 @@
   font-size: var(--font-size-sm, 12px);
   user-select: none;
   white-space: nowrap;
+  vertical-align: middle;
 }
 .ohjanus-data-grid-row {
   transition: background-color var(--transition-fast, 100ms);
@@ -78,6 +88,7 @@
   color: var(--text-primary, #DFE1E5);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  vertical-align: middle;
 }
 .ohjanus-data-grid-cell.focused {
   outline: 1px solid var(--action-primary, #3574F0);
@@ -97,7 +108,7 @@
 .ohjanus-data-grid-cell.truncate {
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 0;
+  white-space: nowrap;
 }
 .ohjanus-data-grid-align-left { text-align: left; }
 .ohjanus-data-grid-align-center { text-align: center; }

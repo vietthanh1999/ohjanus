@@ -1,7 +1,8 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
-  import { Card, Badge, Alert, Button, Select, Text, Box, Flex, Grid, Stack, toast } from '@ohjanus/ui';
+  import { Card, Badge, Alert, Button, Text, Box, Flex, Grid, Stack, toast } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
+  import { Toolbar, ToolbarSeparator, BorderlessSelect } from '../toolbar';
 
   let selectedWindow = $state<string>('1h');
 
@@ -21,14 +22,14 @@
   {:else if appState.dataError}
     <Box style="padding: 8px 16px;">
       <Alert variant="danger" title="Admin API unreachable">
-        <p>{appState.dataError}</p>
+        <Text color="danger">{appState.dataError}</Text>
         <Button variant="secondary" size="sm" onclick={() => void appState.loadAll()}>Retry</Button>
       </Alert>
     </Box>
   {/if}
   <!-- Toolbar: Observability Actions (matching design2.png) -->
-  <div class="table-toolbar">
-    <div class="toolbar-left">
+  <Toolbar>
+    {#snippet left()}
       <Button
         variant="ghost"
         size="icon-sm"
@@ -38,27 +39,16 @@
       >
         <Icon name="refresh" size={13} />
       </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        class="jb-icon-btn"
-        title="Live monitoring active"
-      >
-        <Icon name="clock" size={13} color="#57D38C" />
-      </Button>
-      <span class="bar-separator"></span>
-      <div class="borderless-select-wrapper">
-        <Select
-          class="toolbar-select borderless-select"
-          options={[
-            { value: '1h', label: 'Window: Last 1 Hour' },
-            { value: '24h', label: 'Window: Last 24 Hours' },
-            { value: '7d', label: 'Window: Last 7 Days' },
-          ]}
-          bind:value={selectedWindow}
-        />
-      </div>
-      <span class="bar-separator"></span>
+      <ToolbarSeparator />
+      <BorderlessSelect
+        options={[
+          { value: '1h', label: 'Window: Last 1 Hour' },
+          { value: '24h', label: 'Window: Last 24 Hours' },
+          { value: '7d', label: 'Window: Last 7 Days' },
+        ]}
+        bind:value={selectedWindow}
+      />
+      <ToolbarSeparator />
       <Button
         variant="ghost"
         size="icon-sm"
@@ -95,9 +85,9 @@
       >
         <Icon name="key" size={13} />
       </Button>
-    </div>
+    {/snippet}
 
-    <div class="toolbar-right">
+    {#snippet right()}
       <Button
         variant="ghost"
         size="icon-sm"
@@ -107,8 +97,8 @@
       >
         <Icon name="settings" size={13} />
       </Button>
-    </div>
-  </div>
+    {/snippet}
+  </Toolbar>
 
   <Stack class="dashboard-body" gap="16px">
     <!-- Top KPI Cards via @ohjanus/ui -->
@@ -155,14 +145,16 @@
       <Card class="chart-panel">
         {#snippet header()}
           <Flex class="panel-header-inner" justify="between" align="center">
-            <span>REAL-TIME QUERY THROUGHPUT (REQS / SEC)</span>
-            <Badge variant="success" size="sm"><span class="status-dot ok" aria-hidden="true"></span>LIVE</Badge>
+            <Text size="xs" weight="semibold" color="muted">REAL-TIME QUERY THROUGHPUT (REQS / SEC)</Text>
+            <Badge variant="success" size="sm">
+              <Box as="span" class="status-dot ok" />LIVE
+            </Badge>
           </Flex>
         {/snippet}
         <Flex class="chart-bars font-mono" align="end" gap="6px">
           {#each [18, 25, 42, 38, 55, 62, 45, 80, 72, 95, 88, 64, 52, 47, 63, 78, 92, 105, 84, 76] as h, i}
             <Flex class="bar-col" direction="column" align="center" justify="end">
-              <Box class="bar-fill" style="height: {h}%;"></Box>
+              <Box class="bar-fill" style="height: {h}%;" />
               <Text class="bar-label" size="sm" color="muted">{i * 3}m</Text>
             </Flex>
           {/each}
@@ -172,7 +164,7 @@
       <Card class="security-panel">
         {#snippet header()}
           <Flex class="panel-header-inner" justify="between" align="center">
-            <span>RECENT BLOCKED OPERATIONS (AST VALIDATION)</span>
+            <Text size="xs" weight="semibold" color="muted">RECENT BLOCKED OPERATIONS (AST VALIDATION)</Text>
           </Flex>
         {/snippet}
         <Stack class="denials-list font-mono" gap="8px">
@@ -181,8 +173,8 @@
               <Badge variant="danger" size="sm">banned-function</Badge>
               <Text class="denial-time" size="sm" color="muted">10:45:12</Text>
             </Flex>
-            <Box class="denial-sql">SELECT pg_read_file('/etc/passwd')</Box>
-            <Box class="denial-agent">Agent: Claude Desktop v1.2</Box>
+            <Text class="denial-sql" mono size="xs">SELECT pg_read_file('/etc/passwd')</Text>
+            <Text class="denial-agent" size="xs" color="muted">Agent: Claude Desktop v1.2</Text>
           </Box>
 
           <Box class="denial-item">
@@ -190,8 +182,8 @@
               <Badge variant="danger" size="sm">deny-ddl</Badge>
               <Text class="denial-time" size="sm" color="muted">09:12:33</Text>
             </Flex>
-            <Box class="denial-sql">DROP TABLE user_entitlements CASCADE;</Box>
-            <Box class="denial-agent">Agent: Cursor AI Agent</Box>
+            <Text class="denial-sql" mono size="xs">DROP TABLE user_entitlements CASCADE;</Text>
+            <Text class="denial-agent" size="xs" color="muted">Agent: Cursor AI Agent</Text>
           </Box>
 
           <Box class="denial-item">
@@ -199,8 +191,8 @@
               <Badge variant="danger" size="sm">denied-table</Badge>
               <Text class="denial-time" size="sm" color="muted">08:04:19</Text>
             </Flex>
-            <Box class="denial-sql">SELECT * FROM admin_credentials LIMIT 10;</Box>
-            <Box class="denial-agent">Agent: Cursor AI Agent</Box>
+            <Text class="denial-sql" mono size="xs">SELECT * FROM admin_credentials LIMIT 10;</Text>
+            <Text class="denial-agent" size="xs" color="muted">Agent: Cursor AI Agent</Text>
           </Box>
         </Stack>
       </Card>
@@ -215,58 +207,6 @@
     height: 100%;
     background: var(--bg-canvas);
     overflow-y: auto;
-  }
-
-  :global(.dashboard-view .table-toolbar) {
-    height: var(--toolbar-height, 32px);
-    background-color: var(--bg-toolbar);
-    border-bottom: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 8px;
-    flex-shrink: 0;
-  }
-
-  :global(.dashboard-view .toolbar-left),
-  :global(.dashboard-view .toolbar-right) {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
-
-  :global(.dashboard-view .bar-separator) {
-    width: 1px;
-    height: 14px;
-    background-color: var(--border-default);
-    margin: 0 4px;
-  }
-
-  :global(.dashboard-view .borderless-select-wrapper) {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  :global(.dashboard-view .borderless-select) {
-    min-width: unset !important;
-    width: auto !important;
-  }
-
-  :global(.dashboard-view .borderless-select .ohjanus-select-trigger) {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    height: 24px !important;
-    padding: 0 6px !important;
-    gap: 4px !important;
-    font-size: var(--font-size-xs, 12px) !important;
-    color: var(--text-secondary, #9DA0A8) !important;
-    cursor: pointer;
-  }
-
-  :global(.dashboard-view .borderless-select .ohjanus-select-trigger:hover) {
-    background-color: var(--bg-hover, #313438) !important;
-    color: var(--text-primary, #DFE1E5) !important;
   }
 
   :global(.dashboard-view .dashboard-body) {

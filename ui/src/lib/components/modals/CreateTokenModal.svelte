@@ -1,6 +1,6 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
-  import { Modal, Button, Input, Field, Alert, toast, Box, Flex, Stack, Text } from '@ohjanus/ui';
+  import { Modal, Button, Input, Checkbox, Field, Alert, toast, Box, Flex, Stack, Text } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 
   let tokenName = $state('');
@@ -73,13 +73,12 @@
                 <!-- svelte-ignore a11y_click_events_have_key_events -->
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <Flex class="scope-row" align="start" gap="8px" onclick={() => toggleScope(sc.id)}>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={selectedScopes.includes(sc.id)}
-                    class="scope-checkbox"
+                    ariaLabel={sc.label}
                   />
                   <Stack class="scope-text" gap="2px">
-                    <span class="sc-name code-text">{sc.label}</span>
+                    <Text size="xs" weight="medium" mono class="sc-name">{sc.label}</Text>
                     <Text size="sm" color="muted">{sc.desc}</Text>
                   </Stack>
                 </Flex>
@@ -90,22 +89,22 @@
           <!-- Success Token Reveal View -->
           <Stack class="token-reveal-view" gap="12px">
             <Alert variant="warning" title="Save this token key now!">
-              <p style="font-size: 11px; margin-top: 2px;">
+              <Text size="xs" style="margin-top: 2px;">
                 Janus stores only cryptographic hashes in its vault. You will not be able to view this plaintext secret again.
-              </p>
+              </Text>
             </Alert>
 
             <Box class="secret-box code-text">
-              <span>{appState.createdTokenSecret}</span>
+              <Text mono size="xs">{appState.createdTokenSecret}</Text>
             </Box>
 
             <Button variant="secondary" onclick={copySecret}>
               {#if hasCopied}
                 <Icon name="check" size={14} color="#57D38C" />
-                <span>Copied to Clipboard!</span>
+                <Text size="sm">Copied to Clipboard!</Text>
               {:else}
                 <Icon name="copy" size={14} />
-                <span>Copy Token to Clipboard</span>
+                <Text size="sm">Copy Token to Clipboard</Text>
               {/if}
             </Button>
           </Stack>
@@ -149,12 +148,7 @@
     background-color: var(--bg-hover, #313438);
   }
 
-  .scope-checkbox {
-    margin-top: 2px;
-    cursor: pointer;
-  }
-
-  .sc-name {
+  :global(.sc-name) {
     font-size: 11.5px;
     color: var(--text-primary, #DFE1E5);
     font-weight: 500;

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
-  import { Alert, Button, Select, Text, toast } from '@ohjanus/ui';
+  import { Alert, Button, Text, Box, Flex, Input, toast } from '@ohjanus/ui';
   import {
     DataGrid,
     DataGridHead,
@@ -13,6 +13,13 @@
     DataGridRowNum,
     DataGridCell
   } from '@ohjanus/ui';
+  import {
+    Toolbar,
+    ToolbarSeparator,
+    BorderlessSelect,
+    FilterBar,
+    FloatingRowCount,
+  } from '../toolbar';
 
   let selectedRowIndex = $state(0);
   let selectedColumn = $state(0);
@@ -86,9 +93,10 @@
   }
 </script>
 
-<div class="table-data-view">
-  <div class="table-toolbar">
-    <div class="toolbar-left">
+<Box class="table-data-view">
+  <!-- Toolbar 1: Actions -->
+  <Toolbar>
+    {#snippet left()}
       <Button
         variant="ghost"
         size="icon-sm"
@@ -99,90 +107,14 @@
       >
         <Icon name="refresh" size={13} />
       </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        class="jb-icon-btn"
-        title="Audit history"
-        onclick={() => (appState.activeTabId = "audit")}
-      >
-        <Icon name="clock" size={13} />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        class="jb-icon-btn"
-        title="Stop Execution"
-        disabled
-      >
-        <Icon name="stop" size={13} color="#E55353" />
-      </Button>
-      <span class="bar-separator"></span>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        class="jb-icon-btn"
-        title="Add Row (+)"
-        disabled
-      >
-        <Icon name="plus" size={13} color="#57D38C" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        class="jb-icon-btn"
-        title="Delete Row (-)"
-        disabled
-      >
-        <Icon name="minus" size={13} />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        class="jb-icon-btn"
-        title="Undo"
-        disabled
-      >
-        <Icon name="undo" size={13} />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        class="jb-icon-btn"
-        title="Redo"
-        disabled
-      >
-        <Icon name="redo" size={13} />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        class="jb-icon-btn"
-        title="Submit Changes"
-        disabled
-      >
-        <Icon name="arrow-up" size={13} />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        class="jb-icon-btn"
-        title="Rollback Changes"
-        disabled
-      >
-        <Icon name="arrow-down" size={13} />
-      </Button>
-      <span class="bar-separator"></span>
-      <div class="borderless-select-wrapper">
-        <Select
-          class="toolbar-select borderless-select"
-          options={[
-            { value: "auto", label: "Tx: Auto" },
-            { value: "manual", label: "Tx: Manual" },
-          ]}
-          bind:value={txMode}
-        />
-      </div>
+      <ToolbarSeparator />
+      <BorderlessSelect
+        options={[
+          { value: "auto", label: "Tx: Auto" },
+          { value: "manual", label: "Tx: Manual" },
+        ]}
+        bind:value={txMode}
+      />
       <Button
         variant="ghost"
         size="icon-sm"
@@ -192,32 +124,29 @@
       >
         <Text size="xs" weight="bold" color="muted" mono>DDL</Text>
       </Button>
-      <span class="bar-separator"></span>
-      <span class="tx-selector" title="Target table">
+      <ToolbarSeparator />
+      <Text size="xs" color="muted" class="tx-selector" title="Target table">
         {#if viewer.connection && viewer.table}
           {viewer.connection}.{viewer.schema}.{viewer.table}
         {:else}
           No table selected
         {/if}
-      </span>
+      </Text>
       {#if viewer.loading}
         <Text size="sm" color="muted" mono style="padding: 0 6px;">Loading…</Text>
       {:else if viewer.durationMs > 0}
         <Text size="sm" color="muted" mono style="padding: 0 6px;">{viewer.rowCount} row(s){viewer.truncated ? ' (truncated)' : ''} · {viewer.durationMs} ms</Text>
       {/if}
-    </div>
+    {/snippet}
 
-    <div class="toolbar-right">
-      <div class="borderless-select-wrapper format-select-wrapper">
-        <Select
-          class="toolbar-select borderless-select"
-          options={[
-            { value: "CSV", label: "CSV" },
-            { value: "JSON", label: "JSON" },
-          ]}
-          bind:value={exportFormat}
-        />
-      </div>
+    {#snippet right()}
+      <BorderlessSelect
+        options={[
+          { value: "CSV", label: "CSV" },
+          { value: "JSON", label: "JSON" },
+        ]}
+        bind:value={exportFormat}
+      />
       <Button
         variant="ghost"
         size="icon-sm"
@@ -227,28 +156,20 @@
       >
         <Icon name="download" size={13} />
       </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        class="jb-icon-btn"
-        title="Import Data"
-        disabled
-      >
-        <Icon name="upload" size={13} />
-      </Button>
-      <span class="bar-separator"></span>
-      <label class="limit-label" title="Row limit">
-        Limit
-        <input
+      <ToolbarSeparator />
+      <Flex align="center" gap="4px" class="limit-wrapper">
+        <Text size="xs" color="muted" title="Row limit">Limit</Text>
+        <Input
           type="number"
+          size="sm"
           class="limit-input code-text"
           bind:value={viewer.limit}
           min={1}
           max={1000}
           onchange={handleReload}
         />
-      </label>
-      <span class="bar-separator"></span>
+      </Flex>
+      <ToolbarSeparator />
       <Button
         variant="ghost"
         size="icon-sm"
@@ -258,50 +179,30 @@
       >
         <Icon name="settings" size={13} />
       </Button>
-    </div>
-  </div>
+    {/snippet}
+  </Toolbar>
 
-  <div class="filter-bar">
-    <div class="filter-group where-group">
-      <span class="filter-icon"><Icon name="filter" size={11} /></span>
-      <Text size="sm" weight="semibold" color="secondary" style="user-select: none;">WHERE</Text>
-      <input
-        type="text"
-        class="filter-input code-text"
-        placeholder="e.g. id IS NOT NULL"
-        bind:value={viewer.where}
-        onchange={handleReload}
-      />
-    </div>
-
-    <div class="filter-group orderby-group">
-      <span class="filter-icon"><Icon name="sort" size={11} /></span>
-      <Text size="sm" weight="semibold" color="secondary" style="user-select: none;">ORDER BY</Text>
-      <input
-        type="text"
-        class="filter-input code-text"
-        placeholder="e.g. id DESC"
-        bind:value={viewer.orderBy}
-        onchange={handleReload}
-      />
-    </div>
-  </div>
+  <!-- Toolbar 2: WHERE & ORDER BY -->
+  <FilterBar
+    wherePlaceholder="e.g. id IS NOT NULL"
+    orderByPlaceholder="e.g. id DESC"
+    bind:whereValue={viewer.where}
+    bind:orderByValue={viewer.orderBy}
+    onwherechange={handleReload}
+    onorderbychange={handleReload}
+  />
 
   {#if viewer.error}
-    <div class="table-alert">
+    <Box class="table-alert">
       <Alert variant="danger" title="Table load failed">
-        <p class="code-text">{viewer.error}</p>
+        <Text class="code-text">{viewer.error}</Text>
       </Alert>
-    </div>
+    </Box>
   {/if}
 
   <DataGrid style="flex: 1; min-height: 0;">
     {#snippet overlay()}
-      {#if viewer.rowCount > 0}
-        <div class="floating-row-badge" title="Row count">
-          <Text size="sm">{viewer.rowCount} rows{viewer.truncated ? '+' : ''}</Text>
-        </div>
-      {/if}
+      <FloatingRowCount count={viewer.rowCount} unit="rows{viewer.truncated ? '+' : ''}" />
     {/snippet}
     <DataGridHead>
       <DataGridRow>
@@ -312,15 +213,16 @@
               {#if tableDef?.primaryKey.includes(col)}
                 <Icon name="key" size={12} color="#FACC15" />
               {/if}
-              <span>{col}</span>
-              <button
-                type="button"
+              <Text size="xs">{col}</Text>
+              <Button
+                variant="ghost"
+                size="icon-xs"
                 class="ohjanus-data-grid-header-action"
                 title="Sort by {col}"
                 onclick={() => toggleSort(`"${col}"`)}
               >
                 <Icon name="sort" size={9} />
-              </button>
+              </Button>
             </DataGridHeaderInner>
           </DataGridHeadCell>
         {/each}
@@ -360,154 +262,52 @@
       {/if}
     </DataGridBody>
   </DataGrid>
-
-</div>
+</Box>
 
 <style>
-  .table-data-view {
+  :global(.table-data-view) {
     display: flex;
     flex-direction: column;
     height: 100%;
     background-color: var(--bg-canvas);
+    color: var(--text-primary);
     overflow: hidden;
   }
 
-  .table-toolbar {
-    height: var(--toolbar-height);
-    background-color: var(--bg-toolbar);
-    border-bottom: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 8px;
-    flex-shrink: 0;
-  }
-
-  .toolbar-left, .toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-
-  .bar-separator {
-    width: 1px;
-    height: 14px;
-    background-color: var(--border-default);
-    margin: 0 4px;
-  }
-
-  .borderless-select-wrapper {
+  :global(.table-data-view .ddl-btn) {
     display: inline-flex;
     align-items: center;
-  }
-
-  :global(.table-data-view .borderless-select) {
-    min-width: unset !important;
+    justify-content: center;
+    padding: 0 4px !important;
     width: auto !important;
   }
 
-  :global(.table-data-view .borderless-select .ohjanus-select-trigger) {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    height: 24px !important;
-    padding: 0 6px !important;
-    gap: 4px !important;
-    font-size: var(--font-size-xs, 12px) !important;
-    color: var(--text-secondary, #9DA0A8) !important;
-    cursor: pointer;
-  }
-
-  :global(.table-data-view .borderless-select .ohjanus-select-trigger:hover) {
-    background-color: var(--bg-hover, #313438) !important;
-    color: var(--text-primary, #DFE1E5) !important;
-  }
-
-  .tx-selector {
-    font-size: var(--font-size-xs, 12px);
-    color: var(--text-primary);
-    padding: 0 6px;
+  :global(.table-data-view .tx-selector) {
     font-family: var(--font-code);
+    padding: 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
   }
 
-  .limit-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--text-secondary);
-  }
-
-  .limit-input {
-    width: 72px;
-    height: 24px;
-    background-color: var(--bg-canvas);
-    border: 1px solid var(--border-default);
-    border-radius: 4px;
-    color: var(--text-primary);
-    padding: 0 8px;
-    font-size: 12px;
-    outline: none;
-  }
-
-  .filter-bar {
-    height: var(--filterbar-height);
-    background-color: var(--bg-canvas);
-    border-bottom: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    padding: 0 8px;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-
-  .filter-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .where-group {
-    flex: 1.1;
-  }
-
-  .orderby-group {
-    flex: 0.9;
-  }
-
-  .filter-icon {
-    color: var(--text-muted);
-    font-size: 11px;
+  :global(.table-data-view .limit-wrapper) {
     user-select: none;
   }
 
-  .filter-input {
-    flex: 1;
-    height: var(--control-height-xs, 24px);
-    background-color: transparent;
-    border: none;
-    outline: none;
-    padding: 0 8px;
-    font-size: var(--font-size-sm, 13px);
-    color: var(--text-primary);
+  :global(.table-data-view .limit-input) {
+    width: 48px !important;
+    height: 22px !important;
+    text-align: right;
   }
 
-  .table-alert {
-    padding: 8px 12px;
-    flex-shrink: 0;
+  :global(.table-data-view .limit-input .ohjanus-input-field) {
+    text-align: right;
+    padding: 0 4px !important;
   }
 
-  .floating-row-badge {
-    position: absolute;
-    bottom: 12px;
-    right: 16px;
-    background-color: var(--bg-toolbar);
-    border: 1px solid var(--border-default);
-    border-radius: 12px;
-    padding: 2px 10px;
-    font-size: 11px;
-    color: var(--text-primary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
-    z-index: 5;
+  :global(.table-alert) {
+    padding: 8px;
+    border-bottom: 1px solid var(--border-subtle);
   }
 </style>

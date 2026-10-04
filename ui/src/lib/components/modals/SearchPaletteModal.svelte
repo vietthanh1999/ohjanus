@@ -1,6 +1,6 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
-  import { DialogPrimitive, Badge, Kbd, Box, Flex, Text } from '@ohjanus/ui';
+  import { DialogPrimitive, Badge, Kbd, Box, Flex, Text, Input } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
 
   let query = $state('');
@@ -69,8 +69,7 @@
     <Flex class="palette-input-wrap" align="center" gap="10px">
       <Icon name="search" size={15} color="var(--text-muted)" />
       <!-- svelte-ignore a11y_autofocus -->
-      <input
-        type="text"
+      <Input
         class="palette-input"
         placeholder="Search Everywhere (Tables, Consoles, Gateway, Actions)..."
         bind:value={query}
@@ -86,13 +85,15 @@
         <Flex class="result-row" align="center" justify="between" onclick={() => selectItem(item.action)}>
           <Flex class="row-left" align="center" gap="8px">
             <Badge variant="outline" size="sm">{item.category}</Badge>
-            <span class="row-title">{item.title}</span>
+            <Text size="xs" weight="medium" class="row-title">{item.title}</Text>
           </Flex>
           <Text class="row-desc" size="sm" color="muted">{item.desc}</Text>
         </Flex>
       {/each}
       {#if filtered.length === 0}
-        <div class="palette-empty">No matches. Tables appear here after the explorer loads their schema.</div>
+        <Text size="xs" color="muted" class="palette-empty">
+          No matches. Tables appear here after the explorer loads their schema.
+        </Text>
       {/if}
     </Box>
   </Box>
@@ -117,13 +118,23 @@
     background-color: #191A1C;
   }
 
-  .palette-input {
+  :global(.palette-input-wrap .ohjanus-input-wrapper) {
     flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    font-size: 13px;
-    color: var(--text-primary, #DFE1E5);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    height: auto !important;
+  }
+
+  :global(.palette-input-wrap .ohjanus-input-field) {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    font-size: 13px !important;
+    color: var(--text-primary, #DFE1E5) !important;
+    padding: 0 !important;
   }
 
   :global(.palette-results) {
@@ -142,16 +153,13 @@
     background-color: var(--bg-hover, #2E3136);
   }
 
-  .row-title {
-    font-size: 12px;
-    font-weight: 500;
+  :global(.row-title) {
     color: var(--text-primary, #DFE1E5);
   }
 
-  .palette-empty {
+  :global(.palette-empty) {
+    display: block;
     padding: 16px;
-    font-size: 12px;
-    color: var(--text-muted, #767980);
     text-align: center;
   }
 </style>

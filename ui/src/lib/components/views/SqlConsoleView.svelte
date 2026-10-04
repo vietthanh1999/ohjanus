@@ -1,7 +1,8 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
-  import { Alert, Select, Text } from '@ohjanus/ui';
+  import { Alert, Button, Text, Box, Flex, Textarea } from '@ohjanus/ui';
+  import { Toolbar, ToolbarSeparator, BorderlessSelect, FloatingRowCount } from '../toolbar';
   import {
     DataGrid,
     DataGridHead,
@@ -36,30 +37,38 @@
   }
 </script>
 
-<div class="sql-console-view">
-  <div class="sql-toolbar">
-    <div class="toolbar-left">
-      <button
-        type="button"
-        class="action-btn run-btn"
+<Box class="sql-console-view">
+  <Toolbar>
+    {#snippet left()}
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn run-btn"
         title="Execute (Cmd+Enter)"
         onclick={handleExecute}
         disabled={appState.console.isExecuting || !appState.console.connection}
       >
-        <Icon name="play" size={13} />
-      </button>
-      <button type="button" class="action-btn" title="EXPLAIN (never executes)" onclick={handleExplain}>
-        <Text size="sm" weight="semibold" color="secondary">EX</Text>
-      </button>
-      <button
-        type="button"
-        class="action-btn"
+        <Icon name="play" size={13} color="#57D38C" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="EXPLAIN (never executes)"
+        onclick={handleExplain}
+      >
+        <Text size="xs" weight="semibold" color="secondary">EX</Text>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
         title="Reload last query"
         onclick={handleExecute}
       >
         <Icon name="refresh" size={12} />
-      </button>
-      <span class="bar-separator"></span>
+      </Button>
+      <ToolbarSeparator />
       <Text size="sm" color="secondary" style="padding: 0 4px;">
         {#if appState.console.isExecuting}
           Executing…
@@ -69,67 +78,72 @@
           Tx: Auto
         {/if}
       </Text>
-      <span class="bar-separator"></span>
-      <button type="button" class="jb-icon-btn" title="View DDL" onclick={() => appState.ddlModalOpen = true}>
+      <ToolbarSeparator />
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="jb-icon-btn"
+        title="View DDL"
+        onclick={() => appState.ddlModalOpen = true}
+      >
         <Text size="xs" weight="bold" color="muted">DDL</Text>
-      </button>
-    </div>
+      </Button>
+    {/snippet}
 
-    <div class="toolbar-right">
+    {#snippet right()}
       {#if appState.connections.length === 0}
-        <span class="schema-name">No connection</span>
+        <Text size="xs" color="muted" class="schema-name">No connection</Text>
       {:else}
-        <div class="borderless-select-wrapper">
-          <Select
-            class="toolbar-select borderless-select"
-            options={appState.connections.map((conn) => ({
-              value: conn.name,
-              label: conn.readonly ? `${conn.name} (readonly)` : conn.name
-            }))}
-            bind:value={appState.console.connection}
-          />
-        </div>
+        <BorderlessSelect
+          options={appState.connections.map((conn) => ({
+            value: conn.name,
+            label: conn.readonly ? `${conn.name} (readonly)` : conn.name
+          }))}
+          bind:value={appState.console.connection}
+        />
       {/if}
-    </div>
-  </div>
+    {/snippet}
+  </Toolbar>
 
-  <div class="editor-container">
+  <Box class="editor-container">
     {#if appState.connections.length === 0}
-      <div class="editor-empty">
-        {#if appState.dataLoading}
-          Connecting to Admin API…
-        {:else}
-          No connections available. Check janus.yaml connections and Admin API status.
-        {/if}
-      </div>
+      <Flex align="center" justify="center" class="editor-empty">
+        <Text size="sm" color="muted">
+          {#if appState.dataLoading}
+            Connecting to Admin API…
+          {:else}
+            No connections available. Check janus.yaml connections and Admin API status.
+          {/if}
+        </Text>
+      </Flex>
     {:else}
-      <textarea
+      <Textarea
         class="editor-textarea code-text"
         bind:value={appState.console.sql}
         spellcheck={false}
         placeholder="-- SELECT * FROM ..."
-      ></textarea>
+      />
     {/if}
-  </div>
+  </Box>
 
   {#if appState.console.error}
-    <div class="console-alert">
+    <Box class="console-alert">
       <Alert variant="danger" title="Query failed">
-        <p class="code-text">{appState.console.error}</p>
+        <Text class="code-text">{appState.console.error}</Text>
       </Alert>
-    </div>
+    </Box>
   {/if}
 
   {#if appState.console.plan}
-    <div class="console-alert">
+    <Box class="console-alert">
       <Alert variant="info" title="EXPLAIN plan">
-        <pre class="code-text plan-pre">{appState.console.plan}</pre>
+        <Box class="code-text plan-pre">{appState.console.plan}</Box>
       </Alert>
-    </div>
+    </Box>
   {/if}
 
-  <div class="results-header-tabs">
-    <div class="result-tab active">
+  <Flex align="center" class="results-header-tabs">
+    <Flex align="center" gap="6px" class="result-tab active">
       <Icon name="table" size={12} />
       <Text size="sm" color="secondary">
         {#if appState.console.rowCount > 0}
@@ -138,16 +152,12 @@
           Result
         {/if}
       </Text>
-    </div>
-  </div>
+    </Flex>
+  </Flex>
 
   <DataGrid style="flex: 1; min-height: 0;">
     {#snippet overlay()}
-      {#if appState.console.rowCount > 0}
-        <div class="floating-row-badge" title="Retrieved count">
-          <Text size="sm">{appState.console.rowCount} row(s)</Text>
-        </div>
-      {/if}
+      <FloatingRowCount count={appState.console.rowCount} />
     {/snippet}
     <DataGridHead>
       <DataGridRow>
@@ -155,7 +165,7 @@
         {#each appState.console.columns as col, i (col + i)}
           <DataGridHeadCell width="200px">
             <DataGridHeaderInner>
-              <span>{col}</span>
+              <Text size="xs">{col}</Text>
             </DataGridHeaderInner>
           </DataGridHeadCell>
         {/each}
@@ -190,10 +200,10 @@
       {/if}
     </DataGridBody>
   </DataGrid>
-</div>
+</Box>
 
 <style>
-  .sql-console-view {
+  :global(.sql-console-view) {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -201,173 +211,72 @@
     overflow: hidden;
   }
 
-  .sql-toolbar {
-    height: var(--toolbar-height);
-    background-color: var(--bg-toolbar);
-    border-bottom: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 8px;
-    flex-shrink: 0;
-  }
-
-  .toolbar-left, .toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-
-  .action-btn {
-    width: var(--icon-btn-size-sm, 26px);
-    height: var(--icon-btn-size-sm, 26px);
-    border-radius: var(--radius-sm, 4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-secondary);
-    transition: all 0.1s ease;
-  }
-
-  .action-btn:hover:not(:disabled) {
-    background-color: var(--bg-hover);
-    color: var(--text-primary);
-  }
-
-  .action-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .action-btn.run-btn {
-    color: var(--action-success);
-  }
-
-  .bar-separator {
-    width: 1px;
-    height: 14px;
-    background-color: var(--border-default);
-    margin: 0 4px;
-  }
-
-  .borderless-select-wrapper {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  :global(.sql-console-view .borderless-select) {
-    min-width: unset !important;
-    width: auto !important;
-  }
-
-  :global(.sql-console-view .borderless-select .ohjanus-select-trigger) {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    height: 24px !important;
-    padding: 0 6px !important;
-    gap: 4px !important;
-    font-size: var(--font-size-xs, 12px) !important;
-    color: var(--text-secondary, #9DA0A8) !important;
-    cursor: pointer;
-  }
-
-  :global(.sql-console-view .borderless-select .ohjanus-select-trigger:hover) {
-    background-color: var(--bg-hover, #313438) !important;
-    color: var(--text-primary, #DFE1E5) !important;
-  }
-
-  .schema-name {
+  :global(.sql-console-view .schema-name) {
     font-size: var(--font-size-xs, 12px);
     color: var(--text-muted);
+    font-family: var(--font-code);
   }
 
-  .editor-container {
-    height: 220px;
-    min-height: 160px;
+  :global(.sql-console-view .editor-container) {
+    height: 180px;
     background-color: var(--bg-canvas);
-    display: flex;
-    overflow: hidden;
+    border-bottom: 1px solid var(--border-subtle);
     position: relative;
-    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
   }
 
-  .editor-textarea {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    resize: none;
-    padding: 10px 12px;
-    font-size: 13px;
-    line-height: 20px;
-    color: var(--text-primary);
-  }
-
-  .editor-empty {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    font-size: 12px;
+  :global(.sql-console-view .editor-empty) {
+    width: 100%;
+    height: 100%;
     padding: 16px;
-    text-align: center;
+    font-size: var(--font-size-sm);
   }
 
-  .console-alert {
-    padding: 8px 12px;
-    flex-shrink: 0;
+  :global(.sql-console-view .editor-textarea) {
+    width: 100% !important;
+    height: 100% !important;
+    padding: 10px !important;
+    background-color: transparent !important;
+    border: none !important;
+    color: var(--text-primary) !important;
+    font-family: var(--font-code) !important;
+    font-size: var(--font-size-sm) !important;
+    resize: none !important;
+    outline: none !important;
   }
 
-  .plan-pre {
-    white-space: pre-wrap;
-    font-size: 11px;
-    margin: 4px 0 0;
-  }
-
-  .results-header-tabs {
-    height: 26px;
-    background-color: var(--bg-canvas);
+  :global(.sql-console-view .console-alert) {
+    padding: 6px 8px;
     border-bottom: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    padding: 0 4px;
-    flex-shrink: 0;
-    overflow-x: auto;
-    gap: 4px;
   }
 
-  .result-tab {
-    padding: 0 8px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    color: var(--text-secondary);
-    border-radius: 3px;
-    user-select: none;
-    white-space: nowrap;
+  :global(.sql-console-view .plan-pre) {
+    margin: 0;
+    font-family: var(--font-code);
+    font-size: var(--font-size-xs, 12px);
+    white-space: pre-wrap;
+    max-height: 140px;
+    overflow-y: auto;
   }
 
-  .result-tab.active {
-    background-color: #1F2E4A;
-    border: 1px solid #3574F0;
-    color: #DFE1E5;
-  }
-
-  .floating-row-badge {
-    position: absolute;
-    bottom: 12px;
-    right: 16px;
+  :global(.sql-console-view .results-header-tabs) {
+    height: 28px;
     background-color: var(--bg-toolbar);
-    border: 1px solid var(--border-default);
-    border-radius: 12px;
-    padding: 2px 10px;
-    font-size: 11px;
-    color: var(--text-primary);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
-    z-index: 5;
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0 8px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  :global(.sql-console-view .result-tab) {
+    height: 24px;
+    padding: 0 8px;
+    border-radius: var(--radius-sm, 4px) var(--radius-sm, 4px) 0 0;
+    user-select: none;
+  }
+
+  :global(.sql-console-view .result-tab.active) {
+    background-color: var(--bg-card);
+    border-bottom: 2px solid var(--border-accent, #3574F0);
   }
 </style>

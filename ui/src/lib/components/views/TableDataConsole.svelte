@@ -1,19 +1,19 @@
 <script lang="ts">
   import { appState } from '../../state/appState.svelte';
   import { Icon } from '@ohjanus/icons';
-  import { Text } from '@ohjanus/ui';
+  import { Text, Box, Flex, Button } from '@ohjanus/ui';
 </script>
 
-<div class="log-console-container">
-  <div class="log-content code-text">
+<Flex class="log-console-container">
+  <Box class="log-content code-text">
     {#if appState.consoleLogs.length === 0}
-      <div class="log-line">
+      <Flex gap="8px" class="log-line">
         <Text size="lg" color="muted" mono>--</Text>
         <Text size="lg" mono>No output yet. Run a query or open a table to see live execution logs.</Text>
-      </div>
+      </Flex>
     {:else}
       {#each appState.consoleLogs as log (log.id)}
-        <div class="log-line">
+        <Flex gap="8px" class="log-line">
           <Text size="lg" color="muted" mono>[{log.timestamp}]</Text>
           {#if log.connection}
             <Text size="lg" weight="medium" mono>{log.connection}&gt;</Text>
@@ -27,40 +27,51 @@
               color={log.type === 'error' ? 'danger' : 'default'}
             >{log.summary}</Text>
           {/if}
-        </div>
+        </Flex>
         {#if log.querySnippet}
-          <div class="log-line indent-sql">
+          <Flex gap="8px" class="log-line indent-sql">
             <Text
               size="lg"
               mono
               color={log.type === 'error' ? 'danger' : 'default'}
             >{log.summary}</Text>
-          </div>
+          </Flex>
         {/if}
       {/each}
     {/if}
-  </div>
+  </Box>
 
-  <div class="log-action-strip">
-    <button type="button" class="strip-btn" title="Reload table data" onclick={() => void appState.loadTableData()}>
+  <Flex direction="column" align="center" gap="4px" class="log-action-strip">
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      class="strip-btn"
+      title="Reload table data"
+      onclick={() => void appState.loadTableData()}
+    >
       <Icon name="refresh" size={13} />
-    </button>
-    <button type="button" class="strip-btn" title="Clear Console" onclick={() => appState.clearLogs()}>
+    </Button>
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      class="strip-btn"
+      title="Clear Console"
+      onclick={() => appState.clearLogs()}
+    >
       <Icon name="trash" size={13} />
-    </button>
-  </div>
-</div>
+    </Button>
+  </Flex>
+</Flex>
 
 <style>
-  .log-console-container {
+  :global(.log-console-container) {
     width: 100%;
     height: 100%;
-    display: flex;
     background-color: var(--bg-canvas, #1E1F22);
     overflow: hidden;
   }
 
-  .log-content {
+  :global(.log-content) {
     flex: 1;
     overflow-y: auto;
     padding: 10px 14px;
@@ -69,45 +80,20 @@
     font-family: var(--font-code, 'JetBrains Mono', monospace);
   }
 
-  .log-line {
-    display: flex;
-    gap: 8px;
-  }
-
-  .log-line.indent-sql {
+  :global(.log-line.indent-sql) {
     padding-left: 24px;
   }
 
-  .log-action-strip {
+  :global(.log-action-strip) {
     width: 32px;
     background-color: var(--bg-canvas, #1E1F22);
     border-left: 1px solid var(--border-subtle, #323438);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     padding: 4px 0;
-    gap: 4px;
     flex-shrink: 0;
   }
 
-  .strip-btn {
-    width: var(--icon-btn-size-sm, 26px);
-    height: var(--icon-btn-size-sm, 26px);
-    border-radius: var(--radius-sm, 4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--font-size-xs, 12px);
-    color: var(--text-muted, #7A7E85);
-  }
-
-  :global(.strip-btn svg) {
-    width: var(--icon-size-sm, 14px);
-    height: var(--icon-size-sm, 14px);
-  }
-
-  .strip-btn:hover {
-    background-color: var(--bg-hover, #2B2D30);
-    color: var(--text-primary, #DFE1E5);
+  :global(.strip-btn) {
+    width: var(--icon-btn-size-sm, 26px) !important;
+    height: var(--icon-btn-size-sm, 26px) !important;
   }
 </style>
