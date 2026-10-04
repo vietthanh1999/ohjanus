@@ -14,10 +14,23 @@ type Table struct {
 	PrimaryKey []string
 }
 
-// Schema groups tables under a schema name.
+// Routine describes a stored function or procedure.
+type Routine struct {
+	Name string
+	Kind string // FUNCTION or PROCEDURE
+}
+
+// Sequence describes a sequence object.
+type Sequence struct {
+	Name string
+}
+
+// Schema groups tables, routines and sequences under a schema name.
 type Schema struct {
-	Name   string
-	Tables []Table
+	Name      string
+	Tables    []Table
+	Routines  []Routine
+	Sequences []Sequence
 }
 
 // Connection is the metadata the agent is allowed to see.

@@ -1,9 +1,10 @@
 <script lang="ts">
   import { Button, Text, Box } from '@ohjanus/ui';
   import { Icon, type IconName } from '@ohjanus/icons';
+  import TreeRowActions, { type RowActionItem } from './TreeRowActions.svelte';
 
   interface Props {
-    depth?: 0 | 1 | 2;
+    depth?: 0 | 1 | 2 | 3;
     icon: IconName;
     iconColor?: string;
     label: string;
@@ -18,6 +19,8 @@
     isSelected?: boolean;
     warnStatus?: string;
     title?: string;
+    /** Hover "..." menu items (DataGrip-style row actions). */
+    actions?: RowActionItem[];
     onclick?: () => void;
   }
 
@@ -35,6 +38,7 @@
     isSelected = false,
     warnStatus,
     title,
+    actions,
     onclick
   }: Props = $props();
 </script>
@@ -47,30 +51,34 @@
 >
   {#if hasChevron}
     <Box class="chevron {isExpanded ? 'expanded' : ''}">
-      <Icon name="chevron-right" size={12} />
+      <Icon name="chevron-right" size={13} />
     </Box>
   {:else}
     <Box class="chevron-placeholder" />
   {/if}
 
-  <Icon name={icon} size={13} color={iconColor} class="node-icon" />
+  <Icon name={icon} size={14} color={iconColor} class="node-icon" />
 
-  <Text size="sm" truncate class="node-label">
+  <Text size="lg" truncate class="node-label">
     {label}
     {#if badgeText}
-      <Text size="xs" color="muted" style="margin-left: 4px;">{badgeText}</Text>
+      <Text size="sm" color="muted" style="margin-left: 4px;">{badgeText}</Text>
     {/if}
     {#if badgeCount !== undefined}
-      <Text size="xs" color="muted" style="margin-left: 4px;">{badgeCount}</Text>
+      <Text size="sm" color="muted" style="margin-left: 4px;">{badgeCount}</Text>
     {/if}
   </Text>
 
   {#if locked}
-    <Icon name="lock" size={10} color="#7A7E85" class="node-lock" />
+    <Icon name="lock" size={11} color="#7A7E85" class="node-lock" />
   {/if}
 
   {#if warnStatus}
     <Text size="xs" color="danger" class="conn-warn" title={warnStatus}>●</Text>
+  {/if}
+
+  {#if actions?.length}
+    <TreeRowActions items={actions} />
   {/if}
 
   {#if badge !== undefined}
@@ -117,11 +125,14 @@
   :global(.tree-node.depth-2) {
     padding-left: 34px !important;
   }
+  :global(.tree-node.depth-3) {
+    padding-left: 48px !important;
+  }
 
   :global(.chevron) {
-    width: 14px;
-    height: 14px;
-    font-size: 12px;
+    width: 16px;
+    height: 16px;
+    font-size: 13px;
     color: var(--text-muted);
     display: inline-flex;
     align-items: center;
@@ -136,15 +147,15 @@
   }
 
   :global(.chevron-placeholder) {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     flex-shrink: 0;
   }
 
   :global(.node-icon) {
     margin-right: 2px;
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     flex-shrink: 0;
   }
 
@@ -157,7 +168,7 @@
 
   :global(.conn-warn) {
     margin-left: auto;
-    font-size: 9px;
+    font-size: 10px;
   }
 
   :global(.node-lock) {
@@ -169,17 +180,17 @@
   :global(.node-badge) {
     flex-shrink: 0;
     margin-left: auto;
-    min-width: 18px;
-    height: 16px;
-    padding: 0 5px;
+    min-width: 20px;
+    height: 18px;
+    padding: 0 6px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background-color: var(--badge-bg, #393B40);
     color: var(--badge-fg, #9DA0A8);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 500;
-    border-radius: 8px;
+    border-radius: 9px;
     font-variant-numeric: tabular-nums;
   }
 </style>

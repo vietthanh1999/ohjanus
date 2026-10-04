@@ -110,9 +110,20 @@ export interface ApiTable {
   primary_key?: string[] | null;
 }
 
+export interface ApiRoutine {
+  name: string;
+  kind: string;
+}
+
+export interface ApiSequence {
+  name: string;
+}
+
 export interface ApiSchema {
   name: string;
   tables: ApiTable[];
+  routines?: ApiRoutine[] | null;
+  sequences?: ApiSequence[] | null;
 }
 
 export interface ApiQueryResult {

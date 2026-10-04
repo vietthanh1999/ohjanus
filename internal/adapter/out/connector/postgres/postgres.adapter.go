@@ -268,13 +268,17 @@ func (p *Pool) Schema(ctx context.Context, schema, table string) ([]domain.Schem
 
 	var schemas []domain.Schema
 	idx := map[string]int{}
-	for _, c := range columns {
-		i, ok := idx[c.schema]
+	ensureSchema := func(name string) int {
+		i, ok := idx[name]
 		if !ok {
-			schemas = append(schemas, domain.Schema{Name: c.schema})
+			schemas = append(schemas, domain.Schema{Name: name})
 			i = len(schemas) - 1
-			idx[c.schema] = i
+			idx[name] = i
 		}
+		return i
+	}
+	for _, c := range columns {
+		i := ensureSchema(c.schema)
 		ti := -1
 		for j := range schemas[i].Tables {
 			if schemas[i].Tables[j].Name == c.table {
@@ -292,7 +296,76 @@ func (p *Pool) Schema(ctx context.Context, schema, table string) ([]domain.Schem
 		t := &schemas[i].Tables[ti]
 		t.Columns = append(t.Columns, domain.Column{Name: c.name, Type: c.typ, Nullable: c.nullable})
 	}
+
+	// Routines and sequences are schema-level objects: only fetch them for
+	// whole-schema introspection, not for single-table (DDL) lookups.
+	if table == "" {
+		if err := appendRoutines(ctx, p.pool, &schemas, ensureSchema, schema); err != nil {
+			return nil, err
+		}
+		if err := appendSequences(ctx, p.pool, &schemas, ensureSchema, schema); err != nil {
+			return nil, err
+		}
+	}
 	return schemas, nil
+}
+
+func appendRoutines(ctx context.Context, pool *pgxpool.Pool, schemas *[]domain.Schema, ensure func(string) int, schema string) error {
+	q := `SELECT routine_schema, routine_name, routine_type
+		FROM information_schema.routines
+		WHERE routine_schema NOT IN ('pg_catalog', 'information_schema')`
+	var args []any
+	if schema != "" {
+		q += fmt.Sprintf(" AND routine_schema = $%d", len(args)+1)
+		args = append(args, schema)
+	}
+	q += " ORDER BY routine_schema, routine_name"
+	rows, err := pool.Query(ctx, q, args...)
+	if err != nil {
+		return dbErr(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var sch, name, kind string
+		if err := rows.Scan(&sch, &name, &kind); err != nil {
+			return dbErr(err)
+		}
+		i := ensure(sch)
+		(*schemas)[i].Routines = append((*schemas)[i].Routines, domain.Routine{Name: name, Kind: kind})
+	}
+	if err := rows.Err(); err != nil {
+		return dbErr(err)
+	}
+	return nil
+}
+
+func appendSequences(ctx context.Context, pool *pgxpool.Pool, schemas *[]domain.Schema, ensure func(string) int, schema string) error {
+	q := `SELECT sequence_schema, sequence_name
+		FROM information_schema.sequences
+		WHERE sequence_schema NOT IN ('pg_catalog', 'information_schema')`
+	var args []any
+	if schema != "" {
+		q += fmt.Sprintf(" AND sequence_schema = $%d", len(args)+1)
+		args = append(args, schema)
+	}
+	q += " ORDER BY sequence_schema, sequence_name"
+	rows, err := pool.Query(ctx, q, args...)
+	if err != nil {
+		return dbErr(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var sch, name string
+		if err := rows.Scan(&sch, &name); err != nil {
+			return dbErr(err)
+		}
+		i := ensure(sch)
+		(*schemas)[i].Sequences = append((*schemas)[i].Sequences, domain.Sequence{Name: name})
+	}
+	if err := rows.Err(); err != nil {
+		return dbErr(err)
+	}
+	return nil
 }
 
 // Ping checks the pool.

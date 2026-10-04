@@ -918,7 +918,15 @@ func schemaItem(sc domain.Schema) map[string]any {
 			"name": t.Name, "columns": cols, "primary_key": t.PrimaryKey,
 		})
 	}
-	return map[string]any{"name": sc.Name, "tables": tables}
+	routines := make([]map[string]any, 0, len(sc.Routines))
+	for _, r := range sc.Routines {
+		routines = append(routines, map[string]any{"name": r.Name, "kind": r.Kind})
+	}
+	sequences := make([]map[string]any, 0, len(sc.Sequences))
+	for _, sq := range sc.Sequences {
+		sequences = append(sequences, map[string]any{"name": sq.Name})
+	}
+	return map[string]any{"name": sc.Name, "tables": tables, "routines": routines, "sequences": sequences}
 }
 
 // handleSchema serves GET /api/v1/schema?connection=&schema=&table=.
