@@ -74,10 +74,12 @@ func testSetup(vq *domain.ValidatedQuery, verr error, decision domain.PolicyDeci
 		NewGateway(clock),
 		&fakeValidator{vq: vq, err: verr},
 		&fakePolicy{decision: decision},
-		map[string]out.Pool{"analytics": pool},
-		map[string]domain.ConnectionMeta{
-			"analytics": {Connection: domain.Connection{Name: "analytics", Driver: "postgres", ReadOnly: true}, RowLimit: 100},
-		},
+		NewConnRegistry(
+			map[string]out.Pool{"analytics": pool},
+			map[string]domain.ConnectionMeta{
+				"analytics": {Connection: domain.Connection{Name: "analytics", Driver: "postgres", ReadOnly: true}, RowLimit: 100},
+			},
+		),
 		audit, clock, identRedact{}, 1000, 10000, 30*time.Second,
 	)
 	return svc, audit, pool

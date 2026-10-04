@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	pgquery "github.com/pganalyze/pg_query_go/v6"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -30,6 +31,7 @@ type ConnRules struct {
 // Validator parses PostgreSQL with libpg_query and enforces table,
 // schema and function rules on the AST. Never regex.
 type Validator struct {
+	mu        sync.RWMutex
 	conns     map[string]ConnRules
 	blockedFn map[string]struct{}
 }
@@ -52,9 +54,18 @@ func New(conns map[string]ConnRules, blockedFunctions []string) *Validator {
 	return &Validator{conns: conns, blockedFn: blocked}
 }
 
+// SetRules registers the allow/deny lists for a connection at runtime.
+func (v *Validator) SetRules(name string, rules ConnRules) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.conns[name] = rules
+}
+
 // Validate runs the §6.2.2 pipeline: parse → classify → walk → checks.
 func (v *Validator) Validate(_ context.Context, connection, sql string) (*domain.ValidatedQuery, error) {
+	v.mu.RLock()
 	rules, ok := v.conns[connection]
+	v.mu.RUnlock()
 	if !ok {
 		return nil, domain.ErrConnectionNotFound(connection)
 	}

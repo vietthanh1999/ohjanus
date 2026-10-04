@@ -1,5 +1,6 @@
 <script lang="ts">
   import { explorerState } from "@/features/explorer";
+  import { connectionsState } from "@/features/connections";
   import { Button, Flex, Text } from "@ohjanus/ui";
   import {
     DropdownMenu,
@@ -143,6 +144,9 @@
     <DropdownMenuContent>
       <DropdownMenuItem onclick={() => onnewconsole?.()}>
         New console on first connection
+      </DropdownMenuItem>
+      <DropdownMenuItem onclick={() => (connectionsState.createConnectionModalOpen = true)}>
+        New PostgreSQL connection…
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem onclick={() => onmanageconnections?.()}>

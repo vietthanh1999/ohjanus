@@ -1,12 +1,13 @@
 import { mapConnection, type ConnectionItem } from '@/entities/connection';
 import { ApiError } from '@/shared/api';
 import { nowStamp } from '@/shared/lib';
-import { listConnections, testConnection } from '../api/connections';
+import { listConnections, testConnection, createConnection as apiCreateConnection, type CreateConnectionInput } from '../api/connections';
 
 class ConnectionsManager {
   connections = $state<ConnectionItem[]>([]);
   loading = $state<boolean>(false);
   error = $state<string | null>(null);
+  createConnectionModalOpen = $state<boolean>(false);
 
   async loadConnections() {
     this.loading = true;
@@ -32,6 +33,12 @@ class ConnectionsManager {
       conn.last_ping_at = nowStamp();
     }
     return res;
+  }
+
+  async createConnection(input: CreateConnectionInput) {
+    const created = await apiCreateConnection(input);
+    await this.loadConnections().catch(() => {});
+    return created;
   }
 }
 

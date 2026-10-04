@@ -72,7 +72,10 @@ func writeSetup(approved bool) (*WriteService, *captureAudit, *fakeApproval, *mu
 		NewGateway(clk),
 		&writeValidator{vq: vq},
 		writePolicy{},
-		map[string]out.Pool{"analytics": &writePool{planText: "Update on orders  (cost=0.00..1.42 rows=42 width=6)", affected: 42}},
+		NewConnRegistry(
+			map[string]out.Pool{"analytics": &writePool{planText: "Update on orders  (cost=0.00..1.42 rows=42 width=6)", affected: 42}},
+			nil,
+		),
 		tokememory.New(clk, time.Minute),
 		&fakeApproval{approved: approved},
 		audit, clk, identRedact{}, time.Minute, 30*time.Second, 10000,

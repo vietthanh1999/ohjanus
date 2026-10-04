@@ -3,32 +3,26 @@ package service
 import (
 	"context"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/vietthanh1999/ohjanus/internal/core/domain"
 	"github.com/vietthanh1999/ohjanus/internal/core/port/in"
-	"github.com/vietthanh1999/ohjanus/internal/core/port/out"
 )
 
 // SchemaService implements in.SchemaUseCase with allow/deny filtering.
 type SchemaService struct {
 	gateway *Gateway
-	pools   map[string]out.Pool
-	metas   map[string]domain.ConnectionMeta
+	conns   *ConnRegistry
 }
 
 var _ in.SchemaUseCase = (*SchemaService)(nil)
 
 // NewSchemaService wires a SchemaService.
-func NewSchemaService(gateway *Gateway, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta) *SchemaService {
-	if pools == nil {
-		pools = map[string]out.Pool{}
+func NewSchemaService(gateway *Gateway, conns *ConnRegistry) *SchemaService {
+	if conns == nil {
+		conns = NewConnRegistry(nil, nil)
 	}
-	if metas == nil {
-		metas = map[string]domain.ConnectionMeta{}
-	}
-	return &SchemaService{gateway: gateway, pools: pools, metas: metas}
+	return &SchemaService{gateway: gateway, conns: conns}
 }
 
 // ListConnections returns the connection aliases the agent may see.
@@ -40,11 +34,10 @@ func (s *SchemaService) ListConnections(ctx context.Context) ([]domain.Connectio
 		status = "error"
 		return nil, err
 	}
-	out := make([]domain.Connection, 0, len(s.metas))
-	for _, m := range s.metas {
+	out := make([]domain.Connection, 0)
+	for _, m := range s.conns.Metas() {
 		out = append(out, m.Connection)
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
 	return out, nil
 }
 
@@ -56,7 +49,7 @@ func (s *SchemaService) GetSchema(ctx context.Context, connection, schema, table
 		status = "error"
 		return nil, err
 	}
-	meta, ok := s.metas[connection]
+	meta, ok := s.conns.Meta(connection)
 	if !ok {
 		status = "error"
 		return nil, domain.ErrConnectionNotFound(connection)
@@ -71,7 +64,7 @@ func (s *SchemaService) GetSchema(ctx context.Context, connection, schema, table
 		return nil, domain.NewError(domain.CodeTableNotAllowed,
 			fmt.Sprintf("table %q is not allowed", table))
 	}
-	pool, ok := s.pools[connection]
+	pool, ok := s.conns.Pool(connection)
 	if !ok {
 		status = "error"
 		return nil, domain.ErrConnectionNotFound(connection)

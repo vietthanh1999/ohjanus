@@ -10,6 +10,7 @@
   import { TableDataConsole } from '@/features/table-viewer';
   import { ApprovalDecisionModal, approvalsState } from '@/features/approvals';
   import { CreateTokenModal } from '@/features/tokens';
+  import { NewConnectionModal } from '@/features/connections';
   import { SearchPaletteModal } from '@/features/command-palette';
   import { SettingsModal } from '@/features/settings';
   import { explorerState } from '@/features/explorer';
@@ -143,6 +144,7 @@
   <!-- Global Modals & Notifications -->
   <ApprovalDecisionModal />
   <CreateTokenModal />
+  <NewConnectionModal />
   <DdlModal />
   <SearchPaletteModal />
   <SettingsModal onReconnect={() => void bootState.loadAll()} />

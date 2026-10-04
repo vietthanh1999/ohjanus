@@ -66,8 +66,10 @@ func TestReadObservesMetrics(t *testing.T) {
 		NewGatewayWithLimits(clk, out.AllowRateLimiter{}, 0, m),
 		&fakeValidator{vq: vq},
 		&fakePolicy{decision: allowDecision()},
-		map[string]out.Pool{"analytics": &fakePool{res: &domain.ResultSet{RowCount: 1}}},
-		map[string]domain.ConnectionMeta{"analytics": {}},
+		NewConnRegistry(
+			map[string]out.Pool{"analytics": &fakePool{res: &domain.ResultSet{RowCount: 1}}},
+			map[string]domain.ConnectionMeta{"analytics": {}},
+		),
 		&captureAudit{}, clk, identRedact{}, 100, 10000, 0,
 	)
 	if _, err := svc.Read(authedCtx(), domain.ReadRequest{Connection: "analytics", SQL: "SELECT 1"}); err != nil {
@@ -81,7 +83,7 @@ func TestReadObservesMetrics(t *testing.T) {
 		NewGatewayWithLimits(clk, out.AllowRateLimiter{}, 0, m),
 		&fakeValidator{vq: &domain.ValidatedQuery{StatementType: domain.StatementDrop, NormalizedSQL: "DROP TABLE x"}},
 		&fakePolicy{decision: domain.PolicyDecision{Action: domain.ActionDeny, Rule: "deny-ddl"}},
-		map[string]out.Pool{}, map[string]domain.ConnectionMeta{},
+		NewConnRegistry(map[string]out.Pool{}, map[string]domain.ConnectionMeta{}),
 		&captureAudit{}, clk, identRedact{}, 100, 10000, 0,
 	)
 	svc2.Read(authedCtx(), domain.ReadRequest{Connection: "analytics", SQL: "DROP TABLE x"})

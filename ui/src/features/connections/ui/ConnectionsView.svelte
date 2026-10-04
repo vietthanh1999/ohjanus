@@ -168,6 +168,15 @@
 
     {#snippet right()}
       <Button
+        variant="secondary"
+        size="sm"
+        title="Add a PostgreSQL connection"
+        onclick={() => (connectionsState.createConnectionModalOpen = true)}
+      >
+        <Icon name="plus" size={13} />
+        <Text size="sm">New connection</Text>
+      </Button>
+      <Button
         variant="ghost"
         size="icon-sm"
         class="jb-icon-btn"

@@ -17,8 +17,11 @@ import (
 	authmemory "github.com/vietthanh1999/ohjanus/internal/adapter/out/auth/memory"
 	systemclock "github.com/vietthanh1999/ohjanus/internal/adapter/out/clock/system"
 	tokememory "github.com/vietthanh1999/ohjanus/internal/adapter/out/token/memory"
+	pgvalidator "github.com/vietthanh1999/ohjanus/internal/adapter/out/validator/postgres"
+	valrouter "github.com/vietthanh1999/ohjanus/internal/adapter/out/validator/router"
 	"github.com/vietthanh1999/ohjanus/internal/core/domain"
 	"github.com/vietthanh1999/ohjanus/internal/core/port/out"
+	"github.com/vietthanh1999/ohjanus/internal/core/service"
 )
 
 type stubResolver struct {
@@ -42,7 +45,7 @@ func testServer(authMode string) (*Server, *tokememory.Store, *auditmemory.Buffe
 		"analytics": {Connection: domain.Connection{Name: "analytics", Driver: "postgres", ReadOnly: true}},
 	}
 	authStore := authmemory.New(clock)
-	s := New("127.0.0.1:0", authMode, store, &stubResolver{tokens: map[string]domain.AuthToken{}}, authStore, buf, buf, map[string]out.Pool{}, metas, clock)
+	s := New("127.0.0.1:0", authMode, store, &stubResolver{tokens: map[string]domain.AuthToken{}}, authStore, buf, buf, service.NewConnRegistry(map[string]out.Pool{}, metas), nil, nil, nil, clock)
 	return s, store, buf
 }
 
@@ -137,7 +140,7 @@ func TestAdminAuth(t *testing.T) {
 	clock := systemclock.Clock{}
 	store := tokememory.New(clock, time.Minute)
 	buf := auditmemory.New(10)
-	s := New("127.0.0.1:0", "token", store, resolver, authmemory.New(clock), buf, buf, map[string]out.Pool{}, map[string]domain.ConnectionMeta{}, clock)
+	s := New("127.0.0.1:0", "token", store, resolver, authmemory.New(clock), buf, buf, service.NewConnRegistry(nil, nil), nil, nil, nil, clock)
 	ts := httptest.NewServer(s.mux)
 	defer ts.Close()
 
@@ -288,7 +291,7 @@ func TestAdminStreamQueryToken(t *testing.T) {
 	clock := systemclock.Clock{}
 	store := tokememory.New(clock, time.Minute)
 	buf := auditmemory.New(10)
-	s := New("127.0.0.1:0", "token", store, resolver, authmemory.New(clock), buf, buf, map[string]out.Pool{}, map[string]domain.ConnectionMeta{}, clock)
+	s := New("127.0.0.1:0", "token", store, resolver, authmemory.New(clock), buf, buf, service.NewConnRegistry(nil, nil), nil, nil, nil, clock)
 	ts := httptest.NewServer(s.Handler())
 	defer ts.Close()
 
@@ -455,4 +458,127 @@ type testHTTPError struct {
 
 func (e *testHTTPError) Error() string {
 	return http.StatusText(e.status) + " for " + e.url
+}
+
+type stubPool struct{}
+
+func (stubPool) Query(_ context.Context, _ domain.Query, _ domain.QueryOpts) (*domain.ResultSet, error) {
+	return &domain.ResultSet{}, nil
+}
+func (stubPool) Exec(_ context.Context, _ domain.Query) (*domain.ExecResult, error) {
+	return &domain.ExecResult{}, nil
+}
+func (stubPool) Explain(_ context.Context, _ domain.Query) (*domain.Plan, error) {
+	return &domain.Plan{}, nil
+}
+func (stubPool) Schema(_ context.Context, _, _ string) ([]domain.Schema, error) { return nil, nil }
+func (stubPool) Ping(_ context.Context) error                                   { return nil }
+func (stubPool) Close() error                                                   { return nil }
+
+type stubConnector struct {
+	pool out.Pool
+	err  error
+}
+
+func (s *stubConnector) Driver() string { return "postgres" }
+func (s *stubConnector) Open(_ context.Context, _ domain.Credentials, _ domain.PoolConfig) (out.Pool, error) {
+	if s.err != nil {
+		return nil, s.err
+	}
+	return s.pool, nil
+}
+
+func testConnServer(t *testing.T) (*httptest.Server, string, string) {
+	t.Helper()
+	adminSecret := "jn_admin_secret"
+	readSecret := "jn_read_secret"
+	adminSum := sha256.Sum256([]byte(adminSecret))
+	readSum := sha256.Sum256([]byte(readSecret))
+	resolver := authconfig.New([]domain.AuthToken{
+		{ID: "tok_admin", Hash: "sha256:" + hex.EncodeToString(adminSum[:]), Scopes: []domain.Scope{domain.ScopeAdmin}},
+		{ID: "tok_read", Hash: "sha256:" + hex.EncodeToString(readSum[:]), Scopes: []domain.Scope{domain.ScopeRead}},
+	}, systemclock.Clock{})
+	clock := systemclock.Clock{}
+	store := tokememory.New(clock, time.Minute)
+	buf := auditmemory.New(10)
+	pgVal := pgvalidator.New(nil, nil)
+	router := valrouter.New(map[string]out.Validator{}, nil)
+	s := New("127.0.0.1:0", "token", store, resolver, authmemory.New(clock), buf, buf,
+		service.NewConnRegistry(nil, nil), router, pgVal, &stubConnector{pool: stubPool{}}, clock)
+	ts := httptest.NewServer(s.mux)
+	t.Cleanup(ts.Close)
+	return ts, adminSecret, readSecret
+}
+
+func postConn(t *testing.T, ts *httptest.Server, secret, body string) (int, map[string]any) {
+	t.Helper()
+	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/v1/connections", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	if secret != "" {
+		req.Header.Set("Authorization", "Bearer "+secret)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	var item map[string]any
+	_ = json.NewDecoder(resp.Body).Decode(&item)
+	return resp.StatusCode, item
+}
+
+func TestAdminConnectionCreate(t *testing.T) {
+	ts, adminSecret, readSecret := testConnServer(t)
+
+	// Valid field-based create → 201, tested-on-create (stub pings OK).
+	status, item := postConn(t, ts, adminSecret, `{"name":"prod","host":"db.internal","port":5432,"database":"app","username":"app","password":"s3cret","read_only":true}`)
+	if status != http.StatusCreated {
+		t.Fatalf("create status = %d, item = %v", status, item)
+	}
+	if item["name"] != "prod" || item["driver"] != "postgres" || item["status"] != "healthy" {
+		t.Errorf("item = %v", item)
+	}
+
+	// Duplicate name → 409.
+	if status, _ := postConn(t, ts, adminSecret, `{"name":"prod","host":"db.internal","database":"app"}`); status != http.StatusConflict {
+		t.Errorf("duplicate status = %d, want 409", status)
+	}
+
+	// Bad name → 400.
+	if status, _ := postConn(t, ts, adminSecret, `{"name":"bad name!","host":"h","database":"d"}`); status != http.StatusBadRequest {
+		t.Errorf("bad name status = %d, want 400", status)
+	}
+
+	// Unsupported driver → 400.
+	if status, _ := postConn(t, ts, adminSecret, `{"name":"m","driver":"mysql","host":"h","database":"d"}`); status != http.StatusBadRequest {
+		t.Errorf("bad driver status = %d, want 400", status)
+	}
+
+	// Read-scoped token may list but not create → 403.
+	if status, _ := postConn(t, ts, readSecret, `{"name":"other","host":"h","database":"d"}`); status != http.StatusForbidden {
+		t.Errorf("read token create status = %d, want 403", status)
+	}
+
+	// Unauthenticated → 401.
+	if status, _ := postConn(t, ts, "", `{"name":"anon","host":"h","database":"d"}`); status != http.StatusUnauthorized {
+		t.Errorf("anon create status = %d, want 401", status)
+	}
+
+	// Created connection shows up in the list.
+	var list struct {
+		Items []map[string]any `json:"items"`
+	}
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/v1/connections", nil)
+	req.Header.Set("Authorization", "Bearer "+adminSecret)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if err := json.NewDecoder(resp.Body).Decode(&list); err != nil {
+		t.Fatal(err)
+	}
+	if len(list.Items) != 1 || list.Items[0]["name"] != "prod" {
+		t.Errorf("list = %v", list.Items)
+	}
 }

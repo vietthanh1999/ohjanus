@@ -156,7 +156,7 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 			policyEng := policyyaml.New(cfg.PolicyRules(), domain.Action(cfg.Policy.DefaultAction))
 			metas := cfg.ConnectionMetas()
 
-			validator := buildValidator(metas)
+			validator, valRouter, pgVal := buildValidator(metas)
 
 			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 			defer stop()
@@ -193,10 +193,11 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 			}
 
 			gateway := service.NewGatewayWithLimits(clock, limiter, cfg.Limits.MaxConcurrentQueries, metrics)
-			readSvc := service.NewReadService(gateway, validator, policyEng, pools, metas, combinedAudit, clock, redactor,
+			connRegs := service.NewConnRegistry(pools, metas)
+			readSvc := service.NewReadService(gateway, validator, policyEng, connRegs, combinedAudit, clock, redactor,
 				1000, cfg.Limits.MaxQueryLength, cfg.QueryTimeout())
-			schemaSvc := service.NewSchemaService(gateway, pools, metas)
-			writeSvc := service.NewWriteService(gateway, validator, policyEng, pools, tokenStore, approvalEng,
+			schemaSvc := service.NewSchemaService(gateway, connRegs)
+			writeSvc := service.NewWriteService(gateway, validator, policyEng, connRegs, tokenStore, approvalEng,
 				combinedAudit, clock, redactor, tokenTTL, cfg.QueryTimeout(), cfg.Limits.MaxQueryLength)
 			server := mcp.NewServer(cfg.Server.Name, cfg.Server.Version, cfg.Auth.Mode, tokenResolver, clock, readSvc, writeSvc, schemaSvc)
 
@@ -208,7 +209,7 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 			})
 
 			if cfg.Admin.Enabled {
-				if err := startAdmin(ctx, cfg, logger, tokenStore, tokenResolver, authStore, auditBuffer, combinedAudit, pools, metas, clock, metricsHandler, readSvc, schemaSvc); err != nil {
+				if err := startAdmin(ctx, cfg, logger, tokenStore, tokenResolver, authStore, auditBuffer, combinedAudit, connRegs, valRouter, pgVal, pgconnector.New(), clock, metricsHandler, readSvc, schemaSvc); err != nil {
 					return err
 				}
 			}
@@ -222,7 +223,7 @@ func newServeCmd(cfgPath, logLevel, transport *string) *cobra.Command {
 	}
 }
 
-func buildValidator(metas map[string]domain.ConnectionMeta) out.Validator {
+func buildValidator(metas map[string]domain.ConnectionMeta) (out.Validator, *valrouter.Router, *pgvalidator.Validator) {
 	rules := make(map[string]pgvalidator.ConnRules, len(metas))
 	byConn := map[string]out.Validator{}
 	for name, m := range metas {
@@ -238,7 +239,8 @@ func buildValidator(metas map[string]domain.ConnectionMeta) out.Validator {
 			byConn[name] = pgVal
 		}
 	}
-	return valrouter.New(byConn, denyall.New())
+	router := valrouter.New(byConn, denyall.New())
+	return router, router, pgVal
 }
 
 func openPools(ctx context.Context, cfg *config.Config, creds *credchain.Chain) (map[string]out.Pool, error) {
@@ -344,12 +346,12 @@ func serveMCPHTTP(ctx context.Context, cfg *config.Config, logger *slog.Logger, 
 
 // startAdmin pre-binds the Admin port (fail fast) then serves it in the
 // background next to the MCP transport.
-func startAdmin(ctx context.Context, cfg *config.Config, logger *slog.Logger, tokenStore out.TokenStore, tokenResolver out.TokenResolver, authStore out.AuthTokenStore, auditReader out.AuditReader, auditSink out.AuditSink, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta, clock out.Clock, metricsHandler http.Handler, readSvc *service.ReadService, schemaSvc *service.SchemaService) error {
+func startAdmin(ctx context.Context, cfg *config.Config, logger *slog.Logger, tokenStore out.TokenStore, tokenResolver out.TokenResolver, authStore out.AuthTokenStore, auditReader out.AuditReader, auditSink out.AuditSink, conns *service.ConnRegistry, valRouter *valrouter.Router, pgVal *pgvalidator.Validator, connector out.Connector, clock out.Clock, metricsHandler http.Handler, readSvc *service.ReadService, schemaSvc *service.SchemaService) error {
 	ln, err := net.Listen("tcp", cfg.Admin.Listen)
 	if err != nil {
-		return fmt.Errorf("admin listen %s: %w", cfg.Admin.Listen, err)
+		return fmt.Errorf("admin listen %s: %w", cfg.Admin.Listen)
 	}
-	admin := adminapi.New(cfg.Admin.Listen, cfg.Auth.Mode, tokenStore, tokenResolver, authStore, auditReader, auditSink, pools, metas, clock)
+	admin := adminapi.New(cfg.Admin.Listen, cfg.Auth.Mode, tokenStore, tokenResolver, authStore, auditReader, auditSink, conns, valRouter, pgVal, connector, clock)
 	admin.SetQueryBackend(readSvc, schemaSvc)
 	admin.SetMetricsHandler(metricsHandler)
 	go func() {

@@ -14,8 +14,7 @@ type ReadService struct {
 	gateway        *Gateway
 	validator      out.Validator
 	policy         out.PolicyEngine
-	pools          map[string]out.Pool
-	metas          map[string]domain.ConnectionMeta
+	conns          *ConnRegistry
 	audit          out.AuditSink
 	clock          out.Clock
 	redact         out.Redactor
@@ -27,14 +26,13 @@ type ReadService struct {
 var _ in.ReadUseCase = (*ReadService)(nil)
 
 // NewReadService wires a ReadService. Only *Gateway, validator, policy and
-// audit are required; pools/metas may be empty (queries then fail with
+// audit are required; conns may be empty (queries then fail with
 // CONNECTION_NOT_FOUND until connectors are wired).
 func NewReadService(
 	gateway *Gateway,
 	validator out.Validator,
 	policy out.PolicyEngine,
-	pools map[string]out.Pool,
-	metas map[string]domain.ConnectionMeta,
+	conns *ConnRegistry,
 	audit out.AuditSink,
 	clock out.Clock,
 	redact out.Redactor,
@@ -42,15 +40,12 @@ func NewReadService(
 	maxQueryLength int,
 	queryTimeout time.Duration,
 ) *ReadService {
-	if pools == nil {
-		pools = map[string]out.Pool{}
-	}
-	if metas == nil {
-		metas = map[string]domain.ConnectionMeta{}
+	if conns == nil {
+		conns = NewConnRegistry(nil, nil)
 	}
 	return &ReadService{
 		gateway: gateway, validator: validator, policy: policy,
-		pools: pools, metas: metas, audit: audit, clock: clock, redact: redact,
+		conns: conns, audit: audit, clock: clock, redact: redact,
 		rowLimit: rowLimit, maxQueryLength: maxQueryLength, queryTimeout: queryTimeout,
 	}
 }
@@ -95,7 +90,7 @@ func (s *ReadService) Read(ctx context.Context, req domain.ReadRequest) (*domain
 		s.gateway.ObserveDenial(decision.Rule, req.Connection)
 		return fail("denied", err)
 	}
-	pool, ok := s.pools[req.Connection]
+	pool, ok := s.conns.Pool(req.Connection)
 	if !ok {
 		return fail("error", domain.ErrConnectionNotFound(req.Connection))
 	}
@@ -158,7 +153,7 @@ func (s *ReadService) Explain(ctx context.Context, req domain.ReadRequest) (*dom
 		s.gateway.ObserveDenial(decision.Rule, req.Connection)
 		return fail("denied", err)
 	}
-	pool, ok := s.pools[req.Connection]
+	pool, ok := s.conns.Pool(req.Connection)
 	if !ok {
 		return fail("error", domain.ErrConnectionNotFound(req.Connection))
 	}
@@ -166,7 +161,7 @@ func (s *ReadService) Explain(ctx context.Context, req domain.ReadRequest) (*dom
 }
 
 func (s *ReadService) rowLimitFor(connection string) int {
-	if m, ok := s.metas[connection]; ok && m.RowLimit > 0 {
+	if m, ok := s.conns.Meta(connection); ok && m.RowLimit > 0 {
 		return m.RowLimit
 	}
 	if s.rowLimit > 0 {

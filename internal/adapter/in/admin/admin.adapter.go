@@ -9,15 +9,19 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"sort"
+	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/vietthanh1999/ohjanus/internal/adapter/in/admin/uistatic"
+	"github.com/vietthanh1999/ohjanus/internal/adapter/out/validator/postgres"
+	valrouter "github.com/vietthanh1999/ohjanus/internal/adapter/out/validator/router"
 	"github.com/vietthanh1999/ohjanus/internal/core/domain"
 	"github.com/vietthanh1999/ohjanus/internal/core/port/in"
 	"github.com/vietthanh1999/ohjanus/internal/core/port/out"
+	"github.com/vietthanh1999/ohjanus/internal/core/service"
 )
 
 // Server exposes the Admin API for the UI (§4 of ui.md) on a port separate
@@ -32,8 +36,10 @@ type Server struct {
 	authStore out.AuthTokenStore
 	audit     out.AuditReader
 	auditSink out.AuditSink
-	pools     map[string]out.Pool
-	metas     map[string]domain.ConnectionMeta
+	conns     *service.ConnRegistry
+	valRouter *valrouter.Router
+	pgVal     *postgres.Validator
+	connector out.Connector
 	clock     out.Clock
 	read      in.ReadUseCase
 	schema    in.SchemaUseCase
@@ -43,12 +49,14 @@ type Server struct {
 }
 
 // New wires an Admin server. authStore may be nil when token management
-// is unavailable (endpoints return 503).
-func New(addr, authMode string, tokens out.TokenStore, resolver out.TokenResolver, authStore out.AuthTokenStore, audit out.AuditReader, sink out.AuditSink, pools map[string]out.Pool, metas map[string]domain.ConnectionMeta, clock out.Clock) *Server {
+// is unavailable (endpoints return 503). conns/valRouter/pgVal/connector
+// wire runtime connection registration (POST /api/v1/connections); they may
+// be nil only in tests that never touch that endpoint.
+func New(addr, authMode string, tokens out.TokenStore, resolver out.TokenResolver, authStore out.AuthTokenStore, audit out.AuditReader, sink out.AuditSink, conns *service.ConnRegistry, valRouter *valrouter.Router, pgVal *postgres.Validator, connector out.Connector, clock out.Clock) *Server {
 	s := &Server{
 		addr: addr, authMode: authMode, tokens: tokens, resolver: resolver,
 		authStore: authStore,
-		audit:     audit, auditSink: sink, pools: pools, metas: metas, clock: clock,
+		audit:     audit, auditSink: sink, conns: conns, valRouter: valRouter, pgVal: pgVal, connector: connector, clock: clock,
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", s.handleHealth)
@@ -204,6 +212,9 @@ func requiredScope(r *http.Request) domain.Scope {
 	if r.URL.Path == "/api/v1/tokens" || strings.HasPrefix(r.URL.Path, "/api/v1/tokens/") {
 		return domain.ScopeAdmin
 	}
+	if r.URL.Path == "/api/v1/connections" && r.Method == http.MethodPost {
+		return domain.ScopeAdmin
+	}
 	return domain.ScopeRead
 }
 
@@ -259,7 +270,7 @@ func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
 func (s *Server) handleReady(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	unhealthy := map[string]string{}
-	for name, p := range s.pools {
+	for name, p := range s.conns.Pools() {
 		if err := p.Ping(ctx); err != nil {
 			unhealthy[name] = err.Error()
 		}
@@ -506,38 +517,136 @@ func (s *Server) handleAuditOne(w http.ResponseWriter, r *http.Request) {
 // ---- connections ----
 
 func (s *Server) handleConnections(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+	switch r.Method {
+	case http.MethodGet:
+		writeJSON(w, http.StatusOK, map[string]any{"items": s.connectionItems(r.Context())})
+	case http.MethodPost:
+		s.handleConnectionCreate(w, r)
+	default:
 		writeError(w, r, http.StatusMethodNotAllowed, domain.CodeInternal, "method not allowed")
-		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"items": s.connectionItems(r.Context())})
 }
 
 func (s *Server) connectionItems(ctx context.Context) []map[string]any {
-	names := make([]string, 0, len(s.metas))
-	for n := range s.metas {
-		names = append(names, n)
-	}
-	sort.Strings(names)
-	items := make([]map[string]any, 0, len(names))
-	for _, n := range names {
-		m := s.metas[n]
+	items := []map[string]any{}
+	for _, m := range s.conns.Metas() {
 		status := "healthy"
-		if p, ok := s.pools[n]; ok {
+		if p, ok := s.conns.Pool(m.Connection.Name); ok {
 			if err := p.Ping(ctx); err != nil {
 				status = "unhealthy: " + err.Error()
 			}
 		} else {
 			status = "unhealthy: no pool"
 		}
-		items = append(items, map[string]any{
-			"name": m.Connection.Name, "driver": m.Connection.Driver,
-			"readonly": m.Connection.ReadOnly, "status": status,
-			"last_ping_at":    s.clock.Now().UTC().Format(time.RFC3339),
-			"allowed_schemas": m.AllowedSchemas, "denied_tables": m.DeniedTables,
-		})
+		items = append(items, connectionItem(m, status, s.clock.Now()))
 	}
 	return items
+}
+
+func connectionItem(m domain.ConnectionMeta, status string, now time.Time) map[string]any {
+	return map[string]any{
+		"name": m.Connection.Name, "driver": m.Connection.Driver,
+		"readonly": m.Connection.ReadOnly, "status": status,
+		"last_ping_at":    now.UTC().Format(time.RFC3339),
+		"allowed_schemas": m.AllowedSchemas, "denied_tables": m.DeniedTables,
+	}
+}
+
+var connectionNameRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.\-]{0,63}$`)
+
+// handleConnectionCreate registers a PostgreSQL connection at runtime: the
+// DSN is validated, the database is pinged (test-on-create), and only then
+// the pool, metadata and validator rules are attached. Secrets are never
+// logged or returned.
+func (s *Server) handleConnectionCreate(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Name     string `json:"name"`
+		Driver   string `json:"driver"`
+		DSN      string `json:"dsn"`
+		Host     string `json:"host"`
+		Port     int    `json:"port"`
+		Database string `json:"database"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+		SSLMode  string `json:"sslmode"`
+		ReadOnly bool   `json:"read_only"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "invalid body")
+		return
+	}
+	name := strings.TrimSpace(body.Name)
+	if !connectionNameRe.MatchString(name) {
+		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "name must be 1-64 chars: letters, digits, _, ., -")
+		return
+	}
+	driver := strings.TrimSpace(body.Driver)
+	if driver == "" {
+		driver = "postgres"
+	}
+	if s.connector == nil || driver != s.connector.Driver() {
+		writeError(w, r, http.StatusBadRequest, domain.CodeInternal, fmt.Sprintf("driver %q is not supported", driver))
+		return
+	}
+	dsn := strings.TrimSpace(body.DSN)
+	if dsn == "" {
+		if strings.TrimSpace(body.Host) == "" || strings.TrimSpace(body.Database) == "" {
+			writeError(w, r, http.StatusBadRequest, domain.CodeInternal, "host and database are required (or provide a full dsn)")
+			return
+		}
+		dsn = buildPostgresDSN(body.Host, body.Port, body.Database, body.Username, body.Password, body.SSLMode)
+	}
+	if s.conns.Has(name) {
+		writeError(w, r, http.StatusConflict, domain.CodeInternal, fmt.Sprintf("connection %q already exists", name))
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
+	pool, err := s.connector.Open(ctx, domain.Credentials{DSN: dsn}, domain.PoolConfig{})
+	if err != nil {
+		writeError(w, r, http.StatusBadGateway, domain.CodeDBError, "could not connect: "+err.Error())
+		return
+	}
+	meta := domain.ConnectionMeta{
+		Connection: domain.Connection{Name: name, Driver: driver, ReadOnly: body.ReadOnly},
+	}
+	s.conns.Attach(name, pool, meta)
+	s.valRouter.Attach(name, s.pgVal)
+	s.pgVal.SetRules(name, postgres.ConnRules{})
+	if s.auditSink != nil {
+		s.auditSink.Emit(r.Context(), domain.AuditEvent{
+			TS: s.clock.Now(), Event: "connection.created",
+			RequestID: domain.NewRequestID(), TokenID: adminTokenID(r.Context()),
+			Tool: "admin", Status: "success", Error: name,
+		})
+	}
+	writeJSON(w, http.StatusCreated, connectionItem(meta, "healthy", s.clock.Now()))
+}
+
+// buildPostgresDSN assembles a DSN from discrete fields (password is URL-escaped).
+func buildPostgresDSN(host string, port int, database, username, password, sslmode string) string {
+	if port == 0 {
+		port = 5432
+	}
+	if sslmode == "" {
+		sslmode = "prefer"
+	}
+	u := &url.URL{
+		Scheme: "postgres",
+		Host:   net.JoinHostPort(strings.TrimSpace(host), strconv.Itoa(port)),
+		Path:   "/" + strings.TrimSpace(database),
+	}
+	if username != "" {
+		if password != "" {
+			u.User = url.UserPassword(username, password)
+		} else {
+			u.User = url.User(username)
+		}
+	}
+	q := u.Query()
+	q.Set("sslmode", sslmode)
+	u.RawQuery = q.Encode()
+	return u.String()
 }
 
 func (s *Server) handleConnectionSub(w http.ResponseWriter, r *http.Request, _ context.Context) {
@@ -547,7 +656,7 @@ func (s *Server) handleConnectionSub(w http.ResponseWriter, r *http.Request, _ c
 		writeError(w, r, http.StatusNotFound, domain.CodeInternal, "not found")
 		return
 	}
-	p, ok := s.pools[parts[0]]
+	p, ok := s.conns.Pool(parts[0])
 	if !ok {
 		writeError(w, r, http.StatusNotFound, domain.CodeConnectionNotFound, "unknown connection")
 		return

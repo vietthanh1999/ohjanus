@@ -20,7 +20,7 @@ type WriteService struct {
 	gateway        *Gateway
 	validator      out.Validator
 	policy         out.PolicyEngine
-	pools          map[string]out.Pool
+	conns          *ConnRegistry
 	tokens         out.TokenStore
 	approval       out.ApprovalEngine
 	audit          out.AuditSink
@@ -38,7 +38,7 @@ func NewWriteService(
 	gateway *Gateway,
 	validator out.Validator,
 	policy out.PolicyEngine,
-	pools map[string]out.Pool,
+	conns *ConnRegistry,
 	tokens out.TokenStore,
 	approval out.ApprovalEngine,
 	audit out.AuditSink,
@@ -48,12 +48,12 @@ func NewWriteService(
 	queryTimeout time.Duration,
 	maxQueryLength int,
 ) *WriteService {
-	if pools == nil {
-		pools = map[string]out.Pool{}
+	if conns == nil {
+		conns = NewConnRegistry(nil, nil)
 	}
 	return &WriteService{
 		gateway: gateway, validator: validator, policy: policy,
-		pools: pools, tokens: tokens, approval: approval,
+		conns: conns, tokens: tokens, approval: approval,
 		audit: audit, clock: clock, redact: redact,
 		tokenTTL: tokenTTL, queryTimeout: queryTimeout, maxQueryLength: maxQueryLength,
 	}
@@ -96,7 +96,7 @@ func (s *WriteService) Preview(ctx context.Context, req domain.ReadRequest) (*in
 		s.gateway.ObserveDenial(decision.Rule, req.Connection)
 		return fail("denied", err)
 	}
-	pool, ok := s.pools[req.Connection]
+	pool, ok := s.conns.Pool(req.Connection)
 	if !ok {
 		return fail("error", domain.ErrConnectionNotFound(req.Connection))
 	}
@@ -221,7 +221,7 @@ func (s *WriteService) Execute(ctx context.Context, req domain.ExecuteRequest) (
 	if err := s.tokens.MarkUsed(ctx, token.ID); err != nil {
 		return fail("error", err)
 	}
-	pool, ok := s.pools[req.Connection]
+	pool, ok := s.conns.Pool(req.Connection)
 	if !ok {
 		return fail("error", domain.ErrConnectionNotFound(req.Connection))
 	}
