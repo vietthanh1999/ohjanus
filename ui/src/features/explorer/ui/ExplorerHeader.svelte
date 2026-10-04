@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { explorerState } from '@/features/explorer';
-  import { Button, Flex, Text } from '@ohjanus/ui';
+  import { explorerState } from "@/features/explorer";
+  import { Button, Flex, Text } from "@ohjanus/ui";
   import {
     DropdownMenu,
     DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuCheckboxItem,
-    DropdownMenuSeparator
-  } from '@ohjanus/ui';
-  import { Tooltip, TooltipTrigger, TooltipContent } from '@ohjanus/ui';
-  import { Icon } from '@ohjanus/icons';
+    DropdownMenuSeparator,
+  } from "@ohjanus/ui";
+  import { Tooltip, TooltipTrigger, TooltipContent } from "@ohjanus/ui";
+  import { Icon } from "@ohjanus/icons";
 
   interface Props {
     onreload?: () => void;
@@ -19,19 +19,21 @@
     oncopyddl?: () => void;
   }
 
-  let { onreload, onnewconsole, onmanageconnections, oncopyddl }: Props = $props();
+  let { onreload, onnewconsole, onmanageconnections, oncopyddl }: Props =
+    $props();
 </script>
 
 <Flex align="center" justify="between" class="explorer-header-top">
   <Text size="sm" weight="semibold">Database Explorer</Text>
-  <Flex align="center" gap="xs" class="header-window-icons">
+  <Flex align="center" gap="1" class="header-window-icons">
     <Tooltip>
       <TooltipTrigger>
         <Button
           variant="ghost"
           size="icon-xs"
           class="jb-icon-btn {explorerState.scrollFromEditor ? 'toggled' : ''}"
-          onclick={() => (explorerState.scrollFromEditor = !explorerState.scrollFromEditor)}
+          onclick={() =>
+            (explorerState.scrollFromEditor = !explorerState.scrollFromEditor)}
         >
           <Icon name="crosshairs" size={12} />
         </Button>
@@ -66,7 +68,12 @@
     </Tooltip>
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <span class="jb-icon-btn menu-trigger" role="button" tabindex="0" title="Explorer options">
+        <span
+          class="jb-icon-btn menu-trigger"
+          role="button"
+          tabindex="0"
+          title="Explorer options"
+        >
           <Icon name="more" size={12} />
         </span>
       </DropdownMenuTrigger>
@@ -121,10 +128,15 @@
 </Flex>
 
 <!-- Action toolbar (DESIGN §3.1): new / refresh / copy DDL / DDL / eye -->
-<Flex align="center" gap="xs" class="explorer-toolbar">
+<Flex align="center" gap="1" class="explorer-toolbar">
   <DropdownMenu>
     <DropdownMenuTrigger>
-      <span class="jb-icon-btn menu-trigger" role="button" tabindex="0" title="New data source / console">
+      <span
+        class="jb-icon-btn menu-trigger"
+        role="button"
+        tabindex="0"
+        title="New data source / console"
+      >
         <Icon name="plus" size={13} />
       </span>
     </DropdownMenuTrigger>
@@ -184,7 +196,10 @@
         class="jb-icon-btn {explorerState.showSystemSchemas ? 'toggled' : ''}"
         onclick={() => explorerState.toggleSystemSchemas()}
       >
-        <Icon name={explorerState.showSystemSchemas ? 'eye' : 'eye-off'} size={12} />
+        <Icon
+          name={explorerState.showSystemSchemas ? "eye" : "eye-off"}
+          size={12}
+        />
       </Button>
     </TooltipTrigger>
     <TooltipContent side="bottom">Show/hide system catalogs</TooltipContent>

@@ -1,7 +1,20 @@
 <script lang="ts">
   import { workbenchState } from '@/features/workbench';
   import { Icon } from '@ohjanus/icons';
-  import { Text } from '@ohjanus/ui';
+  import {
+    Text,
+    Button,
+    Badge,
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator
+  } from '@ohjanus/ui';
 
   let isDropdownOpen = $state(false);
 
@@ -12,91 +25,75 @@
 
 <nav class="tabbar-container">
   <!-- Tabs list -->
-  <div class="tabs-scrollable">
-    {#each workbenchState.tabs as tab (tab.id)}
-      <button
-        type="button"
-        class="tab-pill"
-        class:active={workbenchState.activeTabId === tab.id}
-        onclick={() => workbenchState.activeTabId = tab.id}
-        title={tab.title}
-      >
-        <!-- Icon -->
-        <span class="tab-icon">
-          {#if tab.type === 'console'}
-            <Icon name="lightning" size={14} color="#4A88C7" />
-          {:else if tab.type === 'table'}
-            <Icon name="table" size={14} color="#4A88C7" />
-          {:else if tab.type === 'approvals'}
-            <Icon name="shield" size={14} color="#EDA200" />
-          {:else if tab.type === 'audit'}
-            <Icon name="audit" size={14} color="#56A8F5" />
-          {:else if tab.type === 'tokens'}
-            <Icon name="key" size={14} color="#3B82F6" />
-          {:else if tab.type === 'connections'}
-            <Icon name="database" size={14} color="#3B82F6" />
-          {:else if tab.type === 'dashboard'}
-            <Icon name="chart" size={14} color="#57D38C" />
-          {:else}
-            <Icon name="database" size={14} color="#7A7E85" />
-          {/if}
-        </span>
+  <Tabs
+    value={workbenchState.activeTabId}
+    onValueChange={(v) => (workbenchState.activeTabId = v)}
+    class="tabbar-tabs"
+  >
+    <TabsList class="tabs-scrollable">
+      {#each workbenchState.tabs as tab (tab.id)}
+        <TabsTrigger value={tab.id} class="tab-pill">
+          <!-- Icon -->
+          <span class="tab-icon">
+            {#if tab.type === 'console'}
+              <Icon name="lightning" size={14} color="#4A88C7" />
+            {:else if tab.type === 'table'}
+              <Icon name="table" size={14} color="#4A88C7" />
+            {:else if tab.type === 'approvals'}
+              <Icon name="shield" size={14} color="#EDA200" />
+            {:else if tab.type === 'audit'}
+              <Icon name="audit" size={14} color="#56A8F5" />
+            {:else if tab.type === 'tokens'}
+              <Icon name="key" size={14} color="#3B82F6" />
+            {:else if tab.type === 'connections'}
+              <Icon name="database" size={14} color="#3B82F6" />
+            {:else if tab.type === 'dashboard'}
+              <Icon name="chart" size={14} color="#57D38C" />
+            {:else}
+              <Icon name="database" size={14} color="#7A7E85" />
+            {/if}
+          </span>
 
-        <!-- Tab Title -->
-        <Text size="md" truncate style="flex: 1;">{tab.title}</Text>
+          <!-- Tab Title -->
+          <Text size="md" truncate title={tab.title} style="flex: 1;">{tab.title}</Text>
 
-        <!-- Close Button (x) -->
-        {#if tab.closable}
-          <span
-            class="tab-close-icon"
-            role="button"
-            tabindex="0"
-            title="Close Tab"
-            onclick={(e) => {
-              e.stopPropagation();
-              workbenchState.closeTab(tab.id);
-            }}
-            onkeydown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
+          <!-- Close Button (x) -->
+          {#if tab.closable}
+            <span
+              class="tab-close-icon"
+              role="button"
+              tabindex="0"
+              title="Close Tab"
+              onclick={(e) => {
                 e.stopPropagation();
                 workbenchState.closeTab(tab.id);
-              }
-            }}
-          >
-            <Icon name="close" size={11} />
-          </span>
-        {/if}
-      </button>
-    {/each}
-  </div>
+              }}
+              onkeydown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.stopPropagation();
+                  workbenchState.closeTab(tab.id);
+                }
+              }}
+            >
+              <Icon name="close" size={11} />
+            </span>
+          {/if}
+        </TabsTrigger>
+      {/each}
+    </TabsList>
+  </Tabs>
 
   <!-- Right: Overflow chevron menu -->
   <div class="tabbar-actions">
-    <button
-      type="button"
-      class="overflow-btn"
-      title="All Open Tabs"
-      onclick={() => isDropdownOpen = !isDropdownOpen}
-    >
-      <Icon name="chevron-down" size={10} />
-    </button>
-
-    <button
-      type="button"
-      class="overflow-btn"
-      title="Tab Actions"
-    >
-      <Icon name="more" size={13} />
-    </button>
-
-    {#if isDropdownOpen}
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div class="tabs-dropdown" onclick={() => isDropdownOpen = false}>
+    <DropdownMenu bind:open={isDropdownOpen}>
+      <DropdownMenuTrigger class="overflow-btn">
+        <Icon name="chevron-down" size={10} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" class="tabs-dropdown-menu">
         {#if workbenchState.tabs.some((t) => t.type === 'table' || t.type === 'console')}
-          <div class="dropdown-header">Database Objects</div>
+          <DropdownMenuLabel class="dropdown-header">Database Objects</DropdownMenuLabel>
           {#each workbenchState.tabs.filter((t) => t.type === 'table' || t.type === 'console') as tab (tab.id)}
-            <button type="button" class="dropdown-item" onclick={() => workbenchState.openTab(tab)}>
+            <DropdownMenuItem class="dropdown-item" onclick={() => workbenchState.openTab(tab)}>
               <span class="dropdown-item-content">
                 {#if tab.type === 'table'}
                   <Icon name="table" size={14} color="#4A88C7" />
@@ -105,46 +102,70 @@
                 {/if}
                 <Text size="md">{tab.title}</Text>
               </span>
-            </button>
+            </DropdownMenuItem>
           {/each}
-          <div class="dropdown-separator"></div>
+          <DropdownMenuSeparator class="dropdown-separator" />
         {/if}
-        <div class="dropdown-header">Gateway Modules</div>
-        <button type="button" class="dropdown-item" onclick={() => workbenchState.openTab({ id: 'approvals', title: 'Approvals Queue', type: 'approvals', closable: false, icon: 'shield' })}>
+        <DropdownMenuLabel class="dropdown-header">Gateway Modules</DropdownMenuLabel>
+        <DropdownMenuItem
+          class="dropdown-item"
+          onclick={() => workbenchState.openTab({ id: 'approvals', title: 'Approvals Queue', type: 'approvals', closable: false, icon: 'shield' })}
+        >
           <span class="dropdown-item-content">
             <Icon name="shield" size={14} color="#EDA200" />
             <Text size="md">Approvals Queue</Text>
           </span>
           {#if approvalsBadge}
-            <span class="count-tag">{approvalsBadge}</span>
+            <Badge variant="counter" size="sm" class="count-tag">{approvalsBadge}</Badge>
           {/if}
-        </button>
-        <button type="button" class="dropdown-item" onclick={() => workbenchState.openTab({ id: 'audit', title: 'Audit Logs', type: 'audit', closable: false, icon: 'audit' })}>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          class="dropdown-item"
+          onclick={() => workbenchState.openTab({ id: 'audit', title: 'Audit Logs', type: 'audit', closable: false, icon: 'audit' })}
+        >
           <span class="dropdown-item-content">
             <Icon name="audit" size={14} color="#56A8F5" />
             <Text size="md">Audit Log Trail</Text>
           </span>
-        </button>
-        <button type="button" class="dropdown-item" onclick={() => workbenchState.openTab({ id: 'tokens', title: 'MCP Tokens', type: 'tokens', closable: false, icon: 'key' })}>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          class="dropdown-item"
+          onclick={() => workbenchState.openTab({ id: 'tokens', title: 'MCP Tokens', type: 'tokens', closable: false, icon: 'key' })}
+        >
           <span class="dropdown-item-content">
             <Icon name="key" size={14} color="#3B82F6" />
             <Text size="md">MCP Agent Tokens</Text>
           </span>
-        </button>
-        <button type="button" class="dropdown-item" onclick={() => workbenchState.openTab({ id: 'connections', title: 'Connection Pools', type: 'connections', closable: false, icon: 'database' })}>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          class="dropdown-item"
+          onclick={() => workbenchState.openTab({ id: 'connections', title: 'Connection Pools', type: 'connections', closable: false, icon: 'database' })}
+        >
           <span class="dropdown-item-content">
             <Icon name="database" size={14} color="#3B82F6" />
             <Text size="md">Connection Pools</Text>
           </span>
-        </button>
-        <button type="button" class="dropdown-item" onclick={() => workbenchState.openTab({ id: 'dashboard', title: 'Gateway Dashboard', type: 'dashboard', closable: false, icon: 'chart' })}>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          class="dropdown-item"
+          onclick={() => workbenchState.openTab({ id: 'dashboard', title: 'Gateway Dashboard', type: 'dashboard', closable: false, icon: 'chart' })}
+        >
           <span class="dropdown-item-content">
             <Icon name="chart" size={14} color="#57D38C" />
             <Text size="md">Telemetry Dashboard</Text>
           </span>
-        </button>
-      </div>
-    {/if}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      class="overflow-btn"
+      title="Tab Actions"
+    >
+      <Icon name="more" size={13} />
+    </Button>
   </div>
 </nav>
 
@@ -162,7 +183,12 @@
     border-radius: 0;
   }
 
-  .tabs-scrollable {
+  /* Let the Tabs list participate directly in the tabbar flex row. */
+  .tabbar-container :global(.tabbar-tabs) {
+    display: contents;
+  }
+
+  .tabbar-container :global(.tabs-scrollable) {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -170,14 +196,20 @@
     overflow-x: auto;
     overflow-y: hidden;
     flex: 1;
+    /* Neutralize core TabsList box styling: the strip itself is chromeless. */
+    width: auto;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
   }
 
-  .tabs-scrollable::-webkit-scrollbar {
+  .tabbar-container :global(.tabs-scrollable)::-webkit-scrollbar {
     display: none;
   }
 
   /* Exact DataGrip Rounded Tab Pill */
-  .tab-pill {
+  .tabbar-container :global(.tab-pill) {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -195,13 +227,13 @@
     white-space: nowrap;
   }
 
-  .tab-pill:hover {
+  .tabbar-container :global(.tab-pill:hover) {
     background-color: #2B2D30;
     color: var(--text-primary);
   }
 
   /* Exact Active Tab from design2.png: Dark blue fill with 1px blue outline */
-  .tab-pill.active {
+  .tabbar-container :global(.tab-pill.active) {
     background-color: #1F2E4A;
     border: 1px solid #3574F0;
     color: #DFE1E5;
@@ -238,7 +270,7 @@
     position: relative;
   }
 
-  .overflow-btn {
+  .tabbar-container :global(.overflow-btn) {
     width: var(--icon-btn-size-sm, 28px);
     height: var(--icon-btn-size-sm, 28px);
     border-radius: var(--radius-sm, 4px);
@@ -248,25 +280,24 @@
     color: var(--text-muted);
   }
 
-  .overflow-btn:hover {
+  .tabbar-container :global(.overflow-btn:hover) {
     background-color: var(--bg-hover);
     color: var(--text-primary);
   }
 
-  .tabs-dropdown {
-    position: absolute;
-    top: 28px;
-    right: 0;
+  /* Portaled via DropdownMenuContent: keep the DataGrip menu look,
+     positioning is handled by the core floating logic. Bare :global (doubled
+     for specificity) so it still matches after the portal moves nodes to <body>. */
+  :global(.tabs-dropdown-menu.tabs-dropdown-menu) {
+    width: 260px;
+    padding: 4px 0;
     background-color: #2B2D30;
     border: 1px solid var(--border-strong);
     border-radius: 4px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
-    width: 260px;
-    padding: 4px 0;
-    z-index: 100;
   }
 
-  .dropdown-header {
+  :global(.dropdown-header.dropdown-header) {
     font-size: var(--font-size-2xs, 11px);
     text-transform: uppercase;
     font-weight: 600;
@@ -275,7 +306,7 @@
     letter-spacing: 0.5px;
   }
 
-  .dropdown-item {
+  :global(.dropdown-item.dropdown-item) {
     width: 100%;
     display: flex;
     align-items: center;
@@ -286,11 +317,11 @@
     text-align: left;
   }
 
-  .dropdown-item:hover {
+  :global(.dropdown-item.dropdown-item:hover) {
     background-color: var(--bg-hover);
   }
 
-  .dropdown-item-content {
+  :global(.dropdown-item-content.dropdown-item-content) {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -299,7 +330,7 @@
     white-space: nowrap;
   }
 
-  .count-tag {
+  :global(.count-tag.count-tag) {
     background-color: #EDA200;
     color: #1E1F22;
     font-size: 9px;
@@ -308,7 +339,7 @@
     border-radius: 4px;
   }
 
-  .dropdown-separator {
+  :global(.dropdown-separator.dropdown-separator) {
     height: 1px;
     background-color: var(--border-default);
     margin: 4px 0;
