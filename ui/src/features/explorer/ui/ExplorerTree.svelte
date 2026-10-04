@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { bootState } from '@/app/boot.svelte';
   import { connectionsState } from '@/features/connections';
   import { consoleState } from '@/features/console';
   import { explorerState } from '@/features/explorer';
@@ -38,19 +37,19 @@
 </script>
 
 <Box class="tree-viewport">
-  {#if bootState.dataLoading}
+  {#if connectionsState.loading}
     <Box class="tree-empty">
       <Text size="xs" color="muted">Loading connections from Admin API…</Text>
     </Box>
-  {:else if bootState.dataError && connectionsState.connections.length === 0}
+  {:else if connectionsState.error && connectionsState.connections.length === 0}
     <Stack gap="xs" class="tree-empty">
       <Text size="xs" color="muted">Admin API unreachable.</Text>
-      <Text size="xs" color="danger" class="tree-error">{bootState.dataError}</Text>
+      <Text size="xs" color="danger" class="tree-error">{connectionsState.error}</Text>
       <Button
         variant="link"
         size="xs"
         class="retry-btn"
-        onclick={() => void bootState.loadAll()}
+        onclick={() => void connectionsState.loadConnections()}
       >
         Retry
       </Button>

@@ -1,10 +1,13 @@
 <script lang="ts">
-  import { approvalsState } from '@/features/approvals';
   import { workbenchState } from '@/features/workbench';
   import { Icon } from '@ohjanus/icons';
   import { Text } from '@ohjanus/ui';
 
   let isDropdownOpen = $state(false);
+
+  // Pending-approvals badge, synced by features/approvals (no import: avoids a
+  // workbench <-> approvals module cycle; TabBar only reads shell tab state).
+  let approvalsBadge = $derived(workbenchState.tabs.find((t) => t.id === 'approvals')?.badge);
 </script>
 
 <nav class="tabbar-container">
@@ -112,8 +115,8 @@
             <Icon name="shield" size={14} color="#EDA200" />
             <Text size="md">Approvals Queue</Text>
           </span>
-          {#if approvalsState.notificationCount > 0}
-            <span class="count-tag">{approvalsState.notificationCount}</span>
+          {#if approvalsBadge}
+            <span class="count-tag">{approvalsBadge}</span>
           {/if}
         </button>
         <button type="button" class="dropdown-item" onclick={() => workbenchState.openTab({ id: 'audit', title: 'Audit Logs', type: 'audit', closable: false, icon: 'audit' })}>

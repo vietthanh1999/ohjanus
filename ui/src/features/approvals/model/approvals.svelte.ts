@@ -1,11 +1,14 @@
 import { mapApproval, type ApprovalRequest } from '@/entities/approval';
 import { workbenchState } from '@/features/workbench';
+import { ApiError } from '@/shared/api';
 import { APPROVAL_PAGE_LIMIT, APPROVAL_POLL_MS } from '@/shared/config';
 import { auditState } from '@/features/audit';
 import { listApprovals, approveApproval, rejectApproval, openApprovalStream } from '../api/approvals';
 
 class ApprovalsManager {
   approvals = $state<ApprovalRequest[]>([]);
+  loading = $state<boolean>(false);
+  error = $state<string | null>(null);
   selectedApprovalForAction = $state<ApprovalRequest | null>(null);
   approvalDecisionMode = $state<'approve' | 'reject'>('approve');
   approvalDecisionReason = $state<string>('');
@@ -14,10 +17,23 @@ class ApprovalsManager {
     this.approvals.filter((a) => a.state === 'pending').length
   );
 
-  async loadApprovals() {
-    const page = await listApprovals({ limit: APPROVAL_PAGE_LIMIT });
-    this.approvals = (page.items ?? []).map((t) => mapApproval(t));
-    this.syncWorkbenchBadge();
+  async loadApprovals(opts: { background?: boolean } = {}) {
+    if (!opts.background) {
+      this.loading = true;
+      this.error = null;
+    }
+    try {
+      const page = await listApprovals({ limit: APPROVAL_PAGE_LIMIT });
+      this.approvals = (page.items ?? []).map((t) => mapApproval(t));
+      this.syncWorkbenchBadge();
+    } catch (e) {
+      if (!opts.background) {
+        this.error = e instanceof ApiError ? e.message : String(e);
+      }
+      throw e;
+    } finally {
+      if (!opts.background) this.loading = false;
+    }
   }
 
   private syncWorkbenchBadge() {
@@ -59,7 +75,7 @@ class ApprovalsManager {
     const poll = async () => {
       if (stopped) return;
       try {
-        await this.loadApprovals();
+        await this.loadApprovals({ background: true });
       } catch {
         // Error state is surfaced by explicit reloads; polling stays quiet.
       }

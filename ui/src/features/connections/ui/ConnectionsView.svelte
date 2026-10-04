@@ -1,7 +1,6 @@
 <script lang="ts">
   import { connectionsState } from '@/features/connections';
   import { settingsState } from '@/features/settings';
-  import { bootState } from '@/app/boot.svelte';
   import {
     Button,
     Alert,
@@ -111,18 +110,18 @@
 </script>
 
 <Box class="connections-view">
-  {#if bootState.dataLoading}
+  {#if connectionsState.loading}
     <Box style="padding: 8px 16px;">
       <Text size="sm" color="muted">Loading live data from Admin API…</Text>
     </Box>
-  {:else if bootState.dataError}
+  {:else if connectionsState.error}
     <Box style="padding: 8px 16px;">
       <Alert variant="danger" title="Admin API unreachable">
-        <Text color="danger">{bootState.dataError}</Text>
+        <Text color="danger">{connectionsState.error}</Text>
         <Button
           variant="secondary"
           size="sm"
-          onclick={() => void bootState.loadAll()}
+          onclick={handleReload}
         >
           Retry
         </Button>

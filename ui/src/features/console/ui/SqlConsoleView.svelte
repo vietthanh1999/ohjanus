@@ -2,7 +2,6 @@
   import { connectionsState } from '@/features/connections';
   import { consoleState } from '@/features/console';
   import { explorerState } from '@/features/explorer';
-  import { bootState } from '@/app/boot.svelte';
   import { Icon } from '@ohjanus/icons';
   import { Alert, Button, Text, Box, Flex, Textarea } from '@ohjanus/ui';
   import { Toolbar, ToolbarSeparator, BorderlessSelect, FloatingRowCount } from '@/shared/ui/toolbar';
@@ -112,7 +111,7 @@
     {#if connectionsState.connections.length === 0}
       <Flex align="center" justify="center" class="editor-empty">
         <Text size="sm" color="muted">
-          {#if bootState.dataLoading}
+          {#if connectionsState.loading}
             Connecting to Admin API…
           {:else}
             No connections available. Check janus.yaml connections and Admin API status.

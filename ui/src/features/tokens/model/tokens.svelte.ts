@@ -1,15 +1,27 @@
 import { mapToken, type McpToken } from '@/entities/mcp-token';
+import { ApiError } from '@/shared/api';
 import { listTokens, createToken as apiCreateToken, revokeToken as apiRevokeToken } from '../api/tokens';
 
 class TokensManager {
   tokens = $state<McpToken[]>([]);
+  loading = $state<boolean>(false);
+  error = $state<string | null>(null);
   createTokenModalOpen = $state<boolean>(false);
   /** Raw secret shown exactly once after creation; never persisted. */
   createdTokenSecret = $state<string | null>(null);
 
   async loadTokens() {
-    const { items } = await listTokens();
-    this.tokens = (items ?? []).map((t) => mapToken(t));
+    this.loading = true;
+    this.error = null;
+    try {
+      const { items } = await listTokens();
+      this.tokens = (items ?? []).map((t) => mapToken(t));
+    } catch (e) {
+      this.error = e instanceof ApiError ? e.message : String(e);
+      throw e;
+    } finally {
+      this.loading = false;
+    }
   }
 
   async createToken(name: string, scopes: string[], ttlDays: number) {

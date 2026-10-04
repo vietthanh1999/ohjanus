@@ -2,7 +2,6 @@
   import type { AuditRecord } from '@/entities/audit-record';
   import { auditState } from '@/features/audit';
   import { settingsState } from '@/features/settings';
-  import { bootState } from '@/app/boot.svelte';
   import { exportAudit } from '@/features/audit';
   import {
     Button,
@@ -145,18 +144,18 @@
 </script>
 
 <Box class="audit-view">
-  {#if bootState.dataLoading}
+  {#if auditState.loading}
     <Box style="padding: 8px 16px;">
       <Text size="sm" color="muted">Loading live data from Admin API…</Text>
     </Box>
-  {:else if bootState.dataError}
+  {:else if auditState.error}
     <Box style="padding: 8px 16px;">
       <Alert variant="danger" title="Admin API unreachable">
-        <Text color="danger">{bootState.dataError}</Text>
+        <Text color="danger">{auditState.error}</Text>
         <Button
           variant="secondary"
           size="sm"
-          onclick={() => void bootState.loadAll()}
+          onclick={handleReload}
         >
           Retry
         </Button>

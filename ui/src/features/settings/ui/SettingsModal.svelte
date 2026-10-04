@@ -1,8 +1,14 @@
 <script lang="ts">
   import { settingsState } from '@/features/settings';
-  import { bootState } from '@/app/boot.svelte';
   import { toast, Select, Text } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
+
+  interface Props {
+    /** Shell-wired full reload after the gateway endpoint changes (app/boot). */
+    onReconnect?: () => void;
+  }
+
+  let { onReconnect }: Props = $props();
 
   // State
   let searchQuery = $state('');
@@ -72,7 +78,7 @@
     setApiBaseUrl(apiBase.trim());
     setAdminToken(adminTokenValue.trim());
     toast.success('Gateway connection applied (reloads data)');
-    void bootState.loadAll();
+    onReconnect?.();
   }
 
   function handleSave() {
@@ -80,7 +86,7 @@
     setAdminToken(adminTokenValue.trim());
     close();
     toast.success('Settings saved successfully');
-    void bootState.loadAll();
+    onReconnect?.();
   }
 </script>
 

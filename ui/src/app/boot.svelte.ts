@@ -10,19 +10,14 @@ import { workbenchState } from '@/features/workbench';
 import { ApiError } from '@/shared/api';
 
 /**
- * Global boot orchestration: initial Admin API load for the App shell.
- * Views read `dataLoading`/`dataError` for their loading/error states and
- * call `loadAll()` to retry. Only the shell (and the deprecated facade)
- * trigger it.
+ * Shell-only boot orchestration: initial Admin API load + full reload after
+ * the gateway endpoint changes (SettingsModal `onReconnect`).
+ * Loading/error display is per-slice (each manager owns its flags); boot
+ * only coordinates and logs the outcome.
  */
 class BootManager {
-  dataLoading = $state<boolean>(true);
-  dataError = $state<string | null>(null);
-
   async loadAll() {
     settingsState.initDensity();
-    this.dataLoading = true;
-    this.dataError = null;
     try {
       await Promise.all([
         approvalsState.loadApprovals(),
@@ -39,10 +34,8 @@ class BootManager {
         await explorerState.loadSchema(consoleState.console.connection).catch(() => {});
       }
     } catch (e) {
-      this.dataError = e instanceof ApiError ? e.message : String(e);
-      workbenchState.pushLog({ type: 'error', summary: `Admin API unreachable: ${this.dataError}` });
-    } finally {
-      this.dataLoading = false;
+      const msg = e instanceof ApiError ? e.message : String(e);
+      workbenchState.pushLog({ type: 'error', summary: `Admin API unreachable: ${msg}` });
     }
   }
 }

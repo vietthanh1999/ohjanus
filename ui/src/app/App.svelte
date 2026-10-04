@@ -145,7 +145,7 @@
   <CreateTokenModal />
   <DdlModal />
   <SearchPaletteModal />
-  <SettingsModal />
+  <SettingsModal onReconnect={() => void bootState.loadAll()} />
   <Toaster />
 </Box>
 

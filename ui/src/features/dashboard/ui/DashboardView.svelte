@@ -5,10 +5,16 @@
   import { settingsState } from '@/features/settings';
   import { tokensState } from '@/features/tokens';
   import { workbenchState } from '@/features/workbench';
-  import { bootState } from '@/app/boot.svelte';
   import { Card, Badge, Alert, Button, Text, Box, Flex, Grid, Stack, toast } from '@ohjanus/ui';
   import { Icon } from '@ohjanus/icons';
   import { Toolbar, ToolbarSeparator, BorderlessSelect } from '@/shared/ui/toolbar';
+
+  let dashboardBusy = $derived(
+    dashboardState.loading || approvalsState.loading || auditState.loading
+  );
+  let dashboardError = $derived(
+    dashboardState.error ?? approvalsState.error ?? auditState.error
+  );
 
   let selectedWindow = $state<string>('1h');
 
@@ -23,13 +29,13 @@
 </script>
 
 <Box class="dashboard-view">
-  {#if bootState.dataLoading}
+  {#if dashboardBusy}
     <Box style="padding: 8px 16px;"><Text size="sm" color="muted">Loading live data from Admin API…</Text></Box>
-  {:else if bootState.dataError}
+  {:else if dashboardError}
     <Box style="padding: 8px 16px;">
       <Alert variant="danger" title="Admin API unreachable">
-        <Text color="danger">{bootState.dataError}</Text>
-        <Button variant="secondary" size="sm" onclick={() => void bootState.loadAll()}>Retry</Button>
+        <Text color="danger">{dashboardError}</Text>
+        <Button variant="secondary" size="sm" onclick={handleReload}>Retry</Button>
       </Alert>
     </Box>
   {/if}
